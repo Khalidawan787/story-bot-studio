@@ -1,0 +1,49 @@
+# ============================================================
+#  SECRETS — never commit these
+# ============================================================
+.env
+credentials/
+*token*.json
+client_secret*.json
+*.WRONG-kids-bak
+
+# ============================================================
+#  Python
+# ============================================================
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# ============================================================
+#  PyInstaller build output
+# ============================================================
+build/
+dist/
+*.spec
+
+# ============================================================
+#  Runtime data & generated media (large / machine-specific)
+# ============================================================
+runs/
+logs/
+*.sqlite3
+assets/
+audio/
+videos/
+thumbnails/
+channels/*/assets/
+channels/*/audio/
+channels/*/videos/
+channels/*/thumbnails/
+data/*_lessons.json
+*.mp4
+*.mp3
+*.wav
+
+# ============================================================
+#  OS
+# ============================================================
+Thumbs.db
+.DS_Store

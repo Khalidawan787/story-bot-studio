@@ -1,0 +1,18 @@
+# Core (dashboard + pipeline)
+flask
+edge-tts
+python-dotenv
+
+# YouTube + Google Drive
+google-api-python-client
+google-auth-oauthlib
+google-auth-httplib2
+
+# Optional (only if you enable OpenAI images/scripts):
+#   openai
+# Optional (only if you enable local Whisper subtitles):
+#   faster-whisper
+# Optional (only to build the portable .exe):
+#   pyinstaller
+#
+# System dependency (not pip): ffmpeg + ffprobe on PATH, or set FFMPEG_BIN/FFPROBE_BIN.

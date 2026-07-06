@@ -1,0 +1,2 @@
+0 9,13,17,21,23 * * * cd /path/to/kids_learning_youtube_bot && .venv/bin/python -m src.cli ai-make --category animals --upload true
+
