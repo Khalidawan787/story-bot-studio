@@ -71,24 +71,44 @@ def _drawtext_filter(title_file: Path, line_file: Path, duration: float) -> str:
     )
 
 
-def _motion_filter(duration: float) -> str:
+def _motion_filter(duration: float, scene: Scene | None = None) -> str:
+    """Dynamic, per-scene camera motion (free): each scene gets a different
+    move — zoom in / zoom out / pan right / pan left / pan up — for variety."""
+    W, H = settings.video_width, settings.video_height
     frames = max(1, int(duration * settings.video_fps))
-    base = (
-        f"scale={settings.video_width}:{settings.video_height}:force_original_aspect_ratio=increase,"
-        f"crop={settings.video_width}:{settings.video_height}"
-    )
-    if settings.enable_motion:
-        base = (
-            f"scale={settings.video_width + 140}:{settings.video_height + 250}:force_original_aspect_ratio=increase,"
-            f"crop={settings.video_width + 140}:{settings.video_height + 250},"
-            f"zoompan=z='min(zoom+0.0012,1.08)':"
-            f"x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':"
-            f"d={frames}:s={settings.video_width}x{settings.video_height}:fps={settings.video_fps}"
+
+    if not settings.enable_motion:
+        base = f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H}"
+        filters = [base, "eq=saturation=1.12:contrast=1.05"]
+    else:
+        cover = (
+            f"scale={W + 160}:{H + 280}:force_original_aspect_ratio=increase,"
+            f"crop={W + 160}:{H + 280}"
         )
-    filters = [base, "eq=saturation=1.12:contrast=1.05"]
+        presets = ["zoom_in", "zoom_out", "pan_right", "pan_left", "pan_up"]
+        key = sum(ord(c) for c in (scene.label if scene else "scene"))
+        motion = presets[key % len(presets)]
+        p = f"(on/{frames})"
+        cx, cy = "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"
+        if motion == "zoom_in":
+            z, x, y = f"1+0.16*{p}", cx, cy
+        elif motion == "zoom_out":
+            z, x, y = f"1.16-0.16*{p}", cx, cy
+        elif motion == "pan_right":
+            z, x, y = "1.14", f"(iw-iw/zoom)*{p}", cy
+        elif motion == "pan_left":
+            z, x, y = "1.14", f"(iw-iw/zoom)*(1-{p})", cy
+        else:  # pan_up
+            z, x, y = "1.14", cx, f"(ih-ih/zoom)*(1-{p})"
+        zoompan = (
+            f"zoompan=z='{z}':x='{x}':y='{y}':"
+            f"d={frames}:s={W}x{H}:fps={settings.video_fps}"
+        )
+        filters = [cover, zoompan, "eq=saturation=1.14:contrast=1.06"]
+
     if settings.enable_fades and duration > 1.0:
-        filters.append("fade=t=in:st=0:d=0.25")
-        filters.append(f"fade=t=out:st={max(0.0, duration - 0.28):.2f}:d=0.25")
+        filters.append("fade=t=in:st=0:d=0.3")
+        filters.append(f"fade=t=out:st={max(0.0, duration - 0.3):.2f}:d=0.3")
     return ",".join(filters)
 
 
@@ -104,7 +124,7 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
     line_file.write_text(line_text, encoding="utf-8")
     if image_path:
         input_args = ["-loop", "1", "-i", str(image_path)]
-        base_filter = _motion_filter(duration)
+        base_filter = _motion_filter(duration, scene)
     else:
         input_args = [
             "-f",
