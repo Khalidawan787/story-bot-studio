@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import importlib.util
 import json
+import random
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
@@ -191,7 +192,7 @@ def generate_google_scene_image(scene: Scene, output_path: Path) -> Path:
     return output_path
 
 
-def generate_pollinations_scene_image(scene: Scene, output_path: Path, channel=None) -> Path:
+def generate_pollinations_scene_image(scene: Scene, output_path: Path, channel=None, fresh: bool = False) -> Path:
     if _is_genre(channel):
         # Genre videos must NOT get kid-friendly styling.
         prompt = _prompt_for_scene(scene, channel) + " High quality, cinematic, vertical 9:16."
@@ -201,11 +202,13 @@ def generate_pollinations_scene_image(scene: Scene, output_path: Path, channel=N
             + " High quality, kid friendly, colorful, professional YouTube Shorts illustration."
         )
     encoded_prompt = urllib.parse.quote(prompt)
+    # fresh=True picks a random seed so each render gets a NEW image.
+    seed = random.randint(0, 1_000_000) if fresh else (abs(hash(scene.image)) % 1_000_000)
     params = urllib.parse.urlencode(
         {
             "width": "1080",
             "height": "1920",
-            "seed": str(abs(hash(scene.image)) % 1_000_000),
+            "seed": str(seed),
             "model": "flux",
             "enhance": "true",
             "nologo": "true",
@@ -303,6 +306,14 @@ def ensure_scene_asset(scene: Scene, channel=None) -> Path | None:
         except Exception:
             pass
     return None
+
+
+def generate_fresh_image(scene: Scene, output_path: Path, channel=None) -> Path:
+    """Always generate a brand-new image (random seed) — never reuse a cached one."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    if pollinations_image_ready():
+        return generate_pollinations_scene_image(scene, output_path, channel, fresh=True)
+    return _generate_best_available_scene_image(scene, output_path, channel)
 
 
 def unique_missing_scenes(limit: int | None = None) -> list[Scene]:

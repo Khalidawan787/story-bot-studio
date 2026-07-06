@@ -68,6 +68,8 @@ class Settings:
     youtube_privacy_status: str = os.getenv("YOUTUBE_PRIVACY_STATUS", "public")
     # Storage: clean big intermediate render files, and optionally push finals to Drive.
     enable_run_cleanup: bool = os.getenv("ENABLE_RUN_CLEANUP", "true").lower() == "true"
+    # Generate fresh images every render (don't reuse the same cached images).
+    enable_fresh_images: bool = os.getenv("ENABLE_FRESH_IMAGES", "true").lower() == "true"
     enable_drive_storage: bool = os.getenv("ENABLE_DRIVE_STORAGE", "false").lower() == "true"
     drive_folder: str = os.getenv("DRIVE_FOLDER", "StoryBot Videos")
 

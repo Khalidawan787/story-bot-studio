@@ -18,6 +18,7 @@ from .channels import Channel
 
 
 GENRE_TONE = {
+    "kids": "simple, cheerful, gentle and 100% safe for young children",
     "crime": "gripping true-crime style, suspenseful and dramatic, tasteful, NO gore or real victim names",
     "love": "warm, emotional, heartfelt romance, clean and tasteful",
     "horror": "eerie, suspenseful, atmospheric dread — NOT graphic gore, advertiser-friendly",
@@ -102,6 +103,62 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) ->
         "outro": raw.get("outro", ""),
         "scenes": lesson_scenes,
     }
+
+
+def _build_lesson(channel: Channel, raw: dict, fallback_title: str) -> tuple[str, dict]:
+    title = (raw.get("title") or fallback_title).strip()
+    key = _slug(title)
+    lesson_scenes = []
+    for i, sc in enumerate(raw.get("scenes", []), start=1):
+        lesson_scenes.append({
+            "label": sc.get("label", f"Part {i}"),
+            "line": sc.get("line", ""),
+            "image": f"assets/generated/{key}_{i:02}.jpg",
+            "image_prompt": f"{sc.get('image_prompt', title)}, {channel.image_style}",
+        })
+    return key, {
+        "title": title,
+        "category": channel.genre.title(),
+        "intro": raw.get("intro", ""),
+        "outro": raw.get("outro", ""),
+        "scenes": lesson_scenes,
+    }
+
+
+def generate_from_prompt(channel: Channel, user_prompt: str, scenes: int = 8) -> str:
+    """Write a script about the USER'S own prompt and save it as a custom topic.
+
+    Works for every channel (kids too). Returns the new topic key.
+    """
+    tone = GENRE_TONE.get(channel.genre, "engaging and well-paced")
+    prompt = (
+        f"You are a scriptwriter for a {channel.genre} YouTube channel. Tone: {tone}.\n"
+        f"Write a {channel.genre} short video script about this idea from the user:\n"
+        f"\"{user_prompt}\"\n"
+        f"Return ONLY JSON: {{\"title\": str, \"intro\": str, \"outro\": str, "
+        f"\"scenes\": [{{\"label\": str, \"line\": str, \"image_prompt\": str}}]}}.\n"
+        f"Use exactly {scenes} scenes. 'line' = one narrated sentence. "
+        f"'label' = a 2-4 word on-screen caption. 'image_prompt' = a visual description "
+        f"of that scene (scene only, no art-style words)."
+    )
+    raw = _gemini(prompt)
+    key, lesson = _build_lesson(channel, raw, fallback_title=user_prompt[:60])
+
+    path = channel.custom_lessons_path
+    lessons = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    if key in lessons:
+        key = f"{key}_{len(lessons) + 1}"
+    lessons[key] = lesson
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(lessons, indent=2, ensure_ascii=False), encoding="utf-8")
+    return key
+
+
+def load_custom_lessons(channel: Channel) -> dict:
+    path = channel.custom_lessons_path
+    if path.exists():
+        return json.loads(path.read_text(encoding="utf-8"))
+    return {}
 
 
 def load_genre_lessons(channel: Channel) -> dict:

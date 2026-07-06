@@ -39,6 +39,11 @@ class Channel:
     def lessons_path(self) -> Path | None:
         return (settings.root / self.lessons_file) if self.lessons_file else None
 
+    @property
+    def custom_lessons_path(self) -> Path:
+        # User-written custom-prompt topics (works for every channel, incl. kids).
+        return settings.root / "data" / f"custom_{self.id}_lessons.json"
+
 
 def _default_kids() -> Channel:
     """Fallback kids channel that reproduces the original single-channel behavior."""

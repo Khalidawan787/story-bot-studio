@@ -38,18 +38,24 @@ def _lesson_from_raw(topic_key: str, raw: dict) -> Lesson:
 
 
 def load_topics_for(channel) -> dict:
-    """Topic pool for a channel: built-in bank for kids, genre file otherwise."""
-    if channel.builtin:
-        return load_all_lessons()
-    from .genre_topics import load_genre_lessons
-    return load_genre_lessons(channel)
+    """Topic pool for a channel: built-in bank (kids) or genre file, PLUS any
+    custom-prompt topics the user wrote."""
+    from .genre_topics import load_genre_lessons, load_custom_lessons
+    base = dict(load_all_lessons() if channel.builtin else load_genre_lessons(channel))
+    base.update(load_custom_lessons(channel))
+    return base
 
 
 def load_lesson_for(channel, topic_key: str) -> Lesson:
-    """Load one lesson from the correct source for a channel."""
+    """Load one lesson from the correct source for a channel (custom first)."""
+    from .genre_topics import load_custom_lessons
+    custom = load_custom_lessons(channel)
+    if topic_key in custom:
+        return _lesson_from_raw(topic_key, custom[topic_key])
     if channel.builtin:
         return load_lesson(topic_key)
-    lessons = load_topics_for(channel)
+    from .genre_topics import load_genre_lessons
+    lessons = load_genre_lessons(channel)
     if topic_key not in lessons:
         raise ValueError(f"Unknown {channel.genre} topic '{topic_key}'.")
     return _lesson_from_raw(topic_key, lessons[topic_key])

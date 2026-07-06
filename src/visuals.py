@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 
 from .config import settings
-from .image_assets import ensure_scene_asset
+from .image_assets import ensure_scene_asset, generate_fresh_image
 from .models import Lesson, Scene
 
 
@@ -238,6 +238,16 @@ def create_auto_scene_image(scene: Scene, output_path: Path) -> Path:
 
 
 def resolve_scene_image(scene: Scene, run_dir: Path, channel=None) -> Path | None:
+    genre = channel is not None and not getattr(channel, "builtin", False)
+
+    # Genre channels: generate a BRAND-NEW image every render (no reuse).
+    if settings.enable_fresh_images and genre:
+        try:
+            fresh = run_dir / "gen" / Path(scene.image).name
+            return generate_fresh_image(scene, fresh, channel)
+        except Exception:
+            pass
+
     source = ensure_scene_asset(scene, channel) or (settings.root / scene.image)
     if source.exists():
         return source

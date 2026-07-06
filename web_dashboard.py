@@ -155,6 +155,27 @@ def generate():
     return redirect(url_for("home", channel=ch.id))
 
 
+@app.route("/custom", methods=["POST"])
+def custom():
+    ch = current_channel()
+    prompt = (request.form.get("prompt") or "").strip()
+    scenes = int(request.form.get("scenes", "6"))
+    upload = request.form.get("upload") == "on"
+    if not prompt:
+        flash("Type your topic/prompt first.", "error")
+        return redirect(url_for("home", channel=ch.id))
+
+    def job():
+        from src.genre_topics import generate_from_prompt
+        key = generate_from_prompt(ch, prompt, scenes=scenes)
+        assets = run_pipeline(load_lesson_for(ch, key), upload=upload, channel=ch)
+        return f"Made video: {key} ({assets.job_id})"
+
+    start_job(f"[{ch.id}] Custom prompt: {prompt[:30]}", job)
+    flash(f"Writing a script + video for your prompt: \"{prompt[:40]}\"...", "ok")
+    return redirect(url_for("home", channel=ch.id))
+
+
 @app.route("/batch", methods=["POST"])
 def batch():
     ch = current_channel()
@@ -469,6 +490,23 @@ PAGE = r"""
     </div>
     {% if ch.builtin %}<div class="hint">Kids topics come from the built-in 1203-topic bank.</div>
     {% else %}<div class="hint">Write topics first (5 scenes ≈ 30-sec video). Authorize this channel's YouTube before uploading.</div>{% endif %}
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">✍️ Write your OWN topic — bot makes the video from your prompt</h2>
+    <form method="post" action="/custom" class="row">
+      <input type="hidden" name="channel" value="{{ch.id}}">
+      <input type="text" name="prompt" placeholder="Type anything, e.g. 'A brave firefighter cat saves the city'..." required style="flex:1;min-width:260px">
+      <select name="scenes">
+        <option value="5">5 scenes (~30s)</option>
+        <option value="6" selected>6 scenes</option>
+        <option value="8">8 scenes</option>
+        <option value="12">12 scenes</option>
+      </select>
+      <label class="chk"><input type="checkbox" name="upload"> Upload</label>
+      <button class="pink" type="submit">✨ Make my video</button>
+    </form>
+    <div class="hint">Free Gemini writes a {{ch.genre}} script from your prompt, then renders it with fresh AI images.</div>
   </div>
 
   {% if assets %}
