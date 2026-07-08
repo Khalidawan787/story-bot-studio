@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from google.auth.transport.requests import Request
@@ -63,7 +64,8 @@ def set_thumbnail(video_id: str, thumbnail_path: Path, attempts: int = 4,
     raise RuntimeError(f"Thumbnail upload failed after {attempts} attempts: {last_error}")
 
 
-def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, object], channel=None) -> str:
+def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, object],
+                 channel=None, publish_at: datetime | None = None) -> str:
     # Resolve per-channel credentials + settings; default = original kids behavior.
     if channel is not None:
         client_secret_file = channel.client_secret_path
@@ -78,6 +80,16 @@ def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, obj
         made_for_kids = True
         privacy = settings.youtube_privacy_status
 
+    status_body: dict[str, object] = {
+        "privacyStatus": privacy,
+        "selfDeclaredMadeForKids": made_for_kids,
+    }
+    # Scheduled publish: YouTube requires the video be private until publishAt,
+    # then it flips it public automatically at that timestamp (RFC3339 UTC).
+    if publish_at is not None:
+        status_body["privacyStatus"] = "private"
+        status_body["publishAt"] = publish_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
     youtube = _youtube(client_secret_file, token_file)
     request = youtube.videos().insert(
         part="snippet,status",
@@ -88,10 +100,7 @@ def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, obj
                 "tags": metadata["tags"],
                 "categoryId": category_id,
             },
-            "status": {
-                "privacyStatus": privacy,
-                "selfDeclaredMadeForKids": made_for_kids,
-            },
+            "status": status_body,
         },
         media_body=MediaFileUpload(str(video_path), chunksize=-1, resumable=True),
     )
@@ -112,7 +121,7 @@ def connect_and_verify(client_secret_file, token_file) -> str:
     Powers the dashboard 'Connect & verify' button so you can confirm each
     channel is linked to the CORRECT YouTube channel before any upload.
     """
-    service = _get_service(client_secret_file, token_file)
+    service = _youtube(client_secret_file, token_file)
     resp = service.channels().list(part="snippet", mine=True).execute()
     items = resp.get("items", [])
     if not items:

@@ -89,6 +89,11 @@ Set-EnvValue ".env" "YOUTUBE_TOKEN_FILE" "token.json"
 Set-EnvValue ".env" "YOUTUBE_PRIVACY_STATUS" "public"
 Set-EnvValue ".env" "ENABLE_BACKGROUND_MUSIC" "true"
 Set-EnvValue ".env" "AUTO_GENERATE_MISSING_IMAGES" "true"
+# Spread uploads out (private + scheduled publishAt) so a daily batch does not
+# go public all at once. First video ~1h out, then one every 3h.
+Set-EnvValue ".env" "YOUTUBE_SCHEDULE_UPLOADS" "true"
+Set-EnvValue ".env" "YOUTUBE_SCHEDULE_INTERVAL_HOURS" "3"
+Set-EnvValue ".env" "YOUTUBE_SCHEDULE_FIRST_DELAY_HOURS" "1"
 
 Write-Step "Checking YouTube files"
 if (Test-Path "client_secret.json") {
@@ -104,7 +109,7 @@ if (Test-Path "token.json") {
 }
 
 Write-Step "Running health check"
-.\.venv\Scripts\python.exe -m compileall src dashboard_local.py
+.\.venv\Scripts\python.exe -m compileall src web_dashboard.py
 .\.venv\Scripts\python.exe -m src.cli daily --count 5 --dry-run true
 
 if ($InstallDailyTask) {
@@ -115,10 +120,10 @@ if ($InstallDailyTask) {
 
 Write-Step "Setup complete"
 Write-Host "Dashboard command:"
-Write-Host "  .\.venv\Scripts\python.exe dashboard_local.py"
+Write-Host "  .\.venv\Scripts\python.exe web_dashboard.py"
 Write-Host ""
 Write-Host "Dashboard URL:"
-Write-Host "  http://127.0.0.1:8501"
+Write-Host "  http://127.0.0.1:8000"
 Write-Host ""
 Write-Host "Daily manual test command:"
 Write-Host "  .\.venv\Scripts\python.exe -m src.cli daily --count 5 --upload true"

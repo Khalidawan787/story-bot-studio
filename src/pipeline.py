@@ -10,7 +10,7 @@ from .models import Lesson, RenderedAssets
 from .music import add_background_music
 from .seo import build_metadata
 from .subtitles import generate_subtitles
-from .tts import generate_voice
+from .tts import generate_voice, generate_voice_with_marks
 from .video import render_video, validate_rendered_video
 from .visuals import create_thumbnail, resolve_scene_image
 
@@ -35,12 +35,18 @@ def run_pipeline(lesson: Lesson, upload: bool = False, channel=None) -> Rendered
     run_dir = settings.runs_dir / job_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    scene_audio_paths = [
-        generate_voice(scene.line, run_dir / f"voice_scene_{index:02}.mp3", voice=voice)
-        for index, scene in enumerate(lesson.scenes, start=1)
-    ]
+    scene_audio_paths = []
+    scene_marks: list = []
+    for index, scene in enumerate(lesson.scenes, start=1):
+        out = run_dir / f"voice_scene_{index:02}.mp3"
+        if settings.enable_karaoke_captions:
+            path, marks = generate_voice_with_marks(scene.line, out, voice=voice)
+        else:
+            path, marks = generate_voice(scene.line, out, voice=voice), None
+        scene_audio_paths.append(path)
+        scene_marks.append(marks)
     audio_path = generate_voice(lesson.narration, run_dir / "voice.mp3", voice=voice)
-    video_path = render_video(lesson, audio_path, run_dir / "video.mp4", run_dir, scene_audio_paths=scene_audio_paths, channel=channel)
+    video_path = render_video(lesson, audio_path, run_dir / "video.mp4", run_dir, scene_audio_paths=scene_audio_paths, channel=channel, scene_marks=scene_marks)
     video_path = add_background_music(video_path, run_dir, seed_text=lesson.topic_key)
     validate_rendered_video(video_path)
     subtitle_path = generate_subtitles(audio_path, run_dir / "subtitles.srt", lesson.narration)
@@ -51,12 +57,16 @@ def run_pipeline(lesson: Lesson, upload: bool = False, channel=None) -> Rendered
     status = "rendered"
     video_url = None
     error = None
+    publish_at = None
     if upload:
         try:
             from .youtube_upload import ThumbnailUploadError, upload_video
+            from .schedule import next_publish_at
 
-            video_url = upload_video(video_path, thumbnail_path, metadata, channel=channel)
-            status = "uploaded"
+            publish_at = next_publish_at(channel_id)
+            video_url = upload_video(video_path, thumbnail_path, metadata, channel=channel,
+                                     publish_at=publish_at)
+            status = "scheduled" if publish_at else "uploaded"
         except ThumbnailUploadError as exc:
             status = "thumbnail_pending"
             video_url = exc.video_url
@@ -64,6 +74,7 @@ def run_pipeline(lesson: Lesson, upload: bool = False, channel=None) -> Rendered
         except Exception as exc:
             status = "upload_failed"
             error = str(exc)
+            publish_at = None  # nothing reached YouTube, so don't reserve the slot
 
     video_db_id = save_video(
         job_id=job_id,
@@ -75,6 +86,7 @@ def run_pipeline(lesson: Lesson, upload: bool = False, channel=None) -> Rendered
         video_url=video_url,
         error=error,
         channel=channel_id,
+        publish_at=publish_at.isoformat() if publish_at else None,
     )
 
     # Optional: push the final video to Google Drive and free the local copy.

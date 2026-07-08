@@ -138,6 +138,25 @@ def run_daily_batch(count: int = 5, upload: bool = True, channel: Channel | None
     return results
 
 
+def run_buffer_batch(count: int = 30, upload: bool = True, channel: Channel | None = None) -> list[tuple[str, str]]:
+    """Build a BUFFER of many videos in one go and schedule them into the future.
+
+    This decouples publishing from PC uptime: each video uploads as private with
+    a future publishAt (see schedule.next_publish_at), so YouTube keeps releasing
+    them on time even if the PC is off for days. Run this whenever the PC is on to
+    top the buffer back up.
+    """
+    channel = _resolve(channel)
+    results: list[tuple[str, str]] = []
+    for topic_key in select_daily_topics(count, channel):
+        try:
+            assets = run_pipeline(load_lesson_for(channel, topic_key), upload=upload, channel=channel)
+            results.append((topic_key, f"OK {assets.job_id}"))
+        except Exception as exc:
+            results.append((topic_key, f"FAILED {exc}"))
+    return results
+
+
 def run_daily_catchup(target_count: int = 5, upload: bool = True, start_hour: int = 8,
                       channel: Channel | None = None) -> list[tuple[str, str]]:
     channel = _resolve(channel)

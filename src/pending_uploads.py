@@ -7,8 +7,9 @@ from urllib.parse import parse_qs, urlparse
 
 from .config import settings
 from .channels import default_channel, get_channel
-from .db import mark_thumbnail_pending, mark_upload_failed, mark_uploaded
+from .db import mark_scheduled, mark_thumbnail_pending, mark_upload_failed, mark_uploaded
 from .lessons import load_lesson_for
+from .schedule import next_publish_at
 from .seo import build_metadata
 from .youtube_upload import ThumbnailUploadError, set_thumbnail, upload_video
 
@@ -95,7 +96,12 @@ def _process_row(row: sqlite3.Row) -> str:
             raise FileNotFoundError(f"Video missing: {video_path}")
 
         metadata = build_metadata(load_lesson_for(channel, row["topic"]), channel)
-        video_url = upload_video(video_path, thumbnail_path, metadata, channel=channel)
+        publish_at = next_publish_at(channel.id)
+        video_url = upload_video(video_path, thumbnail_path, metadata, channel=channel,
+                                 publish_at=publish_at)
+        if publish_at is not None:
+            mark_scheduled(video_id, video_url, publish_at.isoformat())
+            return f"{video_id}: scheduled for {publish_at.isoformat()} {video_url}"
         mark_uploaded(video_id, video_url)
         return f"{video_id}: uploaded {video_url}"
     except ThumbnailUploadError as exc:

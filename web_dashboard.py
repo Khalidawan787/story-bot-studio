@@ -25,7 +25,7 @@ from src.pipeline import run_pipeline
 from src.lessons import load_lesson_for, load_topics_for
 from src.genre_topics import generate_genre_topics
 from src.pending_uploads import retry_pending_uploads, upload_one
-from src.image_assets import asset_stats, generate_missing_assets, generate_free_asset_pack
+from src.image_assets import asset_stats, generate_missing_assets, generate_free_asset_pack, upgrade_low_quality_assets
 from src.db import delete_video, set_drive_url
 from src import drive_storage
 
@@ -45,7 +45,7 @@ def channel_rows(channel_id: str) -> list[sqlite3.Row]:
         return conn.execute(
             """
             SELECT id, job_id, topic, title, video_path, thumbnail_path,
-                   video_url, status, error, created_at, drive_url
+                   video_url, status, error, created_at, drive_url, publish_at
             FROM videos WHERE channel = ? ORDER BY id DESC
             """,
             (channel_id,),
@@ -117,7 +117,7 @@ def home():
     ch = current_channel()
     topics = load_topics_for(ch)
     vids = channel_rows(ch.id)
-    uploaded = sum(1 for v in vids if v["status"] == "uploaded")
+    uploaded = sum(1 for v in vids if v["status"] in ("uploaded", "scheduled"))
 
     assets = None
     if ch.builtin:  # asset coverage only applies to the kids topic bank
@@ -268,6 +268,20 @@ def asset_missing():
     return redirect(url_for("home", channel=ch.id))
 
 
+@app.route("/asset-upgrade", methods=["POST"])
+def asset_upgrade():
+    ch = current_channel()
+    count = int(request.form.get("count", "30"))
+
+    def job():
+        upgraded, msgs = upgrade_low_quality_assets(limit=count)
+        return f"Upgraded {upgraded} low-quality images"
+
+    start_job(f"[{ch.id}] Upgrade {count} low-quality images", job)
+    flash(f"Upgrading up to {count} low-quality images with fresh AI...", "ok")
+    return redirect(url_for("home", channel=ch.id))
+
+
 @app.route("/asset-free", methods=["POST"])
 def asset_free():
     ch = current_channel()
@@ -411,6 +425,7 @@ PAGE = r"""
   .vid .t{font-weight:600;margin:8px 0 4px;font-size:14px}
   .st{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px}
   .st.uploaded{background:#123122;color:var(--ok)}.st.rendered{background:#2a2f4d;color:#b9c1e6}
+  .st.scheduled{background:#1a2b4d;color:#8fb4ff}
   .st.thumbnail_pending{background:#3a2f12;color:var(--warn)}.st.upload_failed{background:#331617;color:var(--err)}
   .muted{color:var(--muted);font-size:13px}.err{color:var(--err);font-size:11px;margin-top:6px;max-height:48px;overflow:auto}
   .hint{font-size:12px;color:var(--muted);margin-top:8px}
@@ -518,6 +533,7 @@ PAGE = r"""
     <div class="bar"><i style="width:{{ (100*assets.existing/assets.total)|round(0,'floor') if assets.total else 0 }}%"></i></div>
     <div class="row" style="margin-top:8px">
       <form method="post" action="/asset-missing" class="row"><input type="hidden" name="channel" value="{{ch.id}}"><input type="number" name="count" value="10" min="1" max="50" style="width:76px"><button class="ghost sm" type="submit">Generate missing (AI/free)</button></form>
+      <form method="post" action="/asset-upgrade" class="row"><input type="hidden" name="channel" value="{{ch.id}}"><input type="number" name="count" value="30" min="1" max="200" style="width:76px"><button class="green sm" type="submit">⬆ Upgrade low-quality images</button></form>
       <form method="post" action="/asset-free" class="row"><input type="hidden" name="channel" value="{{ch.id}}"><input type="number" name="count" value="50" min="1" max="200" style="width:76px"><button class="ghost sm" type="submit">Free asset pack (offline)</button></form>
     </div>
   </div>
@@ -551,6 +567,7 @@ PAGE = r"""
         <span class="st {{v['status']}}">{{v['status']}}</span>
         {% if v['video_url'] %}<a href="{{v['video_url']}}" target="_blank">YouTube ↗</a>{% endif %}
       </div>
+      {% if v['status']=='scheduled' and v['publish_at'] %}<div class="hint">⏱ Goes public: {{v['publish_at'][:16].replace('T',' ')}} UTC</div>{% endif %}
       <div class="row">
         <a href="/media?path={{v['video_path']|urlencode}}" download><button class="ghost sm" type="button">Download</button></a>
         <form method="post" action="/upload-one"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="green sm" type="submit">Upload to YouTube</button></form>

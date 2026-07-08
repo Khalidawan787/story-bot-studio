@@ -117,6 +117,24 @@ def add_background_music(video_path: Path, run_dir: Path, seed_text: str = "") -
     music_path = _write_music_bed(run_dir / "background_music.wav", duration, seed_text or run_dir.name)
     mixed_path = run_dir / "video_with_music.mp4"
 
+    volume = settings.background_music_volume
+    if settings.enable_music_ducking:
+        # Duck the music whenever the narrator speaks: the voice ([0:a]) drives a
+        # sidechain compressor on the music so speech stays clear, then the music
+        # swells back up in the gaps. asplit keeps one clean copy of the voice for
+        # the final mix and one to trigger the compressor.
+        filter_complex = (
+            f"[1:a]volume={volume}[music];"
+            "[0:a]asplit=2[voice][key];"
+            "[music][key]sidechaincompress=threshold=0.015:ratio=12:attack=5:release=350[ducked];"
+            "[voice][ducked]amix=inputs=2:duration=first:dropout_transition=0[a]"
+        )
+    else:
+        filter_complex = (
+            f"[1:a]volume={volume}[music];"
+            "[0:a][music]amix=inputs=2:duration=first:dropout_transition=0[a]"
+        )
+
     subprocess.run(
         [
             ffmpeg_bin(),
@@ -126,7 +144,7 @@ def add_background_music(video_path: Path, run_dir: Path, seed_text: str = "") -
             "-i",
             str(music_path),
             "-filter_complex",
-            f"[1:a]volume={settings.background_music_volume}[music];[0:a][music]amix=inputs=2:duration=first:dropout_transition=0[a]",
+            filter_complex,
             "-map",
             "0:v",
             "-map",

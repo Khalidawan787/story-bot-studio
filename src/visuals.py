@@ -202,21 +202,58 @@ def _illustration_filter(scene: Scene) -> str:
     return f"{sky},drawbox=x=250:y=560:w=580:h=580:color={color}:t=fill,drawbox=x=330:y=640:w=420:h=420:color={accent}:t=fill"
 
 
+# Clean, friendly (background, card, accent) palettes for the fallback card
+# used ONLY when no real/AI image is available. Chosen so the card looks
+# intentional — never like a broken placeholder.
+CARD_THEMES = [
+    ("0x8e7bef", "0xf3f0ff", "0x6c5ce7"),  # purple
+    ("0x5aa9f0", "0xeaf4ff", "0x1c7ed6"),  # blue
+    ("0x37d6a0", "0xe9fff8", "0x0ca678"),  # green
+    ("0xffc94d", "0xfff8e6", "0xf59f00"),  # amber
+    ("0xff8fc7", "0xfff0f8", "0xe64980"),  # pink
+    ("0xff8787", "0xfff1f1", "0xe03131"),  # red
+]
+
+
 def create_auto_scene_image(scene: Scene, output_path: Path) -> Path:
+    """Pleasant fallback shown when a real/AI image can't be fetched.
+
+    A soft two-tone background, a big centered card with the number/word, and
+    tidy corner dots — so a 'missing' image still looks like a finished slide.
+    No bottom brand bar (that used to collide with the video caption band).
+    """
     output_path.parent.mkdir(parents=True, exist_ok=True)
     font = font_path()
     font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
     label = escape_drawtext(scene.label)
-    symbol = escape_drawtext(label_symbol(scene))
-    color = scene_color(scene)
-    accent = accent_color(scene)
-    illustration = _illustration_filter(scene)
+    symbol_raw = label_symbol(scene)
+    symbol = escape_drawtext(symbol_raw)
+
+    key = sum(ord(c) for c in scene.label)
+    bg, card, accent = CARD_THEMES[key % len(CARD_THEMES)]
+
+    # Size the centre glyph so short symbols (e.g. "16") are big and long
+    # words (e.g. "Sixteen") still fit inside the card.
+    n = max(1, len(symbol_raw))
+    sym_fs = 300 if n <= 2 else (210 if n <= 4 else (150 if n <= 6 else 118))
+    card_top, card_h = 540, 780
+    sym_y = card_top + (card_h - sym_fs) // 2 - 10
+
     vf = (
-        f"{illustration},"
-        "drawbox=x=70:y=68:w=940:h=138:color=black@0.20:t=fill,"
-        f"drawtext=text='{label}'{font_arg}:fontsize=92:fontcolor=white:borderw=7:bordercolor=black:x=(w-text_w)/2:y=92,"
-        "drawbox=x=130:y=1450:w=820:h=128:color=0xffd43b@0.96:t=fill,"
-        f"drawtext=text='Kids Learning'{font_arg}:fontsize=58:fontcolor=0x202020:x=(w-text_w)/2:y=1486"
+        # soft two-tone background (top lighter than bottom)
+        f"drawbox=x=0:y=0:w=1080:h=1920:color={bg}:t=fill,"
+        f"drawbox=x=0:y=0:w=1080:h=780:color=white@0.10:t=fill,"
+        # tidy decorative corner dots (symmetric, not random)
+        f"drawbox=x=110:y=300:w=110:h=110:color=white@0.22:t=fill,"
+        f"drawbox=x=860:y=300:w=110:h=110:color=white@0.22:t=fill,"
+        f"drawbox=x=110:y=1520:w=110:h=110:color=white@0.22:t=fill,"
+        f"drawbox=x=860:y=1520:w=110:h=110:color=white@0.22:t=fill,"
+        # main card (accent frame + light inner)
+        f"drawbox=x=150:y={card_top}:w=780:h={card_h}:color={accent}:t=fill,"
+        f"drawbox=x=174:y={card_top + 24}:w=732:h={card_h - 48}:color={card}:t=fill,"
+        # big centred number / word (the video already adds the title + caption,
+        # so no extra label here — keeps it clear of the caption band)
+        f"drawtext=text='{symbol}'{font_arg}:fontsize={sym_fs}:fontcolor={accent}:x=(w-text_w)/2:y={sym_y}"
     )
     command = [
         ffmpeg_bin(),
@@ -224,7 +261,7 @@ def create_auto_scene_image(scene: Scene, output_path: Path) -> Path:
         "-f",
         "lavfi",
         "-i",
-        f"color=c={color}:s=1080x1920:d=1",
+        "color=c=black:s=1080x1920:d=1",
         "-frames:v",
         "1",
         "-update",

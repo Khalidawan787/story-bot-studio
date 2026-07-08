@@ -4,6 +4,9 @@
 .env
 credentials/
 *token*.json
+*token*.json.*
+*token*.bak
+*.bak
 client_secret*.json
 *.WRONG-kids-bak
 

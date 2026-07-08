@@ -14,6 +14,11 @@ from .lessons import load_topics
 from .models import Scene
 
 
+# A real 1080x1920 illustration is ~300KB-2MB. Anything much smaller is a
+# low-detail / near-broken result we should retry rather than keep.
+MIN_GOOD_IMAGE_BYTES = 130_000
+
+
 @dataclass(frozen=True)
 class AssetStats:
     total: int
@@ -192,7 +197,8 @@ def generate_google_scene_image(scene: Scene, output_path: Path) -> Path:
     return output_path
 
 
-def generate_pollinations_scene_image(scene: Scene, output_path: Path, channel=None, fresh: bool = False) -> Path:
+def generate_pollinations_scene_image(scene: Scene, output_path: Path, channel=None,
+                                      fresh: bool = False, attempts: int = 3) -> Path:
     if _is_genre(channel):
         # Genre videos must NOT get kid-friendly styling.
         prompt = _prompt_for_scene(scene, channel) + " High quality, cinematic, vertical 9:16."
@@ -203,27 +209,47 @@ def generate_pollinations_scene_image(scene: Scene, output_path: Path, channel=N
         )
     encoded_prompt = urllib.parse.quote(prompt)
     # fresh=True picks a random seed so each render gets a NEW image.
-    seed = random.randint(0, 1_000_000) if fresh else (abs(hash(scene.image)) % 1_000_000)
-    params = urllib.parse.urlencode(
-        {
-            "width": "1080",
-            "height": "1920",
-            "seed": str(seed),
-            "model": "flux",
-            "enhance": "true",
-            "nologo": "true",
-            "safe": "true",
-        }
-    )
-    url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?{params}"
-    request = urllib.request.Request(url, headers={"User-Agent": "KidsLearningBot/1.0"})
-    with urllib.request.urlopen(request, timeout=90) as response:
-        data = response.read()
-        content_type = response.headers.get("Content-Type", "")
-    if "image" not in content_type.lower() or len(data) < 20_000:
-        raise RuntimeError(f"Pollinations did not return a valid image. Content-Type={content_type}")
+    base_seed = random.randint(0, 1_000_000) if fresh else (abs(hash(scene.image)) % 1_000_000)
+
+    # Try a few seeds and KEEP THE BEST (largest = most detailed). This is what
+    # stops the occasional tiny/near-broken result from being saved and then
+    # stuck forever behind its provider marker.
+    best_data: bytes | None = None
+    last_error = "no attempts"
+    for i in range(max(1, attempts)):
+        seed = (base_seed + i * 97) % 1_000_000
+        params = urllib.parse.urlencode(
+            {
+                "width": "1080",
+                "height": "1920",
+                "seed": str(seed),
+                "model": "flux",
+                "enhance": "true",
+                "nologo": "true",
+                "safe": "true",
+            }
+        )
+        url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?{params}"
+        request = urllib.request.Request(url, headers={"User-Agent": "KidsLearningBot/1.0"})
+        try:
+            with urllib.request.urlopen(request, timeout=90) as response:
+                data = response.read()
+                content_type = response.headers.get("Content-Type", "")
+        except Exception as exc:  # network hiccup — try the next seed
+            last_error = str(exc)
+            continue
+        if "image" not in content_type.lower() or len(data) < 20_000:
+            last_error = f"invalid image (type={content_type}, {len(data)}B)"
+            continue
+        if best_data is None or len(data) > len(best_data):
+            best_data = data
+        if len(data) >= MIN_GOOD_IMAGE_BYTES:
+            break  # good enough — stop early
+
+    if best_data is None:
+        raise RuntimeError(f"Pollinations did not return a valid image. {last_error}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_bytes(data)
+    output_path.write_bytes(best_data)
     _write_provider_marker(output_path, "pollinations")
     return output_path
 
@@ -367,6 +393,61 @@ def generate_missing_assets(limit: int = 10) -> tuple[int, list[str]]:
             messages.append(f"Failed {scene.label}: {exc}")
             break
     return created, messages
+
+
+def low_quality_scenes(limit: int | None = None) -> list[Scene]:
+    """Existing assets that are too small/low-detail and worth regenerating."""
+    seen_paths: set[Path] = set()
+    found: list[Scene] = []
+    for raw_lesson in load_topics().values():
+        for raw_scene in raw_lesson["scenes"]:
+            scene = Scene(**raw_scene)
+            path = scene_image_path(scene)
+            if path in seen_paths:
+                continue
+            seen_paths.add(path)
+            if path.exists() and path.stat().st_size < MIN_GOOD_IMAGE_BYTES:
+                found.append(scene)
+                if limit and len(found) >= limit:
+                    return found
+    return found
+
+
+def upgrade_low_quality_assets(limit: int = 30) -> tuple[int, list[str]]:
+    """Regenerate the existing tiny/low-quality images with a fresh, higher-
+    quality result. Clears the old file + provider markers first so the marker
+    check no longer blocks a better image. Good images are left untouched."""
+    if not image_api_ready() and not pollinations_image_ready() and not google_image_ready():
+        return 0, ["No image provider is ready (enable Pollinations or set an API key)."]
+
+    scenes = low_quality_scenes(limit)
+    if not scenes:
+        return 0, ["All images already look good — nothing to upgrade."]
+
+    upgraded = 0
+    messages: list[str] = []
+    for scene in scenes:
+        path = scene_image_path(scene)
+        old_size = path.stat().st_size if path.exists() else 0
+        # Drop the old file and its markers so regeneration is not blocked.
+        for marker in (
+            _ai_marker_path(path),
+            _provider_marker_path(path, "pollinations"),
+            _provider_marker_path(path, "google"),
+        ):
+            marker.unlink(missing_ok=True)
+        path.unlink(missing_ok=True)
+        try:
+            new_path = _generate_best_available_scene_image(scene, path)
+            new_size = new_path.stat().st_size
+            if new_size > old_size:
+                upgraded += 1
+                messages.append(f"Upgraded {scene.label}: {old_size // 1024}KB -> {new_size // 1024}KB")
+            else:
+                messages.append(f"Kept {scene.label}: {new_size // 1024}KB")
+        except Exception as exc:
+            messages.append(f"Failed {scene.label}: {exc}")
+    return upgraded, messages
 
 
 def generate_free_asset_pack(limit: int = 50) -> tuple[int, list[str]]:

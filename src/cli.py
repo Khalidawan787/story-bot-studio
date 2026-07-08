@@ -4,7 +4,7 @@ import argparse
 
 from .ai import generate_ai_lesson
 from .channels import get_channel, load_channels, default_channel
-from .daily_runner import run_daily_batch, run_daily_catchup, select_daily_topics
+from .daily_runner import run_buffer_batch, run_daily_batch, run_daily_catchup, select_daily_topics
 from .genre_topics import generate_genre_topics
 from .lessons import load_lesson, load_lesson_for
 from .pending_uploads import retry_pending_uploads
@@ -47,6 +47,14 @@ def main() -> None:
     retry = sub.add_parser("retry-uploads", help="Upload rendered/failed videos when internet is back.")
     retry.add_argument("--limit", default="20", help="Maximum pending videos to retry.")
 
+    upg = sub.add_parser("upgrade-images", help="Replace tiny/low-quality asset images with fresh AI ones.")
+    upg.add_argument("--limit", default="30", help="Maximum images to upgrade.")
+
+    buf = sub.add_parser("buffer", help="Build many videos ahead and schedule them (keeps publishing while PC is off).")
+    buf.add_argument("--count", default="30", help="How many videos to build into the buffer.")
+    buf.add_argument("--channel", default="kids", help="Channel id")
+    buf.add_argument("--upload", default="true", help="true or false")
+
     catchup = sub.add_parser("catch-up-daily", help="Create today's missing daily videos after schedule time.")
     catchup.add_argument("--target", default="5", help="Daily target video count.")
     catchup.add_argument("--channel", default="kids", help="Channel id")
@@ -87,7 +95,7 @@ def main() -> None:
             print(f"  - {k}")
         return
     elif args.command == "authorize":
-        from src.youtube_upload import _get_service
+        from src.youtube_upload import _youtube as _get_service
         channel = get_channel(args.channel)
         print("=" * 60)
         print(f"Authorizing channel: {channel.name}  (genre: {channel.genre})")
@@ -98,9 +106,23 @@ def main() -> None:
         _get_service(channel.client_secret_path, channel.token_path)
         print(f"Done. Token saved: {channel.token}")
         return
+    elif args.command == "buffer":
+        channel = get_channel(args.channel)
+        count = max(1, int(args.count))
+        print(f"Building a {count}-video buffer for [{channel.id}] and scheduling into the future...")
+        for topic, status in run_buffer_batch(count=count, upload=_bool(args.upload), channel=channel):
+            print(f"[{channel.id}] {topic}: {status}")
+        return
     elif args.command == "retry-uploads":
         for message in retry_pending_uploads(limit=max(1, int(args.limit))):
             print(message)
+        return
+    elif args.command == "upgrade-images":
+        from .image_assets import upgrade_low_quality_assets
+        upgraded, messages = upgrade_low_quality_assets(limit=max(1, int(args.limit)))
+        for message in messages:
+            print(message)
+        print(f"Upgraded {upgraded} images.")
         return
     else:
         channel = get_channel(args.channel)

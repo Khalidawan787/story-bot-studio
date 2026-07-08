@@ -45,6 +45,13 @@ class Settings:
     ffprobe_bin: str = _resolve_bin(os.getenv("FFPROBE_BIN"), "ffprobe.exe")
     enable_background_music: bool = os.getenv("ENABLE_BACKGROUND_MUSIC", "true").lower() == "true"
     background_music_volume: float = float(os.getenv("BACKGROUND_MUSIC_VOLUME", "0.08"))
+    # Duck the music under the narrator's voice so speech stays crisp instead of
+    # fighting a flat music bed (sidechain compression).
+    enable_music_ducking: bool = os.getenv("ENABLE_MUSIC_DUCKING", "true").lower() == "true"
+    # Word-by-word (karaoke) captions: each spoken word lights up as it is said,
+    # using Edge-TTS word timings. Falls back to the plain caption if timings are
+    # unavailable, so rendering never breaks.
+    enable_karaoke_captions: bool = os.getenv("ENABLE_KARAOKE_CAPTIONS", "true").lower() == "true"
     enable_whisper: bool = os.getenv("ENABLE_WHISPER", "false").lower() == "true"
     whisper_model_size: str = os.getenv("WHISPER_MODEL_SIZE", "base")
     ai_provider: str = os.getenv("AI_PROVIDER", "none").lower()
@@ -66,6 +73,18 @@ class Settings:
     youtube_client_secret_file: Path = ROOT / os.getenv("YOUTUBE_CLIENT_SECRET_FILE", "client_secret.json")
     youtube_token_file: Path = ROOT / os.getenv("YOUTUBE_TOKEN_FILE", "token.json")
     youtube_privacy_status: str = os.getenv("YOUTUBE_PRIVACY_STATUS", "public")
+    # Scheduled publishing: instead of pushing every video public at the same
+    # moment (which kills reach), upload as private with a future publishAt so
+    # YouTube drips them out. Each new video is queued INTERVAL hours after the
+    # last scheduled one, starting FIRST_DELAY hours from now.
+    youtube_schedule_uploads: bool = os.getenv("YOUTUBE_SCHEDULE_UPLOADS", "true").lower() == "true"
+    youtube_schedule_interval_hours: float = float(os.getenv("YOUTUBE_SCHEDULE_INTERVAL_HOURS", "3"))
+    youtube_schedule_first_delay_hours: float = float(os.getenv("YOUTUBE_SCHEDULE_FIRST_DELAY_HOURS", "1"))
+    # Optional fixed daily publish times (local hours, comma-separated, e.g.
+    # "10,13,16,19,21"). When set, buffered videos are dripped out at these
+    # kid-friendly hours across the coming days instead of every N hours around
+    # the clock. Empty = keep the simple interval spacing above.
+    youtube_schedule_daily_slots: str = os.getenv("YOUTUBE_SCHEDULE_DAILY_SLOTS", "")
     # Storage: clean big intermediate render files, and optionally push finals to Drive.
     enable_run_cleanup: bool = os.getenv("ENABLE_RUN_CLEANUP", "true").lower() == "true"
     # Generate fresh images every render (don't reuse the same cached images).

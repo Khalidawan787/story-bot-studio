@@ -19,12 +19,17 @@ powershell.exe -ExecutionPolicy Bypass -File .\scripts\setup_new_pc.ps1 -Install
 After setup, open the dashboard:
 
 ```powershell
-.\.venv\Scripts\python.exe dashboard_local.py
+.\.venv\Scripts\python.exe web_dashboard.py
 ```
+
+Or just double-click `START_DASHBOARD.bat` — it installs everything the first
+time, rebuilds automatically if the copied setup is broken, and keeps the
+window open (with a "type R to restart" prompt) if anything goes wrong so you
+can read the error instead of it closing on you.
 
 Dashboard URL:
 
-`http://127.0.0.1:8501`
+`http://127.0.0.1:8000`
 
 Notes:
 

@@ -34,6 +34,8 @@ def connect() -> sqlite3.Connection:
         conn.execute("ALTER TABLE videos ADD COLUMN channel TEXT DEFAULT 'kids'")
     if "drive_url" not in cols:
         conn.execute("ALTER TABLE videos ADD COLUMN drive_url TEXT")
+    if "publish_at" not in cols:
+        conn.execute("ALTER TABLE videos ADD COLUMN publish_at TEXT")
     return conn
 
 
@@ -47,14 +49,15 @@ def save_video(
     video_url: str | None = None,
     error: str | None = None,
     channel: str = "kids",
+    publish_at: str | None = None,
 ) -> int:
     with connect() as conn:
         cur = conn.execute(
             """
             INSERT INTO videos (
                 job_id, topic, title, video_path, thumbnail_path, upload_date,
-                video_url, status, error, created_at, channel
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                video_url, status, error, created_at, channel, publish_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 job_id,
@@ -68,9 +71,35 @@ def save_video(
                 error,
                 datetime.now(timezone.utc).isoformat(),
                 channel,
+                publish_at,
             ),
         )
         return int(cur.lastrowid)
+
+
+def latest_scheduled_publish_at(channel: str = "kids") -> str | None:
+    """Most-future publishAt already reserved for this channel, so the next
+    video can be queued after it (keeps a steady drip instead of a dump)."""
+    if not settings.db_path.exists():
+        return None
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT MAX(publish_at) FROM videos WHERE channel = ? AND publish_at IS NOT NULL",
+            (channel,),
+        ).fetchone()
+    return row[0] if row else None
+
+
+def mark_scheduled(video_id: int, video_url: str, publish_at: str) -> None:
+    with connect() as conn:
+        conn.execute(
+            """
+            UPDATE videos
+            SET status = ?, video_url = ?, upload_date = ?, publish_at = ?, error = NULL
+            WHERE id = ?
+            """,
+            ("scheduled", video_url, datetime.now(timezone.utc).isoformat(), publish_at, video_id),
+        )
 
 
 def set_drive_url(video_id: int, drive_url: str) -> None:
