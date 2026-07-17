@@ -66,17 +66,28 @@ class Settings:
     openai_image_model: str = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1")
     openai_image_size: str = os.getenv("OPENAI_IMAGE_SIZE", "1024x1536")
     openai_image_quality: str = os.getenv("OPENAI_IMAGE_QUALITY", "medium")
+    openai_image_daily_limit: int = int(os.getenv("OPENAI_IMAGE_DAILY_LIMIT", "25"))
     google_image_api_key: str = os.getenv("GOOGLE_IMAGE_API_KEY", "")
     google_image_cx: str = os.getenv("GOOGLE_IMAGE_CX", "")
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
     gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+    # Second free Gemini model tried when the primary model's daily free quota
+    # is exhausted. On the free tier each model has its OWN daily limit, so a
+    # different model on the same key keeps scripts flowing. Blank = skip.
+    gemini_fallback_model: str = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-2.0-flash")
+    # Free script fallbacks used before falling back to paid OpenAI.
+    # Groq free tier is generous + fast (needs a free key). Pollinations text is
+    # free and needs NO key, matching the free image path.
+    groq_api_key: str = os.getenv("GROQ_API_KEY", "")
+    groq_model: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    enable_pollinations_text: bool = os.getenv("ENABLE_POLLINATIONS_TEXT", "true").lower() == "true"
     youtube_client_secret_file: Path = ROOT / os.getenv("YOUTUBE_CLIENT_SECRET_FILE", "client_secret.json")
     youtube_token_file: Path = ROOT / os.getenv("YOUTUBE_TOKEN_FILE", "token.json")
     youtube_privacy_status: str = os.getenv("YOUTUBE_PRIVACY_STATUS", "public")
     # Scheduled publishing: instead of pushing every video public at the same
     # moment (which kills reach), upload as private with a future publishAt so
-    # YouTube drips them out. Each new video is queued INTERVAL hours after the
-    # last scheduled one, starting FIRST_DELAY hours from now.
+    # YouTube drips them out. One global queue covers every channel, and the
+    # interval is clamped to 2-3 hours by the scheduler.
     youtube_schedule_uploads: bool = os.getenv("YOUTUBE_SCHEDULE_UPLOADS", "true").lower() == "true"
     youtube_schedule_interval_hours: float = float(os.getenv("YOUTUBE_SCHEDULE_INTERVAL_HOURS", "3"))
     youtube_schedule_first_delay_hours: float = float(os.getenv("YOUTUBE_SCHEDULE_FIRST_DELAY_HOURS", "1"))
@@ -91,6 +102,8 @@ class Settings:
     enable_fresh_images: bool = os.getenv("ENABLE_FRESH_IMAGES", "true").lower() == "true"
     enable_drive_storage: bool = os.getenv("ENABLE_DRIVE_STORAGE", "false").lower() == "true"
     drive_folder: str = os.getenv("DRIVE_FOLDER", "StoryBot Videos")
+    telegram_bot_token: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    telegram_chat_id: str = os.getenv("TELEGRAM_CHAT_ID", "")
 
 
 settings = Settings()

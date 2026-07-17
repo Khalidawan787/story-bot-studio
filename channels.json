@@ -14,7 +14,7 @@
       "image_style": "cute colorful cartoon for kids, bright, friendly",
       "client_secret": "client_secret.json",
       "token": "token.json",
-      "topics_per_day": 5
+      "topics_per_day": 2
     },
     {
       "id": "crime",

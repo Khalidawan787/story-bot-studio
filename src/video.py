@@ -28,7 +28,7 @@ def _audio_duration(audio_path: Path) -> float:
     return float(result.stdout.strip())
 
 
-def validate_rendered_video(video_path: Path) -> None:
+def validate_rendered_video(video_path: Path, content_type: str = "short") -> None:
     if not video_path.exists() or video_path.stat().st_size == 0:
         raise RuntimeError(f"Rendered video missing or empty: {video_path}")
     result = subprocess.run(
@@ -53,40 +53,51 @@ def validate_rendered_video(video_path: Path) -> None:
         raise RuntimeError(f"Rendered video has no audio stream: {video_path}")
 
 
-def _title_drawtext(title_file: Path, duration: float) -> str:
+
+def _dimensions(content_type: str) -> tuple[int, int]:
+    """Shorts stay vertical; long-form videos use standard YouTube 16:9."""
+    if content_type == "long":
+        return 1920, 1080
+    return settings.video_width, settings.video_height
+
+def _title_drawtext(title_file: Path, duration: float, content_type: str = "short") -> str:
     font = font_path()
     font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
     title_path = escape_filter_path(str(title_file))
     fade_alpha = f"if(lt(t,0.25),t/0.25,if(gt(t,{max(0.3, duration - 0.25):.2f}),({duration:.2f}-t)/0.25,1))"
+    font_size = 52 if content_type == "long" else 62
+    title_y = 55 if content_type == "long" else 150
     return (
-        f"drawtext=textfile='{title_path}'{font_arg}:fontsize=62:fontcolor=0xffe066:"
+        f"drawtext=textfile='{title_path}'{font_arg}:fontsize={font_size}:fontcolor=0xffe066:"
         f"borderw=3:bordercolor=black@0.85:box=1:boxcolor=0x14142b@0.55:boxborderw=28:"
-        f"x=(w-text_w)/2:y=150:alpha='{fade_alpha}'"
+        f"x=(w-text_w)/2:y={title_y}:alpha='{fade_alpha}'"
     )
 
 
-def _line_drawtext(line_file: Path, duration: float) -> str:
+def _line_drawtext(line_file: Path, duration: float, content_type: str = "short") -> str:
     font = font_path()
     font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
     line_path = escape_filter_path(str(line_file))
     fade_alpha = f"if(lt(t,0.25),t/0.25,if(gt(t,{max(0.3, duration - 0.25):.2f}),({duration:.2f}-t)/0.25,1))"
-    caption_y = settings.video_height - 560
+    _width, height = _dimensions(content_type)
+    caption_y = height - (220 if content_type == "long" else 560)
+    font_size = 36 if content_type == "long" else 48
     return (
-        f"drawtext=textfile='{line_path}'{font_arg}:fontsize=48:fontcolor=white:"
+        f"drawtext=textfile='{line_path}'{font_arg}:fontsize={font_size}:fontcolor=white:"
         f"borderw=2:bordercolor=black@0.85:box=1:boxcolor=0x14142b@0.60:boxborderw=32:"
         f"line_spacing=14:x=(w-text_w)/2:y={caption_y}:alpha='{fade_alpha}'"
     )
 
 
-def _drawtext_filter(title_file: Path, line_file: Path, duration: float) -> str:
+def _drawtext_filter(title_file: Path, line_file: Path, duration: float, content_type: str = "short") -> str:
     # Clean captions using drawtext's OWN padded background box (auto-sized and
     # centred) instead of muddy full-width grey bars. The caption sits in the
     # lower-middle, clear of YouTube Shorts' bottom-left title and right-side
     # action buttons.
     return ",".join(
         [
-            _title_drawtext(title_file, duration),
-            _line_drawtext(line_file, duration),
+            _title_drawtext(title_file, duration, content_type),
+            _line_drawtext(line_file, duration, content_type),
         ]
     )
 
@@ -101,14 +112,14 @@ def _ass_timestamp(seconds: float) -> str:
     return f"{hours}:{minutes:02}:{secs:02}.{cs:02}"
 
 
-def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, out_path: Path) -> Path | None:
+def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, out_path: Path, content_type: str = "short") -> Path | None:
     """Build an ASS subtitle where each word lights up (white -> yellow) as it is
     spoken. Returns the file path, or None if there is nothing usable to show."""
     words = [(w.strip(), s, d) for (w, s, d) in marks if w and w.strip()]
     if not words:
         return None
 
-    W, H = settings.video_width, settings.video_height
+    W, H = _dimensions(content_type)
     # Karaoke \k timings are in centiseconds; each word holds its highlight until
     # the next word begins (last word holds to the end of the clip).
     parts: list[str] = []
@@ -134,8 +145,8 @@ def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, o
         "BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, "
         "BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
         # PrimaryColour = sung (yellow), SecondaryColour = not yet sung (white).
-        "Style: Kids,Arial,58,&H0000E5FF,&H00FFFFFF,&H00202020,&H64000000,"
-        "-1,0,0,0,100,100,0,0,1,4,2,2,110,110,470,1\n\n"
+        f"Style: Kids,Arial,{44 if content_type == 'long' else 58},&H0000E5FF,&H00FFFFFF,&H00202020,&H64000000,"
+        f"-1,0,0,0,100,100,0,0,1,4,2,2,{160 if content_type == 'long' else 110},{160 if content_type == 'long' else 110},{100 if content_type == 'long' else 470},1\n\n"
         "[Events]\n"
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
     )
@@ -145,10 +156,10 @@ def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, o
     return out_path
 
 
-def _motion_filter(duration: float, scene: Scene | None = None) -> str:
+def _motion_filter(duration: float, scene: Scene | None = None, content_type: str = "short") -> str:
     """Dynamic, per-scene camera motion (free): each scene gets a different
     move — zoom in / zoom out / pan right / pan left / pan up — for variety."""
-    W, H = settings.video_width, settings.video_height
+    W, H = _dimensions(content_type)
     frames = max(1, int(duration * settings.video_fps))
 
     if not settings.enable_motion:
@@ -186,25 +197,29 @@ def _motion_filter(duration: float, scene: Scene | None = None) -> str:
     return ",".join(filters)
 
 
-def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None = None, channel=None, marks: list | None = None) -> Path:
-    image_path = resolve_scene_image(scene, run_dir, channel)
+def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None = None, channel=None, marks: list | None = None, content_type: str = "short") -> Path:
+    image_path = resolve_scene_image(
+        scene, run_dir, channel, require_real_image=True,
+        landscape=content_type == "long",
+    )
     if not image_path or not image_path.exists():
         raise RuntimeError(f"Scene image missing for {scene.label}")
     title_file = run_dir / f"{output_path.stem}_title.txt"
     line_file = run_dir / f"{output_path.stem}_line.txt"
     title_file.write_text(scene.label, encoding="utf-8")
     line_text = scene.line.split(". ", 1)[1] if ". " in scene.line else scene.line
-    line_text = "\n".join(textwrap.wrap(line_text, width=32)) or line_text
+    wrap_width = 64 if content_type == "long" else 32
+    line_text = "\n".join(textwrap.wrap(line_text, width=wrap_width)) or line_text
     line_file.write_text(line_text, encoding="utf-8")
     if image_path:
         input_args = ["-loop", "1", "-i", str(image_path)]
-        base_filter = _motion_filter(duration, scene)
+        base_filter = _motion_filter(duration, scene, content_type)
     else:
         input_args = [
             "-f",
             "lavfi",
             "-i",
-            f"color=c={scene_color(scene)}:s={settings.video_width}x{settings.video_height}:d={duration}",
+            f"color=c={scene_color(scene)}:s={_dimensions(content_type)[0]}x{_dimensions(content_type)[1]}:d={duration}",
         ]
         base_filter = "format=yuv420p"
 
@@ -213,12 +228,12 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
     caption_filter = None
     if settings.enable_karaoke_captions and marks:
         ass_file = run_dir / f"{output_path.stem}_caption.ass"
-        if _write_karaoke_ass(marks, duration, ass_file):
+        if _write_karaoke_ass(marks, duration, ass_file, content_type):
             ass_path = escape_filter_path(str(ass_file))
             fonts_dir = escape_filter_path("C:/Windows/Fonts")
-            caption_filter = f"{_title_drawtext(title_file, duration)},ass=filename='{ass_path}':fontsdir='{fonts_dir}'"
+            caption_filter = f"{_title_drawtext(title_file, duration, content_type)},ass=filename='{ass_path}':fontsdir='{fonts_dir}'"
     if caption_filter is None:
-        caption_filter = _drawtext_filter(title_file, line_file, duration)
+        caption_filter = _drawtext_filter(title_file, line_file, duration, content_type)
 
     vf = f"{base_filter},{caption_filter}"
     command = [
@@ -249,7 +264,7 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
     return output_path
 
 
-def render_video(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: Path, scene_audio_paths: list[Path] | None = None, channel=None, scene_marks: list | None = None) -> Path:
+def render_video(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: Path, scene_audio_paths: list[Path] | None = None, channel=None, scene_marks: list | None = None, content_type: str = "short") -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     scene_count = max(1, len(lesson.scenes))
 
@@ -263,7 +278,7 @@ def render_video(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: P
         else:
             total_duration = max(2.5 * scene_count, _audio_duration(audio_path))
             scene_duration = total_duration / scene_count
-        scene_files.append(_render_scene(scene, scene_duration, scene_file, run_dir, scene_audio, channel, marks))
+        scene_files.append(_render_scene(scene, scene_duration, scene_file, run_dir, scene_audio, channel, marks, content_type))
 
     concat_file = run_dir / "concat.txt"
     concat_file.write_text(

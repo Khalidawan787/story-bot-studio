@@ -52,7 +52,8 @@ Put your Google OAuth *Desktop* client secret at `credentials/client_secret.json
 CLI:
 
 ```powershell
-python -m src.cli daily --channel kids --count 5 --upload true
+python -m src.cli daily --channel kids --count 2 --upload true
+python -m src.cli daily-long-all --scenes 20 --upload true
 python -m src.cli gen-topics --channel crime --count 10
 python -m src.cli authorize --channel crime      # link its OWN YouTube channel
 python -m src.cli retry-uploads

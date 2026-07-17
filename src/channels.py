@@ -53,7 +53,7 @@ def _default_kids() -> Channel:
         privacy=settings.youtube_privacy_status, category_id="27",
         seo_suffix="for Kids | Fun Learning Shorts",
         image_style="cute colorful cartoon for kids, bright, friendly",
-        client_secret="client_secret.json", token="token.json", topics_per_day=5,
+        client_secret="client_secret.json", token="token.json", topics_per_day=2,
     )
 
 

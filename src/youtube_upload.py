@@ -8,6 +8,7 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload
 
 from .config import settings
@@ -59,6 +60,11 @@ def set_thumbnail(video_id: str, thumbnail_path: Path, attempts: int = 4,
             return
         except Exception as exc:
             last_error = exc
+            # Daily quota errors cannot recover seconds later. The queue retries later.
+            if isinstance(exc, HttpError):
+                reason = str(exc).lower()
+                if "quotaexceeded" in reason or ("exceeded your" in reason and "quota" in reason):
+                    break
             if attempt < attempts:
                 time.sleep(8 * attempt)
     raise RuntimeError(f"Thumbnail upload failed after {attempts} attempts: {last_error}")

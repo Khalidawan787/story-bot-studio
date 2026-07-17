@@ -4,7 +4,10 @@ import argparse
 
 from .ai import generate_ai_lesson
 from .channels import get_channel, load_channels, default_channel
-from .daily_runner import run_buffer_batch, run_daily_batch, run_daily_catchup, select_daily_topics
+from .daily_runner import (
+    run_buffer_batch, run_daily_batch, run_daily_catchup, run_daily_long_all,
+    select_daily_topics,
+)
 from .genre_topics import generate_genre_topics
 from .lessons import load_lesson, load_lesson_for
 from .pending_uploads import retry_pending_uploads
@@ -29,13 +32,17 @@ def main() -> None:
     ai_make.add_argument("--upload", default="false", help="true or false")
 
     daily = sub.add_parser("daily", help="Generate a daily batch for one channel.")
-    daily.add_argument("--count", default="5", help="Number of videos to create.")
+    daily.add_argument("--count", default="2", help="Number of videos to create.")
     daily.add_argument("--channel", default="kids", help="Channel id")
     daily.add_argument("--upload", default="true", help="true or false")
     daily.add_argument("--dry-run", default="false", help="Show selected topics without rendering.")
 
     daily_all = sub.add_parser("daily-all", help="Run the daily batch for EVERY channel.")
     daily_all.add_argument("--upload", default="true", help="true or false")
+
+    daily_long = sub.add_parser("daily-long-all", help="Create one ~5-minute video for every connected channel.")
+    daily_long.add_argument("--upload", default="true", help="true or false")
+    daily_long.add_argument("--scenes", default="20", help="Scenes per long video; 20 targets about 5 minutes.")
 
     gen = sub.add_parser("gen-topics", help="Generate new genre topics with free Gemini.")
     gen.add_argument("--channel", required=True, help="Channel id (crime/love/horror/motivation)")
@@ -56,7 +63,7 @@ def main() -> None:
     buf.add_argument("--upload", default="true", help="true or false")
 
     catchup = sub.add_parser("catch-up-daily", help="Create today's missing daily videos after schedule time.")
-    catchup.add_argument("--target", default="5", help="Daily target video count.")
+    catchup.add_argument("--target", default="2", help="Daily target video count.")
     catchup.add_argument("--channel", default="kids", help="Channel id")
     catchup.add_argument("--upload", default="true", help="true or false")
     catchup.add_argument("--start-hour", default="8", help="Local hour after which catch-up can run.")
@@ -86,6 +93,12 @@ def main() -> None:
             print(f"=== Channel: {channel.name} ({n}/day) ===")
             for topic, status in run_daily_batch(count=n, upload=_bool(args.upload), channel=channel):
                 print(f"[{channel.id}] {topic}: {status}")
+        return
+    elif args.command == "daily-long-all":
+        for channel_id, status in run_daily_long_all(
+            upload=_bool(args.upload), scenes=max(12, min(30, int(args.scenes))),
+        ):
+            print(f"[{channel_id}] {status}")
         return
     elif args.command == "gen-topics":
         channel = get_channel(args.channel)

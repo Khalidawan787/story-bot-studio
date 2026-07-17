@@ -43,13 +43,14 @@ def _extract_json(text: str):
     return json.loads(text)
 
 
-def _gemini(prompt: str) -> dict:
+def _gemini(prompt: str, model: str | None = None) -> dict:
     key = settings.gemini_api_key
     if not key:
         raise RuntimeError("GEMINI_API_KEY not set in .env")
+    model = model or settings.gemini_model
     url = (
         f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{settings.gemini_model}:generateContent?key={key}"
+        f"{model}:generateContent?key={key}"
     )
     body = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
@@ -62,11 +63,138 @@ def _gemini(prompt: str) -> dict:
                 payload = json.loads(resp.read())
             return _extract_json(payload["candidates"][0]["content"]["parts"][0]["text"])
         except urllib.error.HTTPError as e:
-            if e.code in (503, 429) and attempt < 3:
+            # 429 = daily free quota exhausted: don't burn time retrying the same
+            # model, let the caller fall through to the next free provider.
+            if e.code == 429:
+                raise
+            if e.code == 503 and attempt < 3:
                 time.sleep(4 * (attempt + 1))
                 continue
             raise
     raise RuntimeError("Gemini failed after retries")
+
+
+def _groq_json(prompt: str) -> dict:
+    """Free, fast Groq fallback (OpenAI-compatible). Needs a free GROQ_API_KEY."""
+    if not settings.groq_api_key:
+        raise RuntimeError("GROQ_API_KEY not set")
+    body = json.dumps({
+        "model": settings.groq_model,
+        "temperature": 1.0,
+        "response_format": {"type": "json_object"},
+        "messages": [
+            {"role": "system", "content": "Return valid JSON only. Follow exact scene and word-count requirements."},
+            {"role": "user", "content": prompt},
+        ],
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.groq.com/openai/v1/chat/completions",
+        data=body,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {settings.groq_api_key}",
+        },
+    )
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=90) as resp:
+                payload = json.loads(resp.read())
+            return _extract_json(payload["choices"][0]["message"]["content"])
+        except urllib.error.HTTPError as e:
+            if e.code == 503 and attempt < 2:
+                time.sleep(4 * (attempt + 1))
+                continue
+            raise
+    raise RuntimeError("Groq failed after retries")
+
+
+def _pollinations_text_json(prompt: str) -> dict:
+    """Free, no-key text fallback (OpenAI-compatible endpoint)."""
+    body = json.dumps({
+        "model": "openai",
+        "temperature": 1.0,
+        "response_format": {"type": "json_object"},
+        "messages": [
+            {"role": "system", "content": "Return valid JSON only. Follow exact scene and word-count requirements."},
+            {"role": "user", "content": prompt},
+        ],
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        "https://text.pollinations.ai/openai",
+        data=body,
+        headers={"Content-Type": "application/json", "User-Agent": "StoryBotStudio/1.0"},
+    )
+    for attempt in range(3):
+        try:
+            with urllib.request.urlopen(req, timeout=90) as resp:
+                raw = resp.read().decode("utf-8", "replace")
+            try:
+                payload = json.loads(raw)
+                text = payload["choices"][0]["message"]["content"]
+            except (json.JSONDecodeError, KeyError, IndexError):
+                text = raw  # some responses come back as the raw JSON body
+            return _extract_json(text)
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 503) and attempt < 2:
+                time.sleep(4 * (attempt + 1))
+                continue
+            raise
+    raise RuntimeError("Pollinations text failed after retries")
+
+
+def _openai_json(prompt: str) -> dict:
+    if not settings.openai_api_key:
+        raise RuntimeError("OPENAI_API_KEY not set")
+    from openai import OpenAI
+
+    client = OpenAI(api_key=settings.openai_api_key)
+    response = client.chat.completions.create(
+        model=settings.openai_model,
+        response_format={"type": "json_object"},
+        messages=[
+            {"role": "system", "content": "Return valid JSON only. Follow exact scene and word-count requirements."},
+            {"role": "user", "content": prompt},
+        ],
+    )
+    return _extract_json(response.choices[0].message.content or "{}")
+
+
+def _script_json(prompt: str) -> dict:
+    """Try free providers first, then paid OpenAI as a last resort.
+
+    Order: Gemini primary model -> Gemini fallback model (separate free quota)
+    -> Groq (free key) -> Pollinations text (free, no key) -> OpenAI (paid).
+    When one provider's daily limit is full, the next free one keeps scripts
+    flowing instead of failing the whole video.
+    """
+    errors: list[str] = []
+    if settings.gemini_api_key:
+        try:
+            return _gemini(prompt)
+        except Exception as exc:
+            errors.append(f"Gemini({settings.gemini_model}): {exc}")
+        fallback_model = settings.gemini_fallback_model
+        if fallback_model and fallback_model != settings.gemini_model:
+            try:
+                return _gemini(prompt, model=fallback_model)
+            except Exception as exc:
+                errors.append(f"Gemini({fallback_model}): {exc}")
+    if settings.groq_api_key:
+        try:
+            return _groq_json(prompt)
+        except Exception as exc:
+            errors.append(f"Groq: {exc}")
+    if settings.enable_pollinations_text:
+        try:
+            return _pollinations_text_json(prompt)
+        except Exception as exc:
+            errors.append(f"Pollinations: {exc}")
+    if settings.openai_api_key:
+        try:
+            return _openai_json(prompt)
+        except Exception as exc:
+            errors.append(f"OpenAI: {exc}")
+    raise RuntimeError("Script providers failed: " + " | ".join(errors))
 
 
 def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) -> dict:
@@ -82,7 +210,7 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) ->
         f"'label' = a 2-4 word on-screen caption. 'image_prompt' = a visual "
         f"description of that scene (scene only, no art-style words)."
     )
-    raw = _gemini(prompt)
+    raw = _script_json(prompt)
 
     title = raw.get("title", "Untitled").strip()
     key = _slug(title)
@@ -125,24 +253,65 @@ def _build_lesson(channel: Channel, raw: dict, fallback_title: str) -> tuple[str
     }
 
 
-def generate_from_prompt(channel: Channel, user_prompt: str, scenes: int = 8) -> str:
-    """Write a script about the USER'S own prompt and save it as a custom topic.
-
-    Works for every channel (kids too). Returns the new topic key.
-    """
+def generate_from_prompt(
+    channel: Channel,
+    user_prompt: str,
+    scenes: int = 8,
+    long_form: bool = False,
+) -> str:
+    """Write and save a script from a user prompt for any configured channel."""
     tone = GENRE_TONE.get(channel.genre, "engaging and well-paced")
+    if long_form:
+        format_instructions = (
+            f"Write a YouTube long-form script targeting about 5 minutes of narration. "
+            f"Use exactly {scenes} scenes. Each scene line must contain 38-43 words "
+            f"(about 760-860 narrated words total). Make the opening immediately engaging, "
+            f"keep a clear story or teaching arc, and end with a satisfying takeaway."
+        )
+    else:
+        format_instructions = (
+            f"Write a short video script. Use exactly {scenes} scenes. "
+            "Each scene line must be one narrated sentence."
+        )
     prompt = (
         f"You are a scriptwriter for a {channel.genre} YouTube channel. Tone: {tone}.\n"
-        f"Write a {channel.genre} short video script about this idea from the user:\n"
+        f"{format_instructions}\nWrite about this idea from the user:\n"
         f"\"{user_prompt}\"\n"
         f"Return ONLY JSON: {{\"title\": str, \"intro\": str, \"outro\": str, "
         f"\"scenes\": [{{\"label\": str, \"line\": str, \"image_prompt\": str}}]}}.\n"
-        f"Use exactly {scenes} scenes. 'line' = one narrated sentence. "
         f"'label' = a 2-4 word on-screen caption. 'image_prompt' = a visual description "
         f"of that scene (scene only, no art-style words)."
     )
-    raw = _gemini(prompt)
+    raw = None
+    for attempt in range(3):
+        attempt_prompt = prompt
+        if attempt:
+            attempt_prompt += (
+                "\nIMPORTANT: The previous draft was too short or had the wrong scene count. "
+                f"Return exactly {scenes} scenes and at least 720 narrated words across scene lines."
+            )
+        candidate = _script_json(attempt_prompt)
+        if not long_form:
+            raw = candidate
+            break
+        scene_rows = candidate.get("scenes", [])
+        word_count = sum(len(str(scene.get("line", "")).split()) for scene in scene_rows)
+        # Accept a scene-count range instead of an exact match: the 5-minute
+        # target is really about narrated word count, and Gemini rarely lands
+        # on the exact number. A script with 16-24 solid scenes is fine.
+        scene_min = max(4, scenes - 4)
+        scene_max = scenes + 4
+        if scene_min <= len(scene_rows) <= scene_max and word_count >= 720:
+            raw = candidate
+            break
+    if raw is None:
+        raise RuntimeError(
+            f"Long script did not reach the 5-minute target after 3 attempts "
+            f"(needs {scene_min}-{scene_max} scenes and at least 720 narrated words)."
+        )
     key, lesson = _build_lesson(channel, raw, fallback_title=user_prompt[:60])
+    if long_form:
+        key = f"long_{key}"
 
     path = channel.custom_lessons_path
     lessons = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
@@ -152,7 +321,6 @@ def generate_from_prompt(channel: Channel, user_prompt: str, scenes: int = 8) ->
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(lessons, indent=2, ensure_ascii=False), encoding="utf-8")
     return key
-
 
 def load_custom_lessons(channel: Channel) -> dict:
     path = channel.custom_lessons_path

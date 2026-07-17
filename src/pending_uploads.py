@@ -7,9 +7,12 @@ from urllib.parse import parse_qs, urlparse
 
 from .config import settings
 from .channels import default_channel, get_channel
-from .db import mark_scheduled, mark_thumbnail_pending, mark_upload_failed, mark_uploaded
+from .db import (
+    active_upload_backoff, apply_upload_error_backoff, mark_scheduled,
+    mark_thumbnail_pending, mark_upload_failed, mark_uploaded,
+)
 from .lessons import load_lesson_for
-from .schedule import next_publish_at
+from .schedule import cancel_publish_at, next_publish_at
 from .seo import build_metadata
 from .youtube_upload import ThumbnailUploadError, set_thumbnail, upload_video
 
@@ -31,21 +34,36 @@ def _video_id_from_url(video_url: str) -> str:
     raise ValueError(f"Could not read video id from URL: {video_url}")
 
 
-def pending_rows(limit: int = 20) -> list[sqlite3.Row]:
+def pending_rows(
+    limit: int = 20, channel_id: str | None = None,
+    content_type: str | None = None,
+) -> list[sqlite3.Row]:
     if not settings.db_path.exists():
         return []
+    if content_type not in {None, "short", "long"}:
+        raise ValueError("content_type must be short, long, or None")
     conn = sqlite3.connect(settings.db_path)
     conn.row_factory = sqlite3.Row
     try:
+        where = ["status IN ('rendered', 'upload_failed', 'thumbnail_pending')"]
+        params: list[object] = []
+        if channel_id:
+            where.append("channel = ?")
+            params.append(channel_id)
+        if content_type:
+            where.append("COALESCE(content_type, 'short') = ?")
+            params.append(content_type)
+        params.append(limit)
         return conn.execute(
-            """
-            SELECT id, topic, video_path, thumbnail_path, video_url, status, error, upload_date, channel
+            f"""
+            SELECT id, topic, video_path, thumbnail_path, video_url, status, error,
+                   upload_date, channel, content_type
             FROM videos
-            WHERE status IN ('rendered', 'upload_failed', 'thumbnail_pending')
+            WHERE {' AND '.join(where)}
             ORDER BY id ASC
             LIMIT ?
             """,
-            (limit,),
+            params,
         ).fetchall()
     finally:
         conn.close()
@@ -53,7 +71,13 @@ def pending_rows(limit: int = 20) -> list[sqlite3.Row]:
 
 def _thumbnail_rate_limited_today(row: sqlite3.Row) -> bool:
     error = (row["error"] or "").lower()
-    if "uploadratelimitexceeded" not in error and "too many thumbnails" not in error:
+    limited = (
+        "uploadratelimitexceeded" in error
+        or "too many thumbnails" in error
+        or "quotaexceeded" in error
+        or ("exceeded your" in error and "quota" in error)
+    )
+    if not limited:
         return False
     upload_date = row["upload_date"]
     if not upload_date:
@@ -69,6 +93,7 @@ def _process_row(row: sqlite3.Row) -> str:
     video_path = Path(row["video_path"])
     thumbnail_path = Path(row["thumbnail_path"])
     channel = _channel_for(row["channel"])
+    reservation_key = f"video:{video_id}"
 
     # SAFETY: never auto-open OAuth for a genre channel that has no token yet.
     # (This is what caused crime/love to land on the kids channel.) A genre
@@ -77,6 +102,11 @@ def _process_row(row: sqlite3.Row) -> str:
     if not channel.builtin and not channel.token_path.exists():
         return (f"{video_id}: skipped — '{channel.id}' not authorized. Create its own "
                 f"YouTube channel, then run: authorize --channel {channel.id}")
+
+    backoff = active_upload_backoff(channel.id)
+    if backoff:
+        reason, retry_after = backoff
+        return f"{video_id}: upload paused until {retry_after}: {reason}"
 
     try:
         if row["status"] == "thumbnail_pending" and _thumbnail_rate_limited_today(row):
@@ -95,8 +125,11 @@ def _process_row(row: sqlite3.Row) -> str:
         if not video_path.exists():
             raise FileNotFoundError(f"Video missing: {video_path}")
 
-        metadata = build_metadata(load_lesson_for(channel, row["topic"]), channel)
-        publish_at = next_publish_at(channel.id)
+        metadata = build_metadata(
+            load_lesson_for(channel, row["topic"]), channel,
+            content_type=row["content_type"] or "short",
+        )
+        publish_at = next_publish_at(channel.id, reservation_key=reservation_key)
         video_url = upload_video(video_path, thumbnail_path, metadata, channel=channel,
                                  publish_at=publish_at)
         if publish_at is not None:
@@ -105,15 +138,23 @@ def _process_row(row: sqlite3.Row) -> str:
         mark_uploaded(video_id, video_url)
         return f"{video_id}: uploaded {video_url}"
     except ThumbnailUploadError as exc:
+        apply_upload_error_backoff(channel.id, str(exc))
         mark_thumbnail_pending(video_id, exc.video_url, str(exc))
         return f"{video_id}: video uploaded but thumbnail failed: {exc.video_url}"
     except Exception as exc:
+        cancel_publish_at(reservation_key)
+        apply_upload_error_backoff(channel.id, str(exc))
         mark_upload_failed(video_id, str(exc))
         return f"{video_id}: failed {exc}"
 
 
-def retry_pending_uploads(limit: int = 20) -> list[str]:
-    return [_process_row(row) for row in pending_rows(limit)]
+def retry_pending_uploads(
+    limit: int = 20, channel_id: str | None = None, content_type: str | None = None,
+) -> list[str]:
+    return [
+        _process_row(row)
+        for row in pending_rows(limit, channel_id=channel_id, content_type=content_type)
+    ]
 
 
 def _row_by_id(video_id: int) -> sqlite3.Row | None:
@@ -124,7 +165,7 @@ def _row_by_id(video_id: int) -> sqlite3.Row | None:
     try:
         return conn.execute(
             """
-            SELECT id, topic, video_path, thumbnail_path, video_url, status, error, upload_date, channel
+            SELECT id, topic, video_path, thumbnail_path, video_url, status, error, upload_date, channel, content_type
             FROM videos WHERE id = ?
             """,
             (video_id,),

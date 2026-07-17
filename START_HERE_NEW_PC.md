@@ -63,7 +63,14 @@ YOUTUBE_SCHEDULE_DAILY_SLOTS=10,13,16,19,21
 ```
 (Local time ke hours — buffered videos in waqton pe publish honge.)
 
-**3. Karaoke captions + music ducking** — default ON hain (lafz bolte waqt highlight,
+**3. Daily 5-minute long videos (all connected channels):**
+```powershell
+.\.venv\Scripts\python.exe -m src.cli daily-long-all --scenes 20 --upload true
+```
+Setup with `-InstallDailyTask` installs this at 09:00 local time. Existing Shorts
+automation remains active. Disconnected channels are skipped.
+
+**4. Karaoke captions + music ducking** — default ON hain (lafz bolte waqt highlight,
 aur awaaz ke waqt music halka). `.env` me band/chalu kar sakte ho:
 ```
 ENABLE_KARAOKE_CAPTIONS=true

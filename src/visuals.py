@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import subprocess
+import time
 from pathlib import Path
 
 from .config import settings
-from .image_assets import ensure_scene_asset, generate_fresh_image
+from .db import claim_unique_image
+from .image_assets import generate_fresh_image
 from .models import Lesson, Scene
 
 
@@ -36,14 +38,10 @@ def escape_filter_path(path: str) -> str:
     return path.replace("\\", "/").replace(":", "\\:")
 
 
-def escape_drawtext(text: str) -> str:
-    return (
-        text.replace("\\", "\\\\")
-        .replace(":", "\\:")
-        .replace("'", "\\'")
-        .replace("%", "\\%")
-        .replace("\n", " ")
-    )
+def _drawtext_file(path: Path, text: str) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return escape_filter_path(str(path))
 
 
 def scene_color(scene: Scene) -> str:
@@ -52,39 +50,6 @@ def scene_color(scene: Scene) -> str:
 
 def accent_color(scene: Scene) -> str:
     return SOFT_PALETTE[(sum(ord(char) for char in scene.label) + 3) % len(SOFT_PALETTE)]
-
-
-def label_symbol(scene: Scene) -> str:
-    symbols = {
-        "one": "1",
-        "two": "2",
-        "three": "3",
-        "four": "4",
-        "five": "5",
-        "six": "6",
-        "seven": "7",
-        "eight": "8",
-        "nine": "9",
-        "ten": "10",
-        "red": "RED",
-        "blue": "BLUE",
-        "yellow": "YELLOW",
-        "green": "GREEN",
-        "circle": "O",
-        "square": "[]",
-        "triangle": "TRI",
-        "rectangle": "RECT",
-        "star": "*",
-        "heart": "<3",
-        "apple": "APPLE",
-        "banana": "BANANA",
-        "carrot": "CARROT",
-        "car": "CAR",
-        "bus": "BUS",
-        "sun": "SUN",
-        "moon": "MOON",
-    }
-    return symbols.get(scene.label.lower(), scene.label)
 
 
 def _scene_theme(scene: Scene) -> str:
@@ -205,101 +170,111 @@ def _illustration_filter(scene: Scene) -> str:
 # Clean, friendly (background, card, accent) palettes for the fallback card
 # used ONLY when no real/AI image is available. Chosen so the card looks
 # intentional — never like a broken placeholder.
-CARD_THEMES = [
-    ("0x8e7bef", "0xf3f0ff", "0x6c5ce7"),  # purple
-    ("0x5aa9f0", "0xeaf4ff", "0x1c7ed6"),  # blue
-    ("0x37d6a0", "0xe9fff8", "0x0ca678"),  # green
-    ("0xffc94d", "0xfff8e6", "0xf59f00"),  # amber
-    ("0xff8fc7", "0xfff0f8", "0xe64980"),  # pink
-    ("0xff8787", "0xfff1f1", "0xe03131"),  # red
-]
-
-
-def create_auto_scene_image(scene: Scene, output_path: Path) -> Path:
-    """Pleasant fallback shown when a real/AI image can't be fetched.
-
-    A soft two-tone background, a big centered card with the number/word, and
-    tidy corner dots — so a 'missing' image still looks like a finished slide.
-    No bottom brand bar (that used to collide with the video caption band).
-    """
+def create_emergency_scene_image(
+    scene: Scene,
+    output_path: Path,
+    channel=None,
+    landscape: bool = False,
+    variant: int = 1,
+) -> Path:
+    """Guaranteed unique, text-free local illustration when all online sources fail."""
+    width, height = (1920, 1080) if landscape else (1080, 1920)
+    genre = getattr(channel, "genre", "kids") if channel is not None else "kids"
+    palettes = {
+        "kids": [("0x51cf66", "0x74c0fc", "0xffd43b"), ("0xff8787", "0x4dabf7", "0xffd43b")],
+        "crime": [("0x101828", "0x334155", "0xb45309"), ("0x111827", "0x374151", "0x991b1b")],
+        "horror": [("0x09090b", "0x27272a", "0x7f1d1d"), ("0x18181b", "0x3f3f46", "0x581c87")],
+        "love": [("0x4c1d95", "0xbe185d", "0xfda4af"), ("0x831843", "0xdb2777", "0xfbcfe8")],
+        "motivation": [("0x1e3a8a", "0x0369a1", "0xf59e0b"), ("0x064e3b", "0x0f766e", "0xfbbf24")],
+    }
+    options = palettes.get(genre, palettes["kids"])
+    seed = sum(ord(char) for char in scene.label) + time.time_ns() + variant * 7919
+    bg, mid, accent = options[seed % len(options)]
+    shift = int(seed % max(60, width // 5))
+    vf = ",".join([
+        f"drawbox=x=0:y=0:w={width}:h={height}:color={bg}:t=fill",
+        f"drawbox=x={width//10 + shift}:y={height//8}:w={width*7//10}:h={height*3//4}:color={mid}@0.72:t=fill",
+        f"drawbox=x={width//5}:y={height//4 + shift//3}:w={width*3//5}:h={height//3}:color={accent}@0.48:t=fill",
+        f"drawbox=x={width//3}:y={height//6}:w={width//3}:h={height*2//3}:color=white@0.08:t=fill",
+        "noise=alls=7:allf=t+u",
+        "vignette=0.45",
+    ])
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    font = font_path()
-    font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
-    label = escape_drawtext(scene.label)
-    symbol_raw = label_symbol(scene)
-    symbol = escape_drawtext(symbol_raw)
-
-    key = sum(ord(c) for c in scene.label)
-    bg, card, accent = CARD_THEMES[key % len(CARD_THEMES)]
-
-    # Size the centre glyph so short symbols (e.g. "16") are big and long
-    # words (e.g. "Sixteen") still fit inside the card.
-    n = max(1, len(symbol_raw))
-    sym_fs = 300 if n <= 2 else (210 if n <= 4 else (150 if n <= 6 else 118))
-    card_top, card_h = 540, 780
-    sym_y = card_top + (card_h - sym_fs) // 2 - 10
-
-    vf = (
-        # soft two-tone background (top lighter than bottom)
-        f"drawbox=x=0:y=0:w=1080:h=1920:color={bg}:t=fill,"
-        f"drawbox=x=0:y=0:w=1080:h=780:color=white@0.10:t=fill,"
-        # tidy decorative corner dots (symmetric, not random)
-        f"drawbox=x=110:y=300:w=110:h=110:color=white@0.22:t=fill,"
-        f"drawbox=x=860:y=300:w=110:h=110:color=white@0.22:t=fill,"
-        f"drawbox=x=110:y=1520:w=110:h=110:color=white@0.22:t=fill,"
-        f"drawbox=x=860:y=1520:w=110:h=110:color=white@0.22:t=fill,"
-        # main card (accent frame + light inner)
-        f"drawbox=x=150:y={card_top}:w=780:h={card_h}:color={accent}:t=fill,"
-        f"drawbox=x=174:y={card_top + 24}:w=732:h={card_h - 48}:color={card}:t=fill,"
-        # big centred number / word (the video already adds the title + caption,
-        # so no extra label here — keeps it clear of the caption band)
-        f"drawtext=text='{symbol}'{font_arg}:fontsize={sym_fs}:fontcolor={accent}:x=(w-text_w)/2:y={sym_y}"
-    )
     command = [
-        ffmpeg_bin(),
-        "-y",
-        "-f",
-        "lavfi",
-        "-i",
-        "color=c=black:s=1080x1920:d=1",
-        "-frames:v",
-        "1",
-        "-update",
-        "1",
-        "-vf",
-        vf,
-        str(output_path),
+        ffmpeg_bin(), "-y", "-f", "lavfi", "-i",
+        f"color=c=black:s={width}x{height}:d=1",
+        "-frames:v", "1", "-update", "1", "-vf", vf, str(output_path),
     ]
     subprocess.run(command, check=True, capture_output=True, text=True)
     return output_path
 
+def resolve_scene_image(
+    scene: Scene,
+    run_dir: Path,
+    channel=None,
+    require_real_image: bool = True,
+    landscape: bool = False,
+) -> Path:
+    """Generate and atomically claim image bytes that no earlier video used."""
+    channel_id = getattr(channel, "id", "kids") if channel is not None else "kids"
+    errors: list[str] = []
+    base_name = Path(scene.image).name or "scene.jpg"
+    stem = Path(base_name).stem
+    suffix = Path(base_name).suffix or ".jpg"
 
-def resolve_scene_image(scene: Scene, run_dir: Path, channel=None) -> Path | None:
-    genre = channel is not None and not getattr(channel, "builtin", False)
-
-    # Genre channels: generate a BRAND-NEW image every render (no reuse).
-    if settings.enable_fresh_images and genre:
+    for attempt in range(1, 5):
+        fresh = run_dir / "gen" / f"{stem}_fresh_{attempt}{suffix}"
         try:
-            fresh = run_dir / "gen" / Path(scene.image).name
-            return generate_fresh_image(scene, fresh, channel)
-        except Exception:
-            pass
+            generated = generate_fresh_image(
+                scene, fresh, channel, landscape=landscape,
+            )
+            if claim_unique_image(generated, channel_id, scene.label):
+                return generated
+            errors.append(f"attempt {attempt}: duplicate image rejected")
+            for extra in (
+                generated,
+                generated.with_suffix(generated.suffix + ".ai"),
+                generated.with_suffix(generated.suffix + ".pollinations"),
+                generated.with_suffix(generated.suffix + ".google"),
+                generated.with_suffix(generated.suffix + ".openverse"),
+                generated.with_suffix(generated.suffix + ".openverse.json"),
+            ):
+                extra.unlink(missing_ok=True)
+        except Exception as exc:
+            errors.append(f"online providers: {exc}")
+            break  # each provider already retried; continue immediately with local art
 
-    source = ensure_scene_asset(scene, channel) or (settings.root / scene.image)
-    if source.exists():
-        return source
-    return create_auto_scene_image(scene, run_dir / "auto_assets" / f"{scene.label.lower()}.jpg")
+    for variant in range(1, 5):
+        emergency = run_dir / "emergency" / f"{stem}_{time.time_ns()}_{variant}.jpg"
+        try:
+            create_emergency_scene_image(
+                scene, emergency, channel, landscape=landscape, variant=variant,
+            )
+            if claim_unique_image(emergency, channel_id, scene.label):
+                return emergency
+            emergency.unlink(missing_ok=True)
+        except Exception as exc:
+            errors.append(f"emergency {variant}: {exc}")
+
+    detail = " | ".join(errors) if errors else "No usable image was found."
+    raise RuntimeError(
+        f"Unable to create any unique image for scene '{scene.label}'. {detail}"
+    )
 
 
 def create_thumbnail(lesson: Lesson, image_path: Path | None, output_path: Path, channel=None) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     font = font_path()
     font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
-    title = escape_drawtext(lesson.title)
     is_genre = channel is not None and not getattr(channel, "builtin", False)
-    top_label = escape_drawtext(channel.name.upper()) if is_genre else "KIDS LEARNING"
-    subtitle = escape_drawtext("Fun learning for kids")
-    labels = escape_drawtext("  -  ".join(scene.label for scene in lesson.scenes[:4]))
+    top_text = channel.name.upper() if is_genre else "KIDS LEARNING"
+    title_file = _drawtext_file(output_path.with_suffix(".title.txt"), lesson.title.upper())
+    top_file = _drawtext_file(output_path.with_suffix(".channel.txt"), top_text)
+    subtitle_file = _drawtext_file(output_path.with_suffix(".subtitle.txt"), "Fun learning for kids")
+    labels_file = _drawtext_file(
+        output_path.with_suffix(".labels.txt"),
+        "  -  ".join(scene.label for scene in lesson.scenes[:4]),
+    )
 
     if image_path and image_path.exists():
         input_args = ["-loop", "1", "-i", str(image_path)]
@@ -308,17 +283,17 @@ def create_thumbnail(lesson: Lesson, image_path: Path | None, output_path: Path,
             "eq=saturation=1.12:contrast=1.05,"
             "drawbox=x=0:y=0:w=1280:h=720:color=black@0.18:t=fill,"
             "drawbox=x=46:y=44:w=520:h=62:color=0xffd43b@0.95:t=fill,"
-            f"drawtext=text='{top_label}'{font_arg}:fontsize=34:fontcolor=0x202020:x=74:y=58,"
+            f"drawtext=textfile='{top_file}'{font_arg}:fontsize=34:fontcolor=0x202020:x=74:y=58,"
             "drawbox=x=42:y=438:w=790:h=210:color=black@0.48:t=fill,"
-            f"drawtext=text='{title.upper()}'{font_arg}:fontsize=74:fontcolor=white:borderw=4:bordercolor=black:x=70:y=468,"
-            f"drawtext=text='{labels}'{font_arg}:fontsize=44:fontcolor=0xffd43b:borderw=3:bordercolor=black:x=76:y=572"
+            f"drawtext=textfile='{title_file}'{font_arg}:fontsize=74:fontcolor=white:borderw=4:bordercolor=black:x=70:y=468,"
+            f"drawtext=textfile='{labels_file}'{font_arg}:fontsize=44:fontcolor=0xffd43b:borderw=3:bordercolor=black:x=76:y=572"
         )
     else:
         input_args = ["-f", "lavfi", "-i", "color=c=0x45aaf2:s=1280x720:d=1"]
         vf = (
             "drawbox=x=42:y=438:w=790:h=210:color=black@0.38:t=fill,"
-            f"drawtext=text='{title.upper()}'{font_arg}:fontsize=80:fontcolor=white:x=(w-text_w)/2:y=270,"
-            f"drawtext=text='{subtitle}'{font_arg}:fontsize=42:fontcolor=white:x=(w-text_w)/2:y=390"
+            f"drawtext=textfile='{title_file}'{font_arg}:fontsize=80:fontcolor=white:x=(w-text_w)/2:y=270,"
+            f"drawtext=textfile='{subtitle_file}'{font_arg}:fontsize=42:fontcolor=white:x=(w-text_w)/2:y=390"
         )
 
     command = [

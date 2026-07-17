@@ -110,7 +110,7 @@ if (Test-Path "token.json") {
 
 Write-Step "Running health check"
 .\.venv\Scripts\python.exe -m compileall src web_dashboard.py
-.\.venv\Scripts\python.exe -m src.cli daily --count 5 --dry-run true
+.\.venv\Scripts\python.exe -m src.cli daily --count 2 --dry-run true
 
 if ($InstallDailyTask) {
     Write-Step "Installing daily 5-video task"
@@ -126,4 +126,4 @@ Write-Host "Dashboard URL:"
 Write-Host "  http://127.0.0.1:8000"
 Write-Host ""
 Write-Host "Daily manual test command:"
-Write-Host "  .\.venv\Scripts\python.exe -m src.cli daily --count 5 --upload true"
+Write-Host "  .\.venv\Scripts\python.exe -m src.cli daily --count 2 --upload true"
