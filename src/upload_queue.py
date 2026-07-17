@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from .channels import get_channel
 from .config import settings
 from .db import active_upload_backoff, auto_upload_queue_enabled
-from .pending_uploads import upload_one
+from .pending_uploads import daily_upload_cap_reached, upload_one
 
 _WORKER_LOCK = threading.Lock()
 
@@ -68,6 +68,8 @@ def queue_snapshot(channel_id: str) -> dict[str, object]:
 
 def due_video_id() -> int | None:
     if datetime.now(timezone.utc) < next_allowed_upload():
+        return None
+    if daily_upload_cap_reached():
         return None
     conn = sqlite3.connect(settings.db_path)
     conn.row_factory = sqlite3.Row

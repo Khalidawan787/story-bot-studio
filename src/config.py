@@ -96,6 +96,11 @@ class Settings:
     # kid-friendly hours across the coming days instead of every N hours around
     # the clock. Empty = keep the simple interval spacing above.
     youtube_schedule_daily_slots: str = os.getenv("YOUTUBE_SCHEDULE_DAILY_SLOTS", "")
+    # Safety cap: max NEW uploads per day across all channels, so the automatic
+    # queue/retry never blows YouTube's daily API quota (~6 uploads = 10k units).
+    # Extra videos stay in the dashboard and upload after the quota resets.
+    # 0 = no cap. Only limits the unattended queue/retry, not a manual "upload now".
+    youtube_upload_daily_limit: int = int(os.getenv("YOUTUBE_UPLOAD_DAILY_LIMIT", "6"))
     # Storage: clean big intermediate render files, and optionally push finals to Drive.
     enable_run_cleanup: bool = os.getenv("ENABLE_RUN_CLEANUP", "true").lower() == "true"
     # Generate fresh images every render (don't reuse the same cached images).

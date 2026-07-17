@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
@@ -88,6 +88,36 @@ def _thumbnail_rate_limited_today(row: sqlite3.Row) -> bool:
         return False
 
 
+def _quota_day_start() -> datetime:
+    """Start of the current YouTube-quota day. Quota resets at midnight Pacific;
+    08:00 UTC (PST) is a safe, dependency-free approximation for a soft cap."""
+    now = datetime.now(timezone.utc)
+    boundary = now.replace(hour=8, minute=0, second=0, microsecond=0)
+    if now < boundary:
+        boundary -= timedelta(days=1)
+    return boundary
+
+
+def uploads_today_count() -> int:
+    """How many videos have actually reached YouTube since the last quota reset."""
+    if not settings.db_path.exists():
+        return 0
+    conn = sqlite3.connect(settings.db_path)
+    try:
+        row = conn.execute(
+            "SELECT COUNT(*) FROM videos WHERE video_url IS NOT NULL AND upload_date >= ?",
+            (_quota_day_start().isoformat(),),
+        ).fetchone()
+        return int(row[0] or 0)
+    finally:
+        conn.close()
+
+
+def daily_upload_cap_reached() -> bool:
+    limit = settings.youtube_upload_daily_limit
+    return limit > 0 and uploads_today_count() >= limit
+
+
 def _process_row(row: sqlite3.Row) -> str:
     video_id = int(row["id"])
     video_path = Path(row["video_path"])
@@ -124,6 +154,13 @@ def _process_row(row: sqlite3.Row) -> str:
 
         if not video_path.exists():
             raise FileNotFoundError(f"Video missing: {video_path}")
+
+        # Safety cap: stop the unattended queue/retry once today's upload budget
+        # is spent, so it never exhausts YouTube's daily quota. The video stays
+        # pending and uploads automatically after the quota resets.
+        if daily_upload_cap_reached():
+            return (f"{video_id}: daily upload cap reached "
+                    f"({settings.youtube_upload_daily_limit}/day) — resumes after the quota resets")
 
         metadata = build_metadata(
             load_lesson_for(channel, row["topic"]), channel,
