@@ -79,6 +79,22 @@
       "client_secret": "client_secret.json",
       "token": "token_motivation.json",
       "topics_per_day": 1
+    },
+    {
+      "id": "trending",
+      "name": "World Trending",
+      "genre": "trending",
+      "builtin": false,
+      "lessons_file": "data/trending_lessons.json",
+      "voice": "en-US-GuyNeural",
+      "made_for_kids": false,
+      "privacy": "public",
+      "category_id": "25",
+      "seo_suffix": "| Trending World News Explained",
+      "image_style": "photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos",
+      "client_secret": "client_secret.json",
+      "token": "token_trending.json",
+      "topics_per_day": 2
     }
   ]
 }

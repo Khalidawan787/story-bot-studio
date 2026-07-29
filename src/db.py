@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import sqlite3
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from .config import settings
 
@@ -43,6 +44,12 @@ def connect() -> sqlite3.Connection:
         conn.execute("ALTER TABLE videos ADD COLUMN hidden_at TEXT")
     if "quality_report" not in cols:
         conn.execute("ALTER TABLE videos ADD COLUMN quality_report TEXT")
+    if "upload_progress" not in cols:
+        conn.execute("ALTER TABLE videos ADD COLUMN upload_progress INTEGER DEFAULT 0")
+    if "upload_started_at" not in cols:
+        conn.execute("ALTER TABLE videos ADD COLUMN upload_started_at TEXT")
+    if "is_daily" not in cols:
+        conn.execute("ALTER TABLE videos ADD COLUMN is_daily INTEGER NOT NULL DEFAULT 0")
     conn.execute(
         "UPDATE videos SET content_type = 'long' "
         "WHERE topic LIKE 'long_%' AND COALESCE(content_type, 'short') != 'long'"
@@ -148,6 +155,7 @@ def save_video(
     publish_at: str | None = None,
     content_type: str = "short",
     quality_report: str | None = None,
+    is_daily: bool = False,
 ) -> int:
     conn = connect()
     try:
@@ -155,8 +163,8 @@ def save_video(
             """
             INSERT INTO videos (
                 job_id, topic, title, video_path, thumbnail_path, upload_date,
-                video_url, status, error, created_at, channel, publish_at, content_type, quality_report
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                video_url, status, error, created_at, channel, publish_at, content_type, quality_report, is_daily
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 job_id,
@@ -173,6 +181,7 @@ def save_video(
                 publish_at,
                 content_type,
                 quality_report,
+                            1 if is_daily else 0,
             ),
         )
         conn.commit()
@@ -279,13 +288,73 @@ def set_upload_backoff(scope: str, reason: str, hours: float = 24.0) -> str:
         conn.close()
 
 
+def set_upload_backoff_until(scope: str, reason: str, retry_at: datetime) -> str:
+    retry_after = retry_at.astimezone(timezone.utc).isoformat()
+    conn = connect()
+    try:
+        conn.execute(
+            "INSERT OR REPLACE INTO upload_backoff (scope, reason, retry_after) VALUES (?, ?, ?)",
+            (scope, reason[:1000], retry_after),
+        )
+        conn.commit()
+        return retry_after
+    finally:
+        conn.close()
+
+
+def _nth_weekday(year: int, month: int, weekday: int, occurrence: int) -> date:
+    first = date(year, month, 1)
+    offset = (weekday - first.weekday()) % 7 + (occurrence - 1) * 7
+    return first + timedelta(days=offset)
+
+
+def _pacific_midnight_utc(day: date) -> datetime:
+    # US Pacific DST begins at 02:00 on March's second Sunday and ends at
+    # 02:00 on November's first Sunday. At midnight on those transition days,
+    # the old offset still applies.
+    dst_start = _nth_weekday(day.year, 3, 6, 2)
+    dst_end = _nth_weekday(day.year, 11, 6, 1)
+    offset_hours = -7 if dst_start < day <= dst_end else -8
+    local_midnight = datetime(day.year, day.month, day.day, tzinfo=timezone(timedelta(hours=offset_hours)))
+    return local_midnight.astimezone(timezone.utc)
+
+
+def youtube_quota_day_start(now: datetime | None = None) -> datetime:
+    now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    candidates = [
+        _pacific_midnight_utc(now.date() + timedelta(days=delta))
+        for delta in (-2, -1, 0, 1)
+    ]
+    return max(item for item in candidates if item <= now)
+
+
+def next_youtube_quota_reset() -> datetime:
+    now = datetime.now(timezone.utc)
+    candidates = [
+        _pacific_midnight_utc(now.date() + timedelta(days=delta))
+        for delta in (-1, 0, 1, 2)
+    ]
+    return min(item for item in candidates if item > now)
+
+
+def youtube_project_scope(channel: str) -> str:
+    """Group quota backoff by OAuth project, not by the whole application."""
+    try:
+        from .channels import get_channel
+        secret_path = get_channel(channel).client_secret_path
+        digest = hashlib.sha256(secret_path.read_bytes()).hexdigest()[:24]
+        return f"__youtube_project__:{digest}"
+    except Exception:
+        return channel
+
+
 def active_upload_backoff(channel: str) -> tuple[str, str] | None:
     now = datetime.now(timezone.utc)
     conn = connect()
     try:
         rows = conn.execute(
-            "SELECT scope, reason, retry_after FROM upload_backoff WHERE scope IN (?, '__global__')",
-            (channel,),
+            "SELECT scope, reason, retry_after FROM upload_backoff WHERE scope IN (?, ?, '__global__')",
+            (channel, youtube_project_scope(channel)),
         ).fetchall()
         active: list[tuple[str, str]] = []
         for scope, reason, retry_after in rows:
@@ -308,32 +377,15 @@ def active_upload_backoff(channel: str) -> tuple[str, str] | None:
 def apply_upload_error_backoff(channel: str, error: str) -> str | None:
     lowered = error.lower()
     if "uploadlimitexceeded" in lowered or "daily upload limit" in lowered:
-        return set_upload_backoff(channel, error, hours=24)
+        return set_upload_backoff_until(channel, error, next_youtube_quota_reset())
     if "quotaexceeded" in lowered or "exceeded your quota" in lowered:
-        return set_upload_backoff("__global__", error, hours=24)
+        return set_upload_backoff_until(youtube_project_scope(channel), error, next_youtube_quota_reset())
     return None
 
 
 def acquire_generation_lock(lock_name: str, hours: float = 12.0) -> bool:
-    now = datetime.now(timezone.utc)
-    expires = (now + timedelta(hours=hours)).isoformat()
-    conn = connect()
-    try:
-        conn.commit()
-        conn.execute("BEGIN IMMEDIATE")
-        conn.execute("DELETE FROM generation_locks WHERE expires_at <= ?", (now.isoformat(),))
-        cursor = conn.execute(
-            "INSERT OR IGNORE INTO generation_locks (lock_name, expires_at) VALUES (?, ?)",
-            (lock_name, expires),
-        )
-        conn.commit()
-        return cursor.rowcount == 1
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
-
+    """Compatibility hook: generation is never blocked; upload timing is handled separately."""
+    return True
 
 def release_generation_lock(lock_name: str) -> None:
     conn = connect()
@@ -441,7 +493,7 @@ def mark_scheduled(video_id: int, video_url: str, publish_at: str) -> None:
         conn.execute(
             """
             UPDATE videos
-            SET status = ?, video_url = ?, upload_date = ?, publish_at = ?, error = NULL
+            SET status = ?, video_url = ?, upload_date = ?, publish_at = ?, error = NULL, upload_progress = 100
             WHERE id = ?
             """,
             ("scheduled", video_url, datetime.now(timezone.utc).isoformat(), publish_at, video_id),
@@ -519,19 +571,42 @@ def mark_queued_for_upload(video_id: int) -> None:
     conn = connect()
     try:
         conn.execute(
-            "UPDATE videos SET status = 'queued_for_upload', error = NULL WHERE id = ? AND video_url IS NULL",
+            "UPDATE videos SET status = 'queued_for_upload', error = NULL, upload_progress = 0, upload_started_at = NULL WHERE id = ? AND video_url IS NULL",
             (video_id,),
         )
         conn.commit()
     finally:
         conn.close()
 
+def mark_daily_upload_pending(video_id: int, error: str | None = None) -> None:
+    with connect() as conn:
+        conn.execute(
+            """UPDATE videos
+               SET status = 'daily_upload_pending', is_daily = 1, error = ?,
+                   upload_progress = 0, upload_started_at = NULL
+               WHERE id = ? AND video_url IS NULL""",
+            (error, video_id),
+        )
+
+
+def set_upload_progress(video_id: int, progress: int) -> None:
+    value = max(0, min(100, int(progress)))
+    with connect() as conn:
+        conn.execute(
+            """UPDATE videos
+               SET status = 'uploading', upload_progress = ?,
+                   upload_started_at = COALESCE(upload_started_at, ?), error = NULL
+               WHERE id = ? AND video_url IS NULL""",
+            (value, datetime.now(timezone.utc).isoformat(), video_id),
+        )
+
+
 def mark_uploaded(video_id: int, video_url: str) -> None:
     with connect() as conn:
         conn.execute(
             """
             UPDATE videos
-            SET status = ?, video_url = ?, upload_date = ?, error = NULL
+            SET status = ?, video_url = ?, upload_date = ?, error = NULL, upload_progress = 100
             WHERE id = ?
             """,
             ("uploaded", video_url, datetime.now(timezone.utc).isoformat(), video_id),
@@ -542,12 +617,12 @@ def mark_upload_failed(video_id: int, error: str, video_url: str | None = None) 
     with connect() as conn:
         if video_url:
             conn.execute(
-                "UPDATE videos SET status = ?, error = ?, video_url = ? WHERE id = ?",
+                "UPDATE videos SET status = ?, error = ?, video_url = ?, upload_progress = 0 WHERE id = ?",
                 ("upload_failed", error, video_url, video_id),
             )
         else:
             conn.execute(
-                "UPDATE videos SET status = ?, error = ? WHERE id = ?",
+                "UPDATE videos SET status = ?, error = ?, upload_progress = 0 WHERE id = ?",
                 ("upload_failed", error, video_id),
             )
 

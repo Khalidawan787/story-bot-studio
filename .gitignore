@@ -9,6 +9,8 @@ credentials/
 *.bak
 client_secret*.json
 *.WRONG-kids-bak
+# API keys the dashboard saves to disk
+data/*_api_key.txt
 
 # ============================================================
 #  Python
@@ -31,7 +33,12 @@ dist/
 # ============================================================
 runs/
 logs/
+*.log
 *.sqlite3
+# Per-machine runtime state, not source
+data/thumbnail_disabled_channels.json
+data/thumbnail_reenabled_channels.json
+data/trending_history.json
 assets/
 audio/
 videos/

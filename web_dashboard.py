@@ -9,9 +9,12 @@ Run:  .venv\\Scripts\\python.exe web_dashboard.py   -> opens http://127.0.0.1:80
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import sqlite3
 import threading
+from datetime import datetime
 from pathlib import Path
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -22,19 +25,31 @@ from src.config import settings
 from src.channels import load_channels, get_channel
 from src.daily_runner import (
     run_daily_batch, run_long_batch, run_long_video, run_offline_buffer,
-    videos_generated_today_count,
+    videos_generated_today_count, short_videos_generated_today_count, long_videos_generated_today_count,
 )
 from src.pipeline import run_pipeline
 from src.lessons import load_lesson_for, load_topics_for
 from src.genre_topics import generate_genre_topics
-from src.pending_uploads import retry_pending_uploads, upload_one
-from src.image_assets import asset_stats, generate_missing_assets, upgrade_low_quality_assets
-from src.db import active_upload_backoff, api_usage_today, approval_mode_enabled, auto_upload_queue_enabled, cleanup_uploaded_videos, delete_video, mark_queued_for_upload, release_generation_lock, set_approval_mode, set_auto_upload_queue, set_drive_url, social_uploads_for_channel
+from src.pending_uploads import retry_pending_uploads, upload_one, uploads_today_count, upload_limit_for_channel
+from src.image_assets import (asset_stats, generate_missing_assets, upgrade_low_quality_assets,
+                              pollinations_key_configured, save_pollinations_api_key)
+from src.db import active_upload_backoff, api_usage_today, approval_mode_enabled, auto_upload_queue_enabled, cleanup_uploaded_videos, delete_video, mark_queued_for_upload, set_approval_mode, set_auto_upload_queue, set_drive_url, social_uploads_for_channel
 from src import drive_storage, youtube_analytics, social_accounts, social_publish, upload_queue
 from src.notifier import is_configured as notifications_configured, notify
 
 app = Flask(__name__)
 app.secret_key = "story-bot-studio"
+
+
+@app.template_filter("localdt")
+def local_datetime(value):
+    if not value:
+        return "Unknown time"
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00")).astimezone().strftime("%A, %d %b %Y, %I:%M %p")
+    except (TypeError, ValueError):
+        return str(value)
+
 
 PORT = 8000
 JOBS = {}
@@ -57,7 +72,8 @@ def channel_rows(channel_id: str, content_type: str | None = None, view: str = "
             f"""
             SELECT id, job_id, topic, title, video_path, thumbnail_path,
                    video_url, status, error, created_at, drive_url, publish_at,
-                   COALESCE(content_type, 'short') AS content_type, quality_report
+                   COALESCE(content_type, 'short') AS content_type, quality_report,
+                   COALESCE(upload_progress, 0) AS upload_progress
             FROM videos WHERE {where} ORDER BY id DESC
             """,
             params,
@@ -104,18 +120,56 @@ def storage_info() -> dict:
     }
 
 
+def youtube_project_status(channel) -> dict:
+    try:
+        fingerprint = hashlib.sha256(channel.client_secret_path.read_bytes()).hexdigest()[:12]
+    except OSError:
+        return {"fingerprint": "missing", "shared_with": [], "independent": False}
+    shared = []
+    for other in load_channels():
+        try:
+            other_fingerprint = hashlib.sha256(other.client_secret_path.read_bytes()).hexdigest()[:12]
+        except OSError:
+            continue
+        if other_fingerprint == fingerprint:
+            shared.append(other.name)
+    return {"fingerprint": fingerprint, "shared_with": shared, "independent": len(shared) == 1}
+
+
 def api_center(channel) -> dict:
     used = api_usage_today("openai", "image")
     return {
         "youtube_pause": active_upload_backoff(channel.id),
+        "youtube_project": youtube_project_status(channel),
         "gemini": bool(settings.gemini_api_key),
         "openai": bool(settings.openai_api_key),
         "openai_images_used": used,
         "openai_images_limit": settings.openai_image_daily_limit,
         "pollinations": settings.enable_pollinations_images,
+        "pollinations_key": pollinations_key_configured(),
         "openverse": True, "wikimedia": True,
         "notifications": notifications_configured(),
+        "thumbnails_allowed": _thumbnails_allowed(channel.id),
+        "pexels_key": _pexels_key_saved(),
     }
+
+
+def _pexels_key_saved() -> bool:
+    try:
+        from src.thumbnails import pexels_key_configured
+
+        return pexels_key_configured()
+    except Exception:
+        return False
+
+
+def _thumbnails_allowed(channel_id: str) -> bool:
+    try:
+        from src.pending_uploads import thumbnail_upload_allowed
+
+        return thumbnail_upload_allowed(channel_id)
+    except Exception:
+        return True
 
 
 def current_channel():
@@ -131,7 +185,12 @@ def current_channel():
 def _run_job(job_id, fn):
     JOBS[job_id]["status"] = "running"
     try:
-        JOBS[job_id]["detail"] = fn() or "Completed"
+        detail = fn() or "Completed"
+        JOBS[job_id]["detail"] = detail
+        # Batch helpers return per-topic status strings rather than raising.
+        # Do not paint an all-failed batch green and make it look created.
+        if "FAILED" in detail and "OK " not in detail:
+            raise RuntimeError(detail)
         JOBS[job_id]["status"] = "done"
         notify(f"DONE: {JOBS[job_id]['label']}\n{JOBS[job_id]['detail']}")
     except Exception as e:
@@ -149,18 +208,17 @@ def _run_job(job_id, fn):
 
 def start_job(label, fn):
     jid = f"job_{len(JOBS) + 1}"
-    JOBS[jid] = {"label": label, "status": "queued", "detail": ""}
+    JOBS[jid] = {
+        "label": label, "status": "queued", "detail": "",
+        "created_at": datetime.now().astimezone().strftime("%A, %d %b %Y, %I:%M %p"),
+    }
     threading.Thread(target=_run_job, args=(jid, fn), daemon=True).start()
 
 
 def _long_job_summary(results: list[tuple[str, str]]) -> str:
     summary = "; ".join(f"{key}:{status}" for key, status in results)
     if not results or not any(status.startswith("OK") for _key, status in results):
-        if "lock:SKIPPED" in summary:
-            raise RuntimeError(
-                "Video creation did not start because this channel already has a generation job lock. "
-                "If no video is currently rendering, use Clear Stuck Generation Lock, then click Create once."
-            )
+
         raise RuntimeError(
             "No long video was created, so nothing new will appear in Videos. "
             "The script service was busy; please retry. Details: " + (summary or "no result")
@@ -237,6 +295,8 @@ def home():
         connected=ch.token_path.exists(), upload_pause=active_upload_backoff(ch.id),
         selected_type=selected_type, selected_view=selected_view, analytics=analytics, approval_mode=approval_mode_enabled(ch.id),
         upload_queue=upload_queue.queue_snapshot(ch.id),
+        channel_uploads_today=uploads_today_count(ch.id), channel_upload_limit=upload_limit_for_channel(ch.id),
+        queue_times=upload_queue.expected_upload_times(),
         api=api_center(ch), calendar=upcoming_schedule(ch.id),
         social=social_accounts.public_status(ch.id), social_uploads=social_uploads_for_channel(ch.id),
         stats={"topics": len(topics), "videos": len(vids), "uploaded": uploaded,
@@ -271,13 +331,6 @@ def queue_one_route():
     return redirect(url_for("home", channel=ch.id, view="unuploaded"))
 
 
-@app.route("/clear-generation-lock", methods=["POST"])
-def clear_generation_lock_route():
-    ch = current_channel()
-    release_generation_lock(f"generation:{ch.id}")
-    flash(f"Stuck generation lock cleared for {ch.name}. You can create videos now.", "ok")
-    return redirect(url_for("home", channel=ch.id))
-
 @app.route("/regenerate-one", methods=["POST"])
 def regenerate_one_route():
     ch = current_channel()
@@ -296,8 +349,15 @@ def regenerate_one_route():
         return redirect(url_for("home", channel=ch.id))
 
     def job():
+        topic = row["topic"]
+        lesson = load_lesson_for(ch, topic)
+        if row["content_type"] == "long" and not ch.builtin:
+            from src.genre_topics import _looks_like_instruction_title, generate_from_prompt
+            if _looks_like_instruction_title(lesson.title):
+                topic = generate_from_prompt(ch, lesson.title, scenes=20, long_form=True)
+                lesson = load_lesson_for(ch, topic)
         assets = run_pipeline(
-            load_lesson_for(ch, row["topic"]), upload=False, channel=ch,
+            lesson, upload=False, channel=ch,
             content_type=row["content_type"],
         )
         return f"Regenerated as {assets.job_id}; review the new copy below"
@@ -367,11 +427,11 @@ def daily():
     upload = request.form.get("upload") == "on"
 
     def job():
-        results = run_daily_batch(count=ch.topics_per_day, upload=upload, channel=ch)
+        results = run_daily_batch(count=3, upload=upload, channel=ch, queue=False)
         return "; ".join(f"{t}:{s}" for t, s in results)
 
-    start_job(f"[{ch.id}] Daily ({ch.topics_per_day})", job)
-    flash(f"Building {ch.topics_per_day} daily video(s)...", "ok")
+    start_job(f"[{ch.id}] Daily (3 Shorts direct + scheduled)", job)
+    flash("Building today's 3 Shorts; they will upload directly to YouTube scheduling.", "ok")
     return redirect(url_for("home", channel=ch.id))
 
 
@@ -457,12 +517,26 @@ def gen_topics():
     count = int(request.form.get("count", "10"))
     scenes = int(request.form.get("scenes", "8"))
 
+    from src.trending import generate_trending_topics, is_trending_channel
+
+    trending = is_trending_channel(ch)
+
     def job():
+        if trending:
+            # This channel takes its topics from live world trends, not from an
+            # invented list. Fall back to the generator only if every source is
+            # unreachable, so the button never silently does nothing.
+            keys = generate_trending_topics(ch, count=count, scenes=scenes)
+            if keys:
+                return f"Added {len(keys)} trending topics"
         keys = generate_genre_topics(ch, count=count, scenes=scenes)
         return f"Added {len(keys)} topics"
 
     start_job(f"[{ch.id}] Writing {count} topics", job)
-    flash(f"Writing {count} new {ch.genre} topics with free Gemini...", "ok")
+    if trending:
+        flash(f"Finding today's top {count} world trends and writing them...", "ok")
+    else:
+        flash(f"Writing {count} new {ch.genre} topics with free Gemini...", "ok")
     return redirect(url_for("home", channel=ch.id))
 
 
@@ -515,6 +589,29 @@ def retry():
     return redirect(url_for("home", channel=ch.id))
 
 
+@app.post("/upload-now")
+def upload_now_route():
+    ch = current_channel()
+    vid = int(request.form.get("id"))
+    conn = sqlite3.connect(settings.db_path)
+    row = conn.execute("SELECT id FROM videos WHERE id = ? AND channel = ? AND video_url IS NULL", (vid, ch.id)).fetchone()
+    conn.close()
+    if not row:
+        flash("Video was not found or is already on YouTube.", "error")
+        return redirect(url_for("home", channel=ch.id, type=request.form.get("type", "all")))
+
+    def job():
+        # Explicit action bypasses only the app safety cap; YouTube quota still applies.
+        result = upload_one(vid, bypass_safety_cap=True)
+        if ": failed " in result.lower() or "skipped" in result.lower():
+            raise RuntimeError(result)
+        return result
+
+    start_job(f"[{ch.id}] Upload now video #{vid}", job)
+    flash("Uploading this video to YouTube now. Its public release still follows the safe schedule.", "ok")
+    return redirect(url_for("home", channel=ch.id, type=request.form.get("type", "all")))
+
+
 @app.route("/upload-one", methods=["POST"])
 def upload_one_route():
     ch = current_channel()
@@ -534,6 +631,45 @@ def upload_one_route():
 
     start_job(f"[{ch.id}] Upload video #{vid}", job)
     flash("Retrying the YouTube thumbnail...", "ok")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/fix-thumbnails")
+def fix_thumbnails_route():
+    """Make a fresh AI thumbnail for this channel's already-published videos."""
+    ch = current_channel()
+    try:
+        limit = max(1, min(50, int(request.form.get("limit") or 10)))
+    except ValueError:
+        limit = 10
+
+    def job():
+        from src.pending_uploads import refresh_thumbnails
+
+        messages = refresh_thumbnails(limit=limit, channel_id=ch.id)
+        return "\n".join(messages) or "No published videos to update."
+
+    start_job(f"[{ch.id}] Fix thumbnails on YouTube ({limit})", job)
+    flash(
+        f"Building fresh thumbnails for up to {limit} published {ch.name} videos. "
+        "The videos themselves are not re-uploaded.",
+        "ok",
+    )
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/enable-thumbnails")
+def enable_thumbnails_route():
+    """Re-enable custom thumbnails after verifying the channel on YouTube."""
+    ch = current_channel()
+    from src.pending_uploads import enable_thumbnail_upload
+
+    enable_thumbnail_upload(ch.id)
+    flash(
+        f"Custom thumbnails are switched back on for {ch.name}. If YouTube still "
+        "refuses, verify that channel at youtube.com/verify first.",
+        "ok",
+    )
     return redirect(url_for("home", channel=ch.id))
 
 
@@ -691,6 +827,44 @@ def disconnect():
     return redirect(url_for("home", channel=ch.id))
 
 
+@app.route("/youtube-project", methods=["POST"])
+def youtube_project():
+    ch = current_channel()
+    uploaded = request.files.get("client_secret_file")
+    if not uploaded or not uploaded.filename:
+        flash("Select the Google OAuth client JSON file first.", "error")
+        return redirect(url_for("home", channel=ch.id))
+    raw = uploaded.read(2 * 1024 * 1024 + 1)
+    if len(raw) > 2 * 1024 * 1024:
+        flash("OAuth JSON file is too large.", "error")
+        return redirect(url_for("home", channel=ch.id))
+    try:
+        payload = json.loads(raw.decode("utf-8-sig"))
+        client = payload.get("installed") or payload.get("web")
+        if not isinstance(client, dict) or not client.get("client_id") or not client.get("client_secret"):
+            raise ValueError("Missing client_id/client_secret")
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+        flash(f"Invalid Google OAuth JSON: {exc}", "error")
+        return redirect(url_for("home", channel=ch.id))
+
+    filename = f"client_secret_{ch.id}.json"
+    target = settings.root / filename
+    target.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    config_path = settings.root / "channels.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    for row in config.get("channels", []):
+        if row.get("id") == ch.id:
+            row["client_secret"] = filename
+            break
+    config_path.write_text(json.dumps(config, indent=2), encoding="utf-8")
+
+    if ch.token_path.exists():
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        ch.token_path.rename(ch.token_path.with_suffix(ch.token_path.suffix + f".{stamp}.bak"))
+    flash(f"Separate Google project saved for {ch.name}. Now click Connect & verify.", "ok")
+    return redirect(url_for("home", channel=ch.id))
+
+
 @app.route("/drive-connect", methods=["POST"])
 def drive_connect():
     ch = current_channel()
@@ -737,9 +911,49 @@ def drive_backup():
     return redirect(url_for("home", channel=ch.id))
 
 
+@app.post("/pollinations-key")
+def pollinations_key_save():
+    ch = current_channel()
+    try:
+        save_pollinations_api_key(request.form.get("api_key", ""))
+        flash("Free Pollinations image key saved. New image jobs will use it immediately.", "ok")
+    except ValueError as exc:
+        flash(str(exc), "error")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/pexels-key")
+def pexels_key_save():
+    ch = current_channel()
+    from src.thumbnails import save_pexels_api_key
+
+    try:
+        save_pexels_api_key(request.form.get("api_key", ""))
+        flash("Free Pexels key saved. New thumbnails will use free stock photos.", "ok")
+    except ValueError as exc:
+        flash(str(exc), "error")
+    return redirect(url_for("home", channel=ch.id))
+
+
 @app.route("/status")
 def status():
     return jsonify(JOBS)
+
+
+@app.get("/video-progress")
+def video_progress():
+    ch = current_channel()
+    conn = sqlite3.connect(settings.db_path)
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute(
+            """SELECT id, status, COALESCE(upload_progress, 0) AS progress
+               FROM videos WHERE channel = ? AND hidden_at IS NULL""",
+            (ch.id,),
+        ).fetchall()
+        return jsonify({str(row["id"]): {"status": row["status"], "progress": int(row["progress"] or 0)} for row in rows})
+    finally:
+        conn.close()
 
 
 @app.route("/media")
@@ -781,7 +995,7 @@ PAGE = r"""
   button.pink{background:linear-gradient(135deg,var(--accent2),#ff4f97)}
   button.green{background:linear-gradient(135deg,#2fbf71,#20a35c)}
   button.red{background:linear-gradient(135deg,#ff6b6b,#e03131)}
-  button.sm{padding:7px 11px;font-size:13px}button:hover{filter:brightness(1.08)}
+  button.sm{padding:7px 11px;font-size:13px}button:hover{filter:brightness(1.08)}button:disabled{opacity:.62;cursor:not-allowed;filter:none}
   .chip{display:inline-block;padding:2px 9px;border-radius:6px;background:#2a3152;color:#c7cff0;font-size:12px;margin-left:6px}
   .flash{padding:12px 16px;border-radius:12px;margin-bottom:14px;border:1px solid}
   .flash.ok{background:#12301f;border-color:#1f6b45;color:#a9f0cd}.flash.error{background:#331617;border-color:#7a2b2f;color:#ffb9bd}
@@ -795,8 +1009,8 @@ PAGE = r"""
   .st{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px}
   .st.uploaded{background:#123122;color:var(--ok)}.st.rendered{background:#2a2f4d;color:#b9c1e6}
   .st.scheduled{background:#1a2b4d;color:#8fb4ff}
-  .st.thumbnail_pending{background:#3a2f12;color:var(--warn)}.st.upload_failed,.st.quality_failed{background:#331617;color:var(--err)}
-  .st.awaiting_approval{background:#3a2f12;color:var(--warn)}.st.queued_for_upload{background:#162d4d;color:#8fc7ff}
+  .st.thumbnail_pending{background:#3a2f12;color:var(--warn)}.st.upload_failed,.st.quality_failed,.st.duplicate_blocked{background:#331617;color:var(--err)}
+  .st.daily_upload_pending{background:#2d2754;color:#c9b7ff}.st.awaiting_approval{background:#3a2f12;color:var(--warn)}.st.queued_for_upload{background:#162d4d;color:#8fc7ff}
   .muted{color:var(--muted);font-size:13px}.err{color:var(--err);font-size:11px;margin-top:6px;max-height:48px;overflow:auto}
   .hint{font-size:12px;color:var(--muted);margin-top:8px}
   .bar{height:8px;background:#12162a;border-radius:999px;overflow:hidden;margin:8px 0}
@@ -879,7 +1093,7 @@ PAGE = r"""
   </div>
 
   {% if upload_pause %}
-  <div class="flash error"><strong>YouTube uploads are temporarily paused.</strong> Video creation still continues and finished videos appear below; YouTube upload/retry will wait until {{upload_pause[1]}}. Reason: {{upload_pause[0]}}</div>
+  <div class="flash error"><strong>YouTube uploads are temporarily paused.</strong> Video creation still continues and finished videos appear below; YouTube upload/retry will wait until <strong>{{upload_pause[1]|localdt}}</strong>. Reason: {{upload_pause[0]}}</div>
   {% endif %}
 
   <div class="card" style="margin-bottom:18px">
@@ -888,12 +1102,28 @@ PAGE = r"""
         <strong>YouTube connection</strong> —
         {% if connected %}<span style="color:var(--ok)">● Connected</span>{% else %}<span style="color:var(--warn)">● Not connected</span>{% endif %}
         <div class="hint">Click "Connect &amp; verify" and it will show which YouTube channel this is linked to. Make sure a genre channel is NOT linked to your kids channel.</div>
+        {% if api.youtube_project.independent %}
+          <div class="hint" style="color:var(--ok)"><strong>Independent YouTube API project active</strong> for {{ch.name}}.</div>
+        {% else %}
+          <div class="hint" style="color:#ffd27a"><strong>Google quota is shared with:</strong> {{api.youtube_project.shared_with|join(', ')}}. Upload a separate OAuth JSON below for a truly separate quota.</div>
+        {% endif %}
       </div>
       <div class="row">
         <form method="post" action="/connect"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green sm" type="submit">🔗 Connect &amp; verify</button></form>
         {% if connected %}<form method="post" action="/disconnect" onsubmit="return confirm('Disconnect this channel?')"><input type="hidden" name="channel" value="{{ch.id}}"><button class="ghost sm" type="submit">Disconnect</button></form>{% endif %}
       </div>
     </div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px">
+    <form method="post" action="/youtube-project" enctype="multipart/form-data" class="row">
+      <input type="hidden" name="channel" value="{{ch.id}}">
+      <label class="field">Separate Google OAuth JSON for {{ch.name}}
+        <input type="file" name="client_secret_file" accept=".json,application/json" required>
+      </label>
+      <button class="ghost sm" type="submit">Save Separate Project</button>
+      <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="hint">Open Google Cloud credentials guide ↗</a>
+    </form>
   </div>
 
   <div class="grid stats">
@@ -956,10 +1186,9 @@ PAGE = r"""
 
   <div class="card" style="margin-bottom:16px;border-left:4px solid var(--ok)">
     <div class="row" style="justify-content:space-between">
-      <div><strong>Timed YouTube Upload Queue</strong><div class="hint"><strong>{{upload_queue.count}}</strong> video(s) waiting. One global upload every {{upload_queue.gap_hours|round(0)|int}} hours. Next allowed check: {{upload_queue.next_at[:16].replace('T',' ')}} UTC.</div></div>
+      <div><strong>Timed YouTube Upload Queue</strong><div class="hint"><strong>{{upload_queue.count}}</strong> video(s) waiting. Public releases stay {{upload_queue.gap_hours|round(0)|int}} hours apart. Next queue check: {{upload_queue.next_at[:16].replace('T',' ')}} UTC.</div><div class="hint"><strong>{{ch.name}} upload budget today:</strong> {{channel_uploads_today}} / {{channel_upload_limit}} for this channel. Manual Upload Now remains available.</div>{% if upload_pause %}<div class="hint" style="color:#ffd27a"><strong>Queue is ON but waiting for YouTube quota:</strong> 0% — resumes {{upload_pause[1]|localdt}}. Video creation remains active.</div>{% endif %}</div>
       <div class="row">
         <form method="post" action="/queue-mode"><input type="hidden" name="channel" value="{{ch.id}}"><label class="chk"><input type="checkbox" name="enabled" {{'checked' if upload_queue.enabled else ''}} onchange="this.form.submit()"> {{'Queue ON' if upload_queue.enabled else 'Queue PAUSED'}}</label></form>
-        <form method="post" action="/clear-generation-lock" onsubmit="return confirm('Clear a stuck generation lock for {{ch.name}}? Only use this when no video is currently rendering.')"><input type="hidden" name="channel" value="{{ch.id}}"><button class="ghost sm" type="submit">Clear Stuck Generation Lock</button></form>
       </div>
     </div>
   </div>
@@ -1177,7 +1406,28 @@ PAGE = r"""
       <span class="chip">Pollinations: {{'ready' if api.pollinations else 'off'}}</span>
       <span class="chip">Openverse: ready</span><span class="chip">Wikimedia: ready</span><span class="chip">Notifications: {{'ready' if api.notifications else 'optional setup'}}</span>
     </div>
-    <div class="hint" style="margin-top:12px">Paid OpenAI images today: <strong>{{api.openai_images_used}} / {{api.openai_images_limit}}</strong>. When the cap is reached, free sources continue automatically.</div>
+    <div class="hint" style="margin-top:12px">Paid OpenAI images today: <strong>{{api.openai_images_used}} / {{api.openai_images_limit}}</strong>. When OpenAI billing/quota is unavailable, the next free source is selected automatically.</div>
+    <div class="row" style="margin-top:10px"><strong>Image fallback order:</strong><span class="chip">1. OpenAI</span><span class="chip">2. Openverse (free)</span><span class="chip">3. Wikimedia (free)</span><span class="chip">Kids cartoon fallback: Pollinations</span></div>
+    <div class="card" style="margin-top:12px;padding:14px">
+      <div class="row" style="justify-content:space-between"><div><strong>Free AI images</strong> <span class="chip">{{'key connected' if api.pollinations_key else 'limited without key'}}</span><div class="hint">Add a free Pollinations key to reduce anonymous HTTP 429 errors. No text-board placeholder is used when a real image cannot be found.</div></div><a href="https://enter.pollinations.ai" target="_blank"><button class="ghost sm" type="button">Get Free Key</button></a></div>
+      <form method="post" action="/pollinations-key" class="row" style="margin-top:10px"><input type="hidden" name="channel" value="{{ch.id}}"><input type="password" name="api_key" placeholder="{{'Key saved - paste a new key to replace' if api.pollinations_key else 'Paste pk_ or sk_ key'}}" style="flex:1;min-width:240px"><button class="green sm" type="submit">Save Image Key</button></form>
+    </div>
+    <div class="card" style="margin-top:12px;padding:14px">
+      <div class="row" style="justify-content:space-between">
+        <div><strong>Thumbnails</strong>
+          <span class="chip">{{'custom thumbnails ON' if api.thumbnails_allowed else 'blocked by YouTube'}}</span>
+          <span class="chip">{{'Pexels connected (free)' if api.pexels_key else 'Pexels key not set'}}</span>
+          <div class="hint">Every new video gets its own 16:9 thumbnail about its topic, with the title on it. Free Pexels stock photos are used first, then AI.
+          {% if not api.thumbnails_allowed %}YouTube refused custom thumbnails for {{ch.name}} — verify that channel at <a href="https://youtube.com/verify" target="_blank">youtube.com/verify</a>, then press "Thumbnails Are Verified".{% endif %}</div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <form method="post" action="/fix-thumbnails"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="limit" value="10"><button class="green sm" type="submit">🖼 Fix Thumbnails On YouTube (10)</button></form>
+        {% if not api.thumbnails_allowed %}<form method="post" action="/enable-thumbnails"><input type="hidden" name="channel" value="{{ch.id}}"><button class="ghost sm" type="submit">✅ Thumbnails Are Verified</button></form>{% endif %}
+        <a href="https://www.pexels.com/api/" target="_blank"><button class="ghost sm" type="button">Get Free Pexels Key</button></a>
+      </div>
+      <form method="post" action="/pexels-key" class="row" style="margin-top:10px"><input type="hidden" name="channel" value="{{ch.id}}"><input type="password" name="api_key" placeholder="{{'Key saved - paste a new key to replace' if api.pexels_key else 'Paste your free Pexels API key'}}" style="flex:1;min-width:240px"><button class="green sm" type="submit">Save Pexels Key</button></form>
+    </div>
     {% if api.youtube_pause %}<div class="hint">YouTube retry after: {{api.youtube_pause[1]}}</div>{% endif %}
   </div>
 
@@ -1218,15 +1468,27 @@ PAGE = r"""
         <div class="card" style="text-align:center;padding:28px"><a href="{{v['drive_url']}}" target="_blank">☁ On Google Drive ↗</a></div>
       {% elif v['video_path'] %}<video controls preload="metadata" src="/media?path={{v['video_path']|urlencode}}"></video>{% endif %}
       <div class="t">{{v['title']}} <span class="chip">{{v['content_type']}}</span></div>
+      <div class="hint">Created: {{v['created_at']|localdt}}</div>
       <div class="row" style="justify-content:space-between;margin:2px 0 8px">
-        <span class="st {{v['status']}}">{{v['status']}}</span>
+        <span class="st {{v['status']}}" data-video-status="{{v['id']}}">{{v['status']}}</span>
         {% if v['video_url'] %}<a href="{{v['video_url']}}" target="_blank">YouTube ↗</a>{% endif %}
       </div>
-      {% if vs %}<div class="social-state">{% for platform,item in vs.items() %}<span class="chip {{item.status}}">{{platform|title}}: {{item.status}}</span>{% if item.post_url %}<a href="{{item.post_url}}" target="_blank">Open</a>{% endif %}{% endfor %}</div>{% endif %}      {% if v['status']=='scheduled' and v['publish_at'] %}<div class="hint">⏱ Goes public: {{v['publish_at'][:16].replace('T',' ')}} UTC</div>{% endif %}
+      <div class="upload-meter" data-video-progress="{{v['id']}}" style="display:{{'block' if v['status']=='uploading' else 'none'}};margin:8px 0">
+        <div class="row" style="justify-content:space-between"><span class="hint">Uploading to YouTube</span><strong class="upload-percent">{{v['upload_progress']}}%</strong></div>
+        <div class="bar" style="margin-top:5px"><i style="width:{{v['upload_progress']}}%"></i></div>
+      </div>
+      {% if upload_pause and not v['video_url'] and v['status'] in ('rendered','upload_failed','daily_upload_pending','queued_for_upload') %}
+      <div style="margin:8px 0;padding:9px 10px;border:1px solid #705b20;border-radius:9px;background:#302912">
+        <div class="row" style="justify-content:space-between"><span class="hint">Waiting for YouTube quota reset</span><strong>0%</strong></div>
+        <div class="bar" style="margin-top:5px"><i style="width:0%"></i></div>
+        <div class="hint">Automatic retry: {{upload_pause[1]|localdt}}. Video creation continues while uploads wait.</div>
+      </div>
+      {% endif %}
+      {% if v['status']=='queued_for_upload' and queue_times.get(v['id']) %}<div class="hint" style="margin:6px 0;color:#9fc4ff"><strong>Expected YouTube upload:</strong> {{queue_times.get(v['id'])|localdt}}</div>{% elif v['status']=='daily_upload_pending' %}<div class="hint" style="margin:6px 0;color:#9fc4ff"><strong>Daily direct upload:</strong> {% if upload_pause %}YouTube quota paused. Automatic retry: {{upload_pause[1]|localdt}}.{% else %}Ready; automatic upload retry will start shortly.{% endif %}</div>{% endif %}      {% if vs %}<div class="social-state">{% for platform,item in vs.items() %}<span class="chip {{item.status}}">{{platform|title}}: {{item.status}}</span>{% if item.post_url %}<a href="{{item.post_url}}" target="_blank">Open</a>{% endif %}{% endfor %}</div>{% endif %}      {% if v['status']=='scheduled' and v['publish_at'] %}<div class="hint"><strong>Goes public on YouTube:</strong> {{v['publish_at']|localdt}}</div>{% endif %}
       <div class="row">
         <a href="/media?path={{v['video_path']|urlencode}}" download><button class="ghost sm" type="button">Download</button></a>
-        {% if v['status'] in ('awaiting_approval','rendered','upload_failed','thumbnail_pending') %}<form method="post" action="/upload-one"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="green sm" type="submit">{{'Approve & Queue' if v['status']=='awaiting_approval' else ('Retry Thumbnail' if v['status']=='thumbnail_pending' else 'Add to Queue')}}</button></form>{% endif %}
-        {% if v['status'] in ('quality_failed','awaiting_approval') %}<form method="post" action="/regenerate-one"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="ghost sm" type="submit">Regenerate</button></form>{% endif %}
+        {% if upload_pause and not v['video_url'] and v['status'] in ('rendered','upload_failed','daily_upload_pending','queued_for_upload') %}<button class="ghost sm" type="button" disabled>Waiting for YouTube quota</button>{% elif v['status']=='daily_upload_pending' %}<form method="post" action="/upload-now"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><input type="hidden" name="type" value="{{selected_type}}"><button class="green sm" type="submit">Upload Now</button></form>{% elif v['status'] in ('awaiting_approval','rendered','upload_failed') %}<form method="post" action="/upload-now"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><input type="hidden" name="type" value="{{selected_type}}"><button class="green sm" type="submit">Upload to YouTube</button></form><form method="post" action="/upload-one"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="ghost sm" type="submit">Add to Timed Queue</button></form>{% elif v['status']=='thumbnail_pending' %}<form method="post" action="/upload-one"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="green sm" type="submit">Retry Thumbnail</button></form>{% endif %}
+        {% if v['status'] in ('quality_failed','awaiting_approval','rendered','thumbnail_pending','uploaded','scheduled') %}<form method="post" action="/regenerate-one"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="ghost sm" type="submit">Regenerate</button></form>{% endif %}
         {% if social.facebook.configured and not (vs.get('facebook') and vs.get('facebook').status=='submitted') %}<form method="post" action="/social-upload"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><input type="hidden" name="platform" value="facebook"><input type="hidden" name="type" value="{{selected_type}}"><input type="hidden" name="view" value="{{selected_view}}"><button class="ghost sm" type="submit">Share Facebook</button></form>{% endif %}
         {% if social.tiktok.configured and not (vs.get('tiktok') and vs.get('tiktok').status=='submitted') %}<form method="post" action="/social-upload" onsubmit="return confirm('Send this video to TikTok? Direct Post mode confirms your consent for this upload.')"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><input type="hidden" name="platform" value="tiktok"><input type="hidden" name="consent" value="on"><input type="hidden" name="type" value="{{selected_type}}"><input type="hidden" name="view" value="{{selected_view}}"><button class="ghost sm" type="submit">Send TikTok</button></form>{% endif %}        <form method="post" action="/delete-one" onsubmit="return confirm('Delete this video?')"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="red sm" type="submit">Delete</button></form>
       </div>
@@ -1278,9 +1540,22 @@ async function poll(){
       box.innerHTML=scoped.map(k=>{const j=jobs[k];
         if(j.status==='running'||j.status==='queued') running=true;
         let detail=String(j.detail||'');
-        if(detail.includes('lock:SKIPPED')) detail='Creation was blocked by an existing channel job lock. If no video is rendering, use Clear Stuck Generation Lock and try once.';
         const d=detail?' — <span class="muted">'+detail.slice(0,260)+'</span>':'';
-        return '<div class="job"><div>'+j.label+d+'</div><span class="badge '+j.status+'">'+j.status+'</span></div>';}).join('');
+        return '<div class="job"><div>'+j.label+(j.created_at?' <span class="muted">• '+j.created_at+'</span>':'')+d+'</div><span class="badge '+j.status+'">'+j.status+'</span></div>';}).join('');
+    });
+    const pr=await fetch('/video-progress?channel={{ch.id}}');
+    const videos=await pr.json();
+    Object.keys(videos).forEach(id=>{
+      const item=videos[id], meter=document.querySelector('[data-video-progress="'+id+'"]');
+      if(meter){
+        const active=item.status==='uploading';
+        meter.style.display=active?'block':'none';
+        const pct=meter.querySelector('.upload-percent'), fill=meter.querySelector('.bar i');
+        if(pct) pct.textContent=item.progress+'%';
+        if(fill) fill.style.width=item.progress+'%';
+      }
+      const badge=document.querySelector('[data-video-status="'+id+'"]');
+      if(badge && badge.textContent.trim()!==item.status){ badge.textContent=item.status; badge.className='st '+item.status; }
     });
     if(!running && window.__was){ window.__was=false; setTimeout(()=>location.reload(),900); }
     if(running) window.__was=true;
@@ -1301,26 +1576,62 @@ def _online() -> bool:
         return False
 
 
-def _startup_daily():
-    """On launch, make sure today's 5 KIDS videos exist (and upload if online).
-
-    Only the kids channel auto-runs — genre channels never auto-upload.
-    Catch-up ensures a max of 5 per day no matter how often you open it.
-    """
+def _daily_automation_check():
+    """Create missing valid daily videos; uploads may wait for YouTube quota."""
     try:
-        from src.daily_runner import run_daily_catchup
-        from src.channels import get_channel
-        online = _online()
+        from src.daily_runner import run_daily_catchup, run_daily_long_all
+        from src.channels import get_channel, load_channels
+        from src.pending_uploads import has_daily_pending, retry_daily_uploads
 
-        def job():
-            results = run_daily_catchup(target_count=2, upload=online, start_hour=0,
-                                        channel=get_channel("kids"))
-            return "; ".join(f"{t}:{s}" for t, s in results)
+        active = any(
+            job.get("status") in {"queued", "running"}
+            and ("Auto daily" in job.get("label", "") or "generation" in job.get("label", "").lower())
+            for job in JOBS.values()
+        )
+        connected_channels = [channel for channel in load_channels() if channel.token_path.exists()]
+        shorts_missing = any(
+            short_videos_generated_today_count(channel.id) < 3
+            for channel in connected_channels
+        )
+        long_missing = any(
+            long_videos_generated_today_count(channel.id) < 1
+            for channel in connected_channels
+        )
+        daily_uploads_waiting = has_daily_pending()
+        if not active and (daily_uploads_waiting or shorts_missing or long_missing):
+            online = _online()
 
-        start_job(f"Auto daily-2 (kids){'' if online else ' — offline, render only'}", job)
-    except Exception as e:
-        print("startup daily skipped:", e)
+            def job():
+                messages: list[str] = []
+                if online and has_daily_pending():
+                    messages.extend(f"direct-upload:{item}" for item in retry_daily_uploads(limit=20))
+                elif has_daily_pending():
+                    messages.append("Direct daily uploads are waiting for internet")
+                for channel in [item for item in load_channels() if item.token_path.exists()]:
+                    if short_videos_generated_today_count(channel.id) < 3:
+                        short_results = run_daily_catchup(
+                            target_count=3, upload=online, start_hour=0,
+                            channel=channel, queue=False,
+                        )
+                        messages.extend(
+                            f"short:{channel.id}:{topic}:{status}"
+                            for topic, status in short_results
+                        )
+                if any(
+                    long_videos_generated_today_count(channel.id) < 1
+                    for channel in [item for item in load_channels() if item.token_path.exists()]
+                ):
+                    long_results = run_daily_long_all(upload=online, scenes=20)
+                    messages.extend(f"long:{channel_id}:{status}" for channel_id, status in long_results)
+                return "; ".join(messages) or "Daily targets already complete"
 
+            start_job(f"Auto daily creation{' + upload' if online else ' (offline render only)'}", job)
+    except Exception as exc:
+        print("daily automation check skipped:", exc)
+    finally:
+        timer = threading.Timer(2 * 60, _daily_automation_check)
+        timer.daemon = True
+        timer.start()
 
 if __name__ == "__main__":
     import webbrowser
@@ -1330,7 +1641,9 @@ if __name__ == "__main__":
     queue_timer.daemon = True
     queue_timer.start()
     threading.Timer(1.5, lambda: webbrowser.open(f"http://127.0.0.1:{PORT}")).start()
-    # Auto-build today's 2 Kids Shorts on launch (set STUDIO_NO_AUTODAILY=1 to skip).
-    if not os.environ.get("STUDIO_NO_AUTODAILY"):
-        threading.Timer(3.0, _startup_daily).start()
+    # Check shortly after launch and then hourly. The checker only creates
+    # missing daily targets, so restarts never duplicate completed videos.
+    daily_timer = threading.Timer(5.0, _daily_automation_check)
+    daily_timer.daemon = True
+    daily_timer.start()
     app.run(host="127.0.0.1", port=PORT, debug=False)

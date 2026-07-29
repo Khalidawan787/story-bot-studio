@@ -6,9 +6,12 @@ import importlib.util
 import json
 import random
 import re
+import subprocess
 import time
+import threading
 import urllib.parse
 import urllib.request
+import urllib.error
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -21,6 +24,18 @@ from .models import Scene
 # A real 1080x1920 illustration is ~300KB-2MB. Anything much smaller is a
 # low-detail / near-broken result we should retry rather than keep.
 MIN_GOOD_IMAGE_BYTES = 130_000
+_PROVIDER_PAUSED_UNTIL: dict[str, float] = {}
+_POLLINATIONS_SEMAPHORE = threading.Semaphore(1)
+_POLLINATIONS_MIN_BYTES = 30_000
+
+
+def _provider_available(name: str) -> bool:
+    return time.time() >= _PROVIDER_PAUSED_UNTIL.get(name, 0)
+
+
+def _pause_provider(name: str, seconds: int = 900) -> None:
+    """Avoid repeating the same unavailable provider for every scene in a video."""
+    _PROVIDER_PAUSED_UNTIL[name] = time.time() + seconds
 
 
 @dataclass(frozen=True)
@@ -45,6 +60,34 @@ def google_image_ready() -> bool:
 
 def pollinations_image_ready() -> bool:
     return settings.enable_pollinations_images
+
+
+def pollinations_api_key() -> str:
+    """Read an optional free Pollinations key without requiring an app restart."""
+    env_key = getattr(settings, "pollinations_api_key", "")
+    if env_key:
+        return env_key.strip()
+    key_file = settings.root / "data" / "pollinations_api_key.txt"
+    try:
+        return key_file.read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+
+
+def pollinations_key_configured() -> bool:
+    return bool(pollinations_api_key())
+
+
+def save_pollinations_api_key(value: str) -> None:
+    key = value.strip()
+    if key and not key.startswith(("pk_", "sk_")):
+        raise ValueError("Pollinations key must start with pk_ or sk_.")
+    path = settings.root / "data" / "pollinations_api_key.txt"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if key:
+        path.write_text(key, encoding="utf-8")
+    else:
+        path.unlink(missing_ok=True)
 
 
 def scene_image_path(scene: Scene) -> Path:
@@ -104,6 +147,15 @@ def _is_genre(channel) -> bool:
     return channel is not None and not getattr(channel, "builtin", False)
 
 
+_STOCK_SAFE_KIDS_CATEGORIES = {
+    "animals", "fruits", "vegetables", "vehicles", "nature", "science",
+}
+
+
+def _stock_fallback_allowed(scene: Scene, channel=None) -> bool:
+    """Genre channels may use relevant stock; Kids must remain cartoon-only."""
+    return channel is not None and not getattr(channel, "builtin", False)
+
 def _prompt_for_scene(scene: Scene, channel=None) -> str:
     # Genre channels (crime/love/horror/...) carry their own styled prompt.
     if _is_genre(channel):
@@ -142,7 +194,7 @@ def generate_openai_scene_image(scene: Scene, output_path: Path, channel=None, l
     from openai import OpenAI
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    client = OpenAI(api_key=settings.openai_api_key)
+    client = OpenAI(api_key=settings.openai_api_key, timeout=75.0, max_retries=0)
     result = client.images.generate(
         model=settings.openai_image_model,
         prompt=_prompt_for_scene(scene, channel) + (" Landscape 16:9 composition." if landscape else " Vertical 9:16 composition."),
@@ -210,13 +262,73 @@ def openverse_image_ready() -> bool:
 
 
 def _openverse_query(scene: Scene, channel=None) -> str:
+    """Build a short concrete stock-image query from both label and visual prompt."""
     label = scene.label.strip()
-    generic = label.lower().startswith(("part ", "scene ", "chapter ", "step "))
-    if generic and scene.image_prompt:
-        words = [word.strip(".,:;!?()[]") for word in scene.image_prompt.split()]
-        return " ".join(word for word in words if len(word) > 2)[:80]
-    return label[:120]
+    prompt_words = [
+        word.strip(".,:;!?()[]").lower()
+        for word in (scene.image_prompt or "").split()
+    ]
+    ignored = {
+        "high", "quality", "detailed", "cinematic", "illustration", "image",
+        "vertical", "landscape", "composition", "lighting", "style", "scene",
+        "colorful", "bright", "friendly", "dramatic", "beautiful",
+    }
+    concrete = [
+        word for word in prompt_words
+        if len(word) > 2 and word not in ignored and word.isascii()
+    ][:6]
+    genre = getattr(channel, "genre", "") if channel is not None else ""
+    suffix = "children education" if genre == "kids" else genre
+    return " ".join(part for part in [label, *concrete, suffix] if part)[:120]
 
+_STOCK_STOP_WORDS = {
+    "about", "against", "around", "clear", "close", "detailed", "dramatic",
+    "evening", "high", "image", "illustration", "lighting", "moody", "part",
+    "scene", "showing", "style", "true", "video", "visual", "with", "without",
+    "dark", "cinematic", "composition", "quality", "original", "complete",
+    "create", "inspired", "date", "seed", "july", "story", "noir", "gore",
+}
+_STOCK_BANNED_WORDS = {
+    "advertisement", "banner", "book cover", "brochure", "campaign", "communism",
+    "election", "infographic", "magazine", "manifesto", "new world order",
+    "newspaper", "political", "politician", "politics", "poster", "propaganda",
+    "soviet", "typography", "666",
+}
+_STOCK_ALIASES = {
+    "investigator": "detective", "investigation": "detective", "police": "detective",
+    "mansion": "manor", "estate": "manor", "house": "manor",
+    "footprint": "footprints", "shoeprint": "footprints", "prints": "footprints",
+    "aroma": "scent", "perfume": "scent", "odor": "scent", "smell": "scent",
+    "document": "letter", "documents": "letter", "records": "letter",
+    "interrogation": "suspect", "criminal": "suspect",
+}
+
+
+def _stock_tokens(value: object) -> set[str]:
+    text = html.unescape(str(value or "")).lower()
+    return {
+        _STOCK_ALIASES.get(word, word)
+        for word in re.findall(r"[a-z]{3,}", text)
+        if word not in _STOCK_STOP_WORDS
+    }
+
+
+def _stock_relevance_score(scene: Scene, candidate_text: object, channel=None) -> int:
+    """Reject stock results whose metadata does not match the narrated scene."""
+    if not _is_genre(channel):
+        return 1
+    lowered = html.unescape(str(candidate_text or "")).lower()
+    if any(term in lowered for term in _STOCK_BANNED_WORDS):
+        return -100
+    anchors = _stock_tokens(f"{scene.label} {scene.image_prompt or ''}")
+    candidate = _stock_tokens(lowered)
+    overlap = anchors & candidate
+    genre = str(getattr(channel, "genre", "") or "").lower()
+    return len(overlap) * 3 + (1 if genre and genre in candidate else 0)
+
+
+def _openverse_candidate_text(item: dict) -> str:
+    return " ".join(str(item.get(key) or "") for key in ("title", "tags", "category", "source"))
 
 def _write_openverse_metadata(output_path: Path, item: dict) -> None:
     metadata = {
@@ -245,40 +357,50 @@ def generate_openverse_scene_image(
     landscape: bool = False,
     attempts: int = 6,
 ) -> Path:
-    """Download a CC0/Public Domain image from Openverse without an API key."""
-    params = urllib.parse.urlencode({
-        "q": _openverse_query(scene, channel),
-        "license": "cc0,pdm",
-        "license_type": "commercial",
-        "mature": "false",
-        "filter_dead": "true",
-        "page_size": "20",
-    })
-    request = urllib.request.Request(
-        f"https://api.openverse.org/v1/images/?{params}",
-        headers={"User-Agent": "StoryBotStudio/1.0 (Openverse image fallback)"},
-    )
-    try:
-        with urllib.request.urlopen(request, timeout=45) as response:
-            payload = json.loads(response.read().decode("utf-8"))
-    except Exception as exc:
-        raise RuntimeError(f"Openverse search failed: {exc}") from exc
+    """Download a commercially reusable, openly licensed image without an API key."""
+    detailed = _openverse_query(scene, channel)
+    prompt_words = [word.strip(".,:;!?()[]") for word in (scene.image_prompt or "").split() if len(word) > 3]
+    queries = [detailed, " ".join(prompt_words[:5])]
+    payload = {"results": []}
+    search_errors: list[str] = []
+    for query in dict.fromkeys(q for q in queries if q):
+        params = urllib.parse.urlencode({
+            "q": query,
+            "license_type": "commercial",
+            "mature": "false",
+            "filter_dead": "true",
+            "page_size": "20",
+        })
+        request = urllib.request.Request(
+            f"https://api.openverse.org/v1/images/?{params}",
+            headers={"User-Agent": "StoryBotStudio/1.0 (Openverse image fallback)"},
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=45) as response:
+                candidate_payload = json.loads(response.read().decode("utf-8"))
+            if candidate_payload.get("results"):
+                payload = candidate_payload
+                break
+        except Exception as exc:
+            search_errors.append(str(exc))
+    if not payload.get("results") and search_errors:
+        raise RuntimeError(f"Openverse search failed: {search_errors[-1]}")
 
     candidates = []
     for item in payload.get("results", []):
-        if str(item.get("license", "")).lower() not in {"cc0", "pdm"}:
+        if str(item.get("license", "")).lower() not in {"cc0", "pdm", "by", "by-sa"}:
             continue
-        width = int(item.get("width") or 0)
-        height = int(item.get("height") or 0)
-        if width and height:
-            if landscape and width <= height:
-                continue
-            if not landscape and height <= width:
-                continue
+        # The renderer safely center-crops any orientation to 16:9 or 9:16.
+        # Do not discard a relevant reusable image only because its source is
+        # portrait or square.
+        relevance = _stock_relevance_score(scene, _openverse_candidate_text(item), channel)
+        if relevance < 1:
+            continue
+        item["_relevance_score"] = relevance
         candidates.append(item)
     if not candidates:
-        raise RuntimeError("Openverse returned no matching CC0/Public Domain images.")
-    random.shuffle(candidates)
+        raise RuntimeError("Openverse returned no matching reusable images.")
+    candidates.sort(key=lambda item: int(item.get("_relevance_score", 0)), reverse=True)
 
     best: tuple[bytes, dict] | None = None
     errors: list[str] = []
@@ -331,7 +453,7 @@ def generate_wikimedia_scene_image(
     landscape: bool = False,
     attempts: int = 8,
 ) -> Path:
-    """Download a Public Domain/CC0 image from Wikimedia Commons without a key."""
+    """Download an openly licensed image from Wikimedia Commons without a key."""
     params = urllib.parse.urlencode({
         "action": "query",
         "format": "json",
@@ -371,7 +493,7 @@ def generate_wikimedia_scene_image(
         info = infos[0]
         metadata = info.get("extmetadata") or {}
         license_name = _plain_metadata(metadata.get("LicenseShortName")).lower()
-        if not any(token in license_name for token in ("public domain", "cc0", "cc zero")):
+        if not any(token in license_name for token in ("public domain", "cc0", "cc zero", "cc by", "attribution")):
             continue
         width, height = int(info.get("width") or 0), int(info.get("height") or 0)
         if width and height:
@@ -381,10 +503,19 @@ def generate_wikimedia_scene_image(
                 continue
         if not str(info.get("mime", "")).startswith("image/"):
             continue
+        candidate_text = " ".join([
+            str(page.get("title") or ""),
+            _plain_metadata(metadata.get("ImageDescription")),
+            _plain_metadata(metadata.get("Credit")),
+        ])
+        relevance = _stock_relevance_score(scene, candidate_text, channel)
+        if relevance < 1:
+            continue
+        page["_relevance_score"] = relevance
         candidates.append((page, info))
     if not candidates:
         raise RuntimeError("Wikimedia returned no matching Public Domain/CC0 images.")
-    random.shuffle(candidates)
+    candidates.sort(key=lambda pair: int(pair[0].get("_relevance_score", 0)), reverse=True)
 
     best: tuple[bytes, dict, dict] | None = None
     errors: list[str] = []
@@ -435,7 +566,97 @@ def generate_wikimedia_scene_image(
     )
     return output_path
 
+def _encoded_image_dimensions(data: bytes) -> tuple[int, int] | None:
+    """Read PNG/JPEG dimensions without adding a Pillow dependency."""
+    if data.startswith(b"\x89PNG\r\n\x1a\n") and len(data) >= 24:
+        return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+    if data.startswith(b"\xff\xd8"):
+        index = 2
+        while index + 9 < len(data):
+            if data[index] != 0xFF:
+                index += 1
+                continue
+            marker = data[index + 1]
+            index += 2
+            if marker in {0xD8, 0xD9}:
+                continue
+            if index + 2 > len(data):
+                break
+            length = int.from_bytes(data[index:index + 2], "big")
+            if length < 2 or index + length > len(data):
+                break
+            if marker in {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}:
+                height = int.from_bytes(data[index + 3:index + 5], "big")
+                width = int.from_bytes(data[index + 5:index + 7], "big")
+                return width, height
+            index += length
+    return None
+
+
+def _generated_image_has_full_frame(data: bytes) -> bool:
+    """Reject provider JPEGs whose lower/upper half decodes as a flat gray block."""
+    try:
+        result = subprocess.run(
+            [settings.ffmpeg_bin, "-v", "error", "-i", "pipe:0", "-vf", "scale=16:24",
+             "-f", "rawvideo", "-pix_fmt", "rgb24", "pipe:1"],
+            input=data, capture_output=True, timeout=20,
+        )
+    except Exception:
+        return False
+    raw = result.stdout
+    if result.returncode != 0 or len(raw) != 16 * 24 * 3:
+        return False
+    rows = []
+    for y in range(24):
+        luminance = []
+        for x in range(16):
+            offset = (y * 16 + x) * 3
+            r, g, b = raw[offset:offset + 3]
+            luminance.append((r * 299 + g * 587 + b * 114) / 1000.0)
+        rows.append(luminance)
+
+    def variation(block: list[list[float]]) -> tuple[float, float]:
+        values = [value for row in block for value in row]
+        mean = sum(values) / len(values)
+        variance = sum((value - mean) ** 2 for value in values) / len(values)
+        return mean, variance ** 0.5
+
+    top_mean, top_sd = variation(rows[:12])
+    bottom_mean, bottom_sd = variation(rows[12:])
+    # Broken Pollinations responses commonly contain a perfectly flat neutral
+    # gray half while the other half contains a normal image.
+    if bottom_sd < 2.0 and top_sd > 8.0 and 85 <= bottom_mean <= 190:
+        return False
+    if top_sd < 2.0 and bottom_sd > 8.0 and 85 <= top_mean <= 190:
+        return False
+    return True
+
+def _usable_pollinations_image(data: bytes, landscape: bool) -> bool:
+    if len(data) < _POLLINATIONS_MIN_BYTES:
+        return False
+    dimensions = _encoded_image_dimensions(data)
+    if dimensions is None:
+        return len(data) >= MIN_GOOD_IMAGE_BYTES
+    width, height = dimensions
+    if min(width, height) < 512 or max(width, height) < 960:
+        return False
+    orientation_ok = width > height if landscape else height > width
+    return orientation_ok and _generated_image_has_full_frame(data)
+
+
 def generate_pollinations_scene_image(scene: Scene, output_path: Path, channel=None,
+                                      fresh: bool = False, attempts: int = 5,
+                                      landscape: bool = False) -> Path:
+    # The free endpoint rate-limits parallel calls. Serialize only this provider;
+    # video jobs continue independently and wait their turn for a fresh image.
+    with _POLLINATIONS_SEMAPHORE:
+        return _generate_pollinations_scene_image(
+            scene, output_path, channel, fresh=fresh,
+            attempts=attempts, landscape=landscape,
+        )
+
+
+def _generate_pollinations_scene_image(scene: Scene, output_path: Path, channel=None,
                                       fresh: bool = False, attempts: int = 5,
                                       landscape: bool = False) -> Path:
     if _is_genre(channel):
@@ -457,6 +678,7 @@ def generate_pollinations_scene_image(scene: Scene, output_path: Path, channel=N
     # stuck forever behind its provider marker.
     best_data: bytes | None = None
     last_error = "no attempts"
+    key = pollinations_api_key()
     for i in range(max(1, attempts)):
         seed = (base_seed + i * 97) % 1_000_000
         params = urllib.parse.urlencode(
@@ -464,36 +686,50 @@ def generate_pollinations_scene_image(scene: Scene, output_path: Path, channel=N
                 "width": "1920" if landscape else "1080",
                 "height": "1080" if landscape else "1920",
                 "seed": str(seed),
-                "model": "flux",
+                "model": "zimage" if key else "flux",
                 "enhance": "true",
                 "nologo": "true",
                 "safe": "true",
             }
         )
-        url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?{params}"
-        request = urllib.request.Request(url, headers={"User-Agent": "KidsLearningBot/1.0"})
+        base_url = "https://gen.pollinations.ai/image" if key else "https://image.pollinations.ai/prompt"
+        url = f"{base_url}/{encoded_prompt}?{params}"
+        headers = {"User-Agent": "KidsLearningBot/1.0"}
+        if key:
+            headers["Authorization"] = f"Bearer {key}"
+        request = urllib.request.Request(url, headers=headers)
         try:
             with urllib.request.urlopen(request, timeout=90) as response:
                 data = response.read()
                 content_type = response.headers.get("Content-Type", "")
-        except Exception as exc:  # network hiccup — try the next seed
+        except urllib.error.HTTPError as exc:
+            last_error = f"HTTP {exc.code}"
+            if exc.code in (429, 503) and i + 1 < max(1, attempts):
+                retry_after = exc.headers.get("Retry-After", "") if exc.headers else ""
+                try:
+                    wait_seconds = float(retry_after)
+                except (TypeError, ValueError):
+                    wait_seconds = 3 * (2 ** i)
+                time.sleep(max(1, min(wait_seconds, 20)))
+            continue
+        except Exception as exc:  # network hiccup - try the next seed
             last_error = str(exc)
+            if i + 1 < max(1, attempts):
+                time.sleep(min(2 ** i, 8))
             continue
         if "image" not in content_type.lower() or len(data) < 20_000:
             last_error = f"invalid image (type={content_type}, {len(data)}B)"
             continue
+        if not _usable_pollinations_image(data, landscape):
+            dimensions = _encoded_image_dimensions(data)
+            last_error = f"image quality too low ({len(data)}B, dimensions={dimensions})"
+            continue
         if best_data is None or len(data) > len(best_data):
             best_data = data
-        if len(data) >= MIN_GOOD_IMAGE_BYTES:
-            break  # good enough — stop early
+        break
 
     if best_data is None:
         raise RuntimeError(f"Pollinations did not return a valid image. {last_error}")
-    if len(best_data) < MIN_GOOD_IMAGE_BYTES:
-        raise RuntimeError(
-            f"Pollinations images were below the quality threshold "
-            f"({len(best_data)}B < {MIN_GOOD_IMAGE_BYTES}B)."
-        )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_bytes(best_data)
     _write_provider_marker(output_path, "pollinations")
@@ -501,43 +737,39 @@ def generate_pollinations_scene_image(scene: Scene, output_path: Path, channel=N
 
 
 def _generate_best_available_scene_image(scene: Scene, output_path: Path, channel=None) -> Path:
+    """Prefer free generation, then paid OpenAI, then free stock-photo sources."""
     errors: list[str] = []
-    genre = _is_genre(channel)
-    # Genre channels use free Pollinations first (no OpenAI cost, correct style).
-    if genre and pollinations_image_ready():
-        try:
-            return generate_pollinations_scene_image(scene, output_path, channel)
-        except Exception as exc:
-            errors.append(f"Pollinations: {exc}")
-    if openverse_image_ready():
-        try:
-            return generate_openverse_scene_image(scene, output_path, channel)
-        except Exception as exc:
-            errors.append(f"Openverse: {exc}")
-    if wikimedia_image_ready():
-        try:
-            return generate_wikimedia_scene_image(scene, output_path, channel)
-        except Exception as exc:
-            errors.append(f"Wikimedia: {exc}")
-    if image_api_ready():
+    stock_allowed = _stock_fallback_allowed(scene, channel)
+    if image_api_ready() and _provider_available("openai"):
         try:
             return generate_openai_scene_image(scene, output_path, channel)
         except Exception as exc:
             errors.append(f"OpenAI: {exc}")
-    if pollinations_image_ready() and not genre:
+            _pause_provider("openai")
+    if pollinations_image_ready() and _provider_available("pollinations"):
         try:
             return generate_pollinations_scene_image(scene, output_path, channel)
         except Exception as exc:
             errors.append(f"Pollinations: {exc}")
-    if google_image_ready():
+            _pause_provider("pollinations", seconds=90)
+    if stock_allowed and openverse_image_ready():
+        try:
+            return generate_openverse_scene_image(scene, output_path, channel)
+        except Exception as exc:
+            errors.append(f"Openverse: {exc}")
+    if stock_allowed and wikimedia_image_ready():
+        try:
+            return generate_wikimedia_scene_image(scene, output_path, channel)
+        except Exception as exc:
+            errors.append(f"Wikimedia: {exc}")
+    if google_image_ready() and _is_genre(channel):
         try:
             return generate_google_scene_image(scene, output_path)
         except Exception as exc:
             errors.append(f"Google: {exc}")
     if errors:
         raise RuntimeError(" | ".join(errors))
-    raise RuntimeError("No AI/Google image provider configured.")
-
+    raise RuntimeError("No real-image provider is available.")
 
 def ensure_scene_asset(scene: Scene, channel=None) -> Path | None:
     output_path = scene_image_path(scene)
@@ -584,11 +816,6 @@ def ensure_scene_asset(scene: Scene, channel=None) -> Path | None:
             return generate_pollinations_scene_image(scene, output_path)
         except Exception:
             pass
-    if settings.auto_generate_missing_images and google_image_ready():
-        try:
-            return generate_google_scene_image(scene, output_path)
-        except Exception:
-            pass
     return None
 
 
@@ -598,10 +825,17 @@ def generate_fresh_image(
     channel=None,
     landscape: bool = False,
 ) -> Path:
-    """Generate a real image with provider fallbacks; never make a text card."""
+    """Generate a unique real image; paid OpenAI is the first fallback after free AI."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     errors: list[str] = []
-    if pollinations_image_ready():
+    stock_allowed = _stock_fallback_allowed(scene, channel)
+    if image_api_ready() and _provider_available("openai"):
+        try:
+            return generate_openai_scene_image(scene, output_path, channel, landscape=landscape)
+        except Exception as exc:
+            errors.append(f"OpenAI: {exc}")
+            _pause_provider("openai")
+    if pollinations_image_ready() and _provider_available("pollinations"):
         try:
             return generate_pollinations_scene_image(
                 scene, output_path, channel, fresh=True, attempts=5,
@@ -609,33 +843,28 @@ def generate_fresh_image(
             )
         except Exception as exc:
             errors.append(f"Pollinations: {exc}")
-    if openverse_image_ready():
+            _pause_provider("pollinations", seconds=90)
+    if stock_allowed and openverse_image_ready():
         try:
             return generate_openverse_scene_image(
                 scene, output_path, channel, landscape=landscape, attempts=6,
             )
         except Exception as exc:
             errors.append(f"Openverse: {exc}")
-    if wikimedia_image_ready():
+    if stock_allowed and wikimedia_image_ready():
         try:
             return generate_wikimedia_scene_image(
                 scene, output_path, channel, landscape=landscape, attempts=8,
             )
         except Exception as exc:
             errors.append(f"Wikimedia: {exc}")
-    if image_api_ready():
-        try:
-            return generate_openai_scene_image(scene, output_path, channel, landscape=landscape)
-        except Exception as exc:
-            errors.append(f"OpenAI: {exc}")
-    if google_image_ready():
+    if google_image_ready() and _is_genre(channel):
         try:
             return generate_google_scene_image(scene, output_path)
         except Exception as exc:
             errors.append(f"Google: {exc}")
     detail = " | ".join(errors) if errors else "No real-image provider is available."
     raise RuntimeError(f"Real image generation failed for '{scene.label}'. {detail}")
-
 
 def unique_missing_scenes(limit: int | None = None) -> list[Scene]:
     seen_paths: set[Path] = set()

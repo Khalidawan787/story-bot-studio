@@ -48,6 +48,11 @@ def main() -> None:
     gen.add_argument("--channel", required=True, help="Channel id (crime/love/horror/motivation)")
     gen.add_argument("--count", default="10", help="How many new topics to create.")
 
+    trends = sub.add_parser("trends", help="Show what is trending in the world right now.")
+    trends.add_argument("--limit", default="15", help="How many trends to show.")
+    trends.add_argument("--make", default="0", help="Also write this many trending scripts.")
+    trends.add_argument("--channel", default="trending", help="Trending channel id")
+
     auth = sub.add_parser("authorize", help="Authorize ONE channel's YouTube account (one-time).")
     auth.add_argument("--channel", required=True, help="Channel id to authorize")
 
@@ -61,6 +66,18 @@ def main() -> None:
     buf.add_argument("--count", default="30", help="How many videos to build into the buffer.")
     buf.add_argument("--channel", default="kids", help="Channel id")
     buf.add_argument("--upload", default="true", help="true or false")
+
+    fixthumbs = sub.add_parser("fix-thumbnails", help="Make fresh AI thumbnails for videos already on YouTube.")
+    fixthumbs.add_argument("--limit", default="20", help="Maximum videos to update.")
+    fixthumbs.add_argument("--channel", default="", help="Only this channel id (blank = all).")
+
+    enthumbs = sub.add_parser("enable-thumbnails", help="Turn custom thumbnails back on after verifying a channel.")
+    enthumbs.add_argument("--channel", required=True, help="Channel id")
+
+    prevthumb = sub.add_parser("preview-thumbnail", help="Build one thumbnail locally to look at it (no upload).")
+    prevthumb.add_argument("--topic", required=True, help="Topic key")
+    prevthumb.add_argument("--channel", default="kids", help="Channel id")
+    prevthumb.add_argument("--out", default="", help="Output .jpg path (default: runs/preview_thumbnail.jpg)")
 
     catchup = sub.add_parser("catch-up-daily", help="Create today's missing daily videos after schedule time.")
     catchup.add_argument("--target", default="2", help="Daily target video count.")
@@ -107,6 +124,20 @@ def main() -> None:
         for k in keys:
             print(f"  - {k}")
         return
+    elif args.command == "trends":
+        from .trending import fetch_world_trends, generate_trending_topics
+        for rank, trend in enumerate(fetch_world_trends(limit=max(1, int(args.limit))), start=1):
+            sources = ", ".join(sorted(trend.sources))
+            print(f"{rank:2}. {trend.title}")
+            print(f"    score {trend.score:.1f} | sources: {sources}")
+        wanted = max(0, int(args.make))
+        if wanted:
+            channel = get_channel(args.channel)
+            keys = generate_trending_topics(channel, count=wanted, scenes=8)
+            print(f"\n[{channel.id}] wrote {len(keys)} trending script(s):")
+            for k in keys:
+                print(f"  - {k}")
+        return
     elif args.command == "authorize":
         from src.youtube_upload import _youtube as _get_service
         channel = get_channel(args.channel)
@@ -129,6 +160,30 @@ def main() -> None:
     elif args.command == "retry-uploads":
         for message in retry_pending_uploads(limit=max(1, int(args.limit))):
             print(message)
+        return
+    elif args.command == "fix-thumbnails":
+        from .pending_uploads import refresh_thumbnails
+        for message in refresh_thumbnails(
+            limit=max(1, int(args.limit)), channel_id=args.channel or None,
+        ):
+            print(message)
+        return
+    elif args.command == "enable-thumbnails":
+        from .pending_uploads import enable_thumbnail_upload
+        channel = get_channel(args.channel)
+        enable_thumbnail_upload(channel.id)
+        print(f"Custom thumbnails are enabled again for [{channel.id}] {channel.name}.")
+        print("If YouTube still refuses, verify that channel at https://youtube.com/verify first.")
+        return
+    elif args.command == "preview-thumbnail":
+        from pathlib import Path as _Path
+        from .thumbnails import create_thumbnail
+        from .config import settings as _settings
+        channel = get_channel(args.channel)
+        lesson = load_lesson_for(channel, args.topic)
+        out = _Path(args.out) if args.out else _settings.runs_dir / "preview_thumbnail.jpg"
+        path = create_thumbnail(lesson, None, out, channel)
+        print(f"Thumbnail: {path}")
         return
     elif args.command == "upgrade-images":
         from .image_assets import upgrade_low_quality_assets

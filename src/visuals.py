@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+import random
 import subprocess
 import time
 from pathlib import Path
@@ -177,35 +179,98 @@ def create_emergency_scene_image(
     landscape: bool = False,
     variant: int = 1,
 ) -> Path:
-    """Guaranteed unique, text-free local illustration when all online sources fail."""
+    """Create a unique text-free scenic illustration when every online source fails."""
     width, height = (1920, 1080) if landscape else (1080, 1920)
     genre = getattr(channel, "genre", "kids") if channel is not None else "kids"
     palettes = {
-        "kids": [("0x51cf66", "0x74c0fc", "0xffd43b"), ("0xff8787", "0x4dabf7", "0xffd43b")],
-        "crime": [("0x101828", "0x334155", "0xb45309"), ("0x111827", "0x374151", "0x991b1b")],
-        "horror": [("0x09090b", "0x27272a", "0x7f1d1d"), ("0x18181b", "0x3f3f46", "0x581c87")],
-        "love": [("0x4c1d95", "0xbe185d", "0xfda4af"), ("0x831843", "0xdb2777", "0xfbcfe8")],
-        "motivation": [("0x1e3a8a", "0x0369a1", "0xf59e0b"), ("0x064e3b", "0x0f766e", "0xfbbf24")],
+        "kids": ((91, 192, 235), (244, 222, 126), (70, 166, 88), (255, 196, 61)),
+        "crime": ((30, 48, 75), (105, 82, 83), (20, 27, 39), (234, 179, 86)),
+        "horror": ((35, 37, 63), (92, 70, 91), (20, 25, 34), (196, 203, 222)),
+        "love": ((111, 76, 145), (245, 154, 154), (96, 57, 91), (255, 215, 153)),
+        "motivation": ((48, 128, 178), (244, 185, 96), (43, 94, 83), (255, 225, 128)),
+        "trending": ((25, 42, 66), (58, 96, 140), (16, 24, 38), (228, 106, 78)),
     }
-    options = palettes.get(genre, palettes["kids"])
-    seed = sum(ord(char) for char in scene.label) + time.time_ns() + variant * 7919
-    bg, mid, accent = options[seed % len(options)]
-    shift = int(seed % max(60, width // 5))
-    vf = ",".join([
-        f"drawbox=x=0:y=0:w={width}:h={height}:color={bg}:t=fill",
-        f"drawbox=x={width//10 + shift}:y={height//8}:w={width*7//10}:h={height*3//4}:color={mid}@0.72:t=fill",
-        f"drawbox=x={width//5}:y={height//4 + shift//3}:w={width*3//5}:h={height//3}:color={accent}@0.48:t=fill",
-        f"drawbox=x={width//3}:y={height//6}:w={width//3}:h={height*2//3}:color=white@0.08:t=fill",
-        "noise=alls=7:allf=t+u",
-        "vignette=0.45",
-    ])
+    top, bottom, foreground, accent = palettes.get(genre, palettes["kids"])
+    seed = sum(ord(char) for char in (scene.label + scene.image_prompt)) + time.time_ns() + variant * 7919
+    rng = random.Random(seed)
+    pixels = bytearray(width * height * 3)
+
+    def hline(y: int, x1: int, x2: int, color: tuple[int, int, int]) -> None:
+        if y < 0 or y >= height:
+            return
+        left, right = max(0, min(x1, x2)), min(width, max(x1, x2))
+        if right <= left:
+            return
+        start = (y * width + left) * 3
+        pixels[start:start + (right - left) * 3] = bytes(color) * (right - left)
+
+    for y in range(height):
+        ratio = y / max(1, height - 1)
+        color = tuple(int(top[i] * (1 - ratio) + bottom[i] * ratio) for i in range(3))
+        hline(y, 0, width, color)
+
+    def ellipse(cx: int, cy: int, rx: int, ry: int, color: tuple[int, int, int]) -> None:
+        for yy in range(max(0, cy - ry), min(height, cy + ry + 1)):
+            dy = (yy - cy) / max(1, ry)
+            dx = int(rx * math.sqrt(max(0.0, 1.0 - dy * dy)))
+            hline(yy, cx - dx, cx + dx + 1, color)
+
+    def triangle(cx: int, apex: int, half_base: int, base: int, color: tuple[int, int, int]) -> None:
+        span = max(1, base - apex)
+        for yy in range(max(0, apex), min(height, base)):
+            half = int(half_base * ((yy - apex) / span))
+            hline(yy, cx - half, cx + half + 1, color)
+
+    def rect(x1: int, y1: int, x2: int, y2: int, color: tuple[int, int, int]) -> None:
+        for yy in range(max(0, y1), min(height, y2)):
+            hline(yy, x1, x2, color)
+
+    celestial_y = height // 5
+    ellipse(width * 4 // 5, celestial_y, width // 12, width // 12, accent)
+    for _ in range(28 if genre in {"crime", "horror"} else 10):
+        x, y = rng.randrange(width), rng.randrange(max(1, height // 2))
+        radius = rng.randrange(2, max(3, width // 180))
+        ellipse(x, y, radius, radius, (235, 235, 220))
+
+    horizon = height * 3 // 5
+    if genre in {"crime", "horror"}:
+        for x in range(-width // 10, width, width // 8):
+            building_h = rng.randrange(height // 8, height // 3)
+            rect(x, horizon - building_h, x + width // 10, horizon, foreground)
+            for wy in range(horizon - building_h + 30, horizon - 20, max(35, height // 20)):
+                for wx in range(x + 18, x + width // 10 - 12, max(28, width // 35)):
+                    if rng.random() > 0.45:
+                        rect(wx, wy, wx + max(5, width // 120), wy + max(8, height // 90), accent)
+        triangle(width // 2, horizon, width // 5, height, (52, 55, 65))
+        for _ in range(7):
+            tx = rng.randrange(width)
+            triangle(tx, horizon - rng.randrange(height // 10, height // 4), width // 18, horizon, (15, 35, 32))
+    else:
+        ellipse(width // 4, horizon + height // 5, width * 3 // 5, height // 3, foreground)
+        ellipse(width * 4 // 5, horizon + height // 4, width * 3 // 5, height // 3, tuple(min(255, c + 24) for c in foreground))
+        for x in (width // 5, width // 2, width * 4 // 5):
+            triangle(x, horizon - rng.randrange(height // 7, height // 4), width // 5, horizon + height // 12, (76, 112, 126))
+        for _ in range(4):
+            cx, cy = rng.randrange(width // 8, width * 7 // 8), rng.randrange(height // 9, height // 3)
+            ellipse(cx, cy, width // 16, height // 45, (245, 246, 240))
+            ellipse(cx + width // 18, cy, width // 18, height // 40, (245, 246, 240))
+        if genre == "kids":
+            for _ in range(5):
+                bx, by = rng.randrange(width // 8, width * 7 // 8), rng.randrange(height // 3, horizon)
+                ellipse(bx, by, width // 35, height // 35, rng.choice([(255, 105, 120), (255, 205, 70), (80, 170, 245)]))
+                for yy in range(by + height // 35, min(height, by + height // 10)):
+                    hline(yy, bx, bx + 2, (80, 80, 80))
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    command = [
-        ffmpeg_bin(), "-y", "-f", "lavfi", "-i",
-        f"color=c=black:s={width}x{height}:d=1",
-        "-frames:v", "1", "-update", "1", "-vf", vf, str(output_path),
-    ]
-    subprocess.run(command, check=True, capture_output=True, text=True)
+    ppm_path = output_path.with_suffix(".ppm")
+    ppm_path.write_bytes(f"P6\n{width} {height}\n255\n".encode("ascii") + pixels)
+    try:
+        subprocess.run(
+            [ffmpeg_bin(), "-y", "-i", str(ppm_path), "-frames:v", "1", str(output_path)],
+            check=True, capture_output=True, text=True,
+        )
+    finally:
+        ppm_path.unlink(missing_ok=True)
     return output_path
 
 def resolve_scene_image(
@@ -242,71 +307,21 @@ def resolve_scene_image(
                 extra.unlink(missing_ok=True)
         except Exception as exc:
             errors.append(f"online providers: {exc}")
-            break  # each provider already retried; continue immediately with local art
+            break  # every configured real-image provider has already been tried
 
-    for variant in range(1, 5):
-        emergency = run_dir / "emergency" / f"{stem}_{time.time_ns()}_{variant}.jpg"
-        try:
-            create_emergency_scene_image(
-                scene, emergency, channel, landscape=landscape, variant=variant,
-            )
-            if claim_unique_image(emergency, channel_id, scene.label):
-                return emergency
-            emergency.unlink(missing_ok=True)
-        except Exception as exc:
-            errors.append(f"emergency {variant}: {exc}")
-
+    # Never substitute cards, geometric art, or placeholders for a real image.
+    # Keeping the failed render out of the upload queue is safer than publishing
+    # a visibly broken video.
     detail = " | ".join(errors) if errors else "No usable image was found."
     raise RuntimeError(
-        f"Unable to create any unique image for scene '{scene.label}'. {detail}"
+        f"Real image unavailable for scene '{scene.label}'. Video stopped to prevent "
+        f"placeholder artwork from being published. {detail}"
     )
 
 
-def create_thumbnail(lesson: Lesson, image_path: Path | None, output_path: Path, channel=None) -> Path:
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    font = font_path()
-    font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
-    is_genre = channel is not None and not getattr(channel, "builtin", False)
-    top_text = channel.name.upper() if is_genre else "KIDS LEARNING"
-    title_file = _drawtext_file(output_path.with_suffix(".title.txt"), lesson.title.upper())
-    top_file = _drawtext_file(output_path.with_suffix(".channel.txt"), top_text)
-    subtitle_file = _drawtext_file(output_path.with_suffix(".subtitle.txt"), "Fun learning for kids")
-    labels_file = _drawtext_file(
-        output_path.with_suffix(".labels.txt"),
-        "  -  ".join(scene.label for scene in lesson.scenes[:4]),
-    )
+def create_thumbnail(lesson: Lesson, image_path: Path | None, output_path: Path,
+                     channel=None, content_type: str = "short") -> Path:
+    """Kept for callers that already import it; the real work lives in thumbnails.py."""
+    from .thumbnails import create_thumbnail as build_thumbnail
 
-    if image_path and image_path.exists():
-        input_args = ["-loop", "1", "-i", str(image_path)]
-        vf = (
-            "scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,"
-            "eq=saturation=1.12:contrast=1.05,"
-            "drawbox=x=0:y=0:w=1280:h=720:color=black@0.18:t=fill,"
-            "drawbox=x=46:y=44:w=520:h=62:color=0xffd43b@0.95:t=fill,"
-            f"drawtext=textfile='{top_file}'{font_arg}:fontsize=34:fontcolor=0x202020:x=74:y=58,"
-            "drawbox=x=42:y=438:w=790:h=210:color=black@0.48:t=fill,"
-            f"drawtext=textfile='{title_file}'{font_arg}:fontsize=74:fontcolor=white:borderw=4:bordercolor=black:x=70:y=468,"
-            f"drawtext=textfile='{labels_file}'{font_arg}:fontsize=44:fontcolor=0xffd43b:borderw=3:bordercolor=black:x=76:y=572"
-        )
-    else:
-        input_args = ["-f", "lavfi", "-i", "color=c=0x45aaf2:s=1280x720:d=1"]
-        vf = (
-            "drawbox=x=42:y=438:w=790:h=210:color=black@0.38:t=fill,"
-            f"drawtext=textfile='{title_file}'{font_arg}:fontsize=80:fontcolor=white:x=(w-text_w)/2:y=270,"
-            f"drawtext=textfile='{subtitle_file}'{font_arg}:fontsize=42:fontcolor=white:x=(w-text_w)/2:y=390"
-        )
-
-    command = [
-        ffmpeg_bin(),
-        "-y",
-        *input_args,
-        "-frames:v",
-        "1",
-        "-update",
-        "1",
-        "-vf",
-        vf,
-        str(output_path),
-    ]
-    subprocess.run(command, check=True)
-    return output_path
+    return build_thumbnail(lesson, image_path, output_path, channel, content_type)

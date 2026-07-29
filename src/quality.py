@@ -46,7 +46,7 @@ def inspect_video(video_path: Path, content_type: str) -> dict[str, object]:
     try:
         black = subprocess.run(
             [ffmpeg_bin(), "-v", "info", "-i", str(video_path), "-vf",
-             "scale=320:-2,blackdetect=d=3:pix_th=0.98", "-an", "-f", "null", os.devnull],
+             "scale=320:-2,blackdetect=d=3:pix_th=0.10:pic_th=0.98", "-an", "-f", "null", os.devnull],
             capture_output=True, text=True, timeout=180,
         )
         black_seconds = sum(float(value) for value in re.findall(r"black_duration:([0-9.]+)", black.stderr))

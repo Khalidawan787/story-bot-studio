@@ -51,7 +51,7 @@ def _topics_generated_today(channel_id: str) -> set[str]:
     today = datetime.now().date()
     conn = sqlite3.connect(settings.db_path)
     try:
-        rows = conn.execute("SELECT topic, created_at FROM videos WHERE channel = ?", (channel_id,)).fetchall()
+        rows = conn.execute("SELECT topic, created_at FROM videos WHERE channel = ? AND status NOT IN ('quality_failed', 'duplicate_blocked')", (channel_id,)).fetchall()
     except sqlite3.OperationalError:
         rows = []
     finally:
@@ -67,13 +67,35 @@ def _topics_generated_today(channel_id: str) -> set[str]:
     return topics
 
 
+def short_videos_generated_today_count(channel_id: str = "kids") -> int:
+    if not settings.db_path.exists():
+        return 0
+    today = datetime.now().date()
+    conn = sqlite3.connect(settings.db_path)
+    try:
+        rows = conn.execute(
+            """SELECT created_at FROM videos
+               WHERE channel = ? AND COALESCE(content_type, 'short') = 'short'
+                 AND status NOT IN ('quality_failed', 'duplicate_blocked')""",
+            (channel_id,),
+        ).fetchall()
+    except sqlite3.OperationalError:
+        rows = []
+    finally:
+        conn.close()
+    return sum(
+        1 for (created_at,) in rows
+        if created_at and datetime.fromisoformat(created_at).date() == today
+    )
+
+
 def videos_generated_today_count(channel_id: str = "kids") -> int:
     if not settings.db_path.exists():
         return 0
     today = datetime.now().date()
     conn = sqlite3.connect(settings.db_path)
     try:
-        rows = conn.execute("SELECT created_at FROM videos WHERE channel = ?", (channel_id,)).fetchall()
+        rows = conn.execute("SELECT created_at FROM videos WHERE channel = ? AND status NOT IN ('quality_failed', 'duplicate_blocked')", (channel_id,)).fetchall()
     except sqlite3.OperationalError:
         rows = []
     finally:
@@ -129,49 +151,119 @@ def _analytics_category_scores(channel: Channel, lessons: dict) -> dict[str, flo
     return scores
 
 
+def _lesson_signature(raw: dict) -> set[str]:
+    """Semantic scene signature used to reject near-duplicate lesson variants."""
+    signature: set[str] = set()
+    for scene in raw.get("scenes", []):
+        value = str(scene.get("label") or scene.get("line") or "").lower()
+        value = "".join(ch if ch.isalnum() else " " for ch in value)
+        normalized = " ".join(value.split())
+        if normalized:
+            signature.add(normalized)
+    return signature
+
+
+def _too_similar_signature(left: set[str], right: set[str]) -> bool:
+    if not left or not right:
+        return False
+    return len(left & right) / min(len(left), len(right)) >= 0.66
+
 def select_daily_topics(count: int = 2, channel: Channel | None = None) -> list[str]:
     channel = _resolve(channel)
     lessons = load_topics_for(channel)
     history = _topic_history(channel.id)
     today_topics = _topics_generated_today(channel.id)
+
+    # Genre channels start with a small seed bank. Replenish it before selection
+    # and never auto-publish a genre topic that already exists in video history.
+    if not channel.builtin:
+        unused = [
+            key for key in lessons
+            if not key.startswith("long_") and key not in history and key not in today_topics
+        ]
+        shortage = max(0, count - len(unused))
+        if shortage:
+            from .trending import is_trending_channel
+            try:
+                if is_trending_channel(channel):
+                    # This channel follows the world instead of inventing topics:
+                    # today's live trends become today's videos. If every trend
+                    # source is unreachable, fall through to the normal generator
+                    # so the daily run still produces something.
+                    from .trending import generate_trending_topics
+                    if not generate_trending_topics(channel, count=shortage, scenes=8):
+                        from .genre_topics import generate_genre_topics
+                        generate_genre_topics(channel, count=shortage, scenes=8)
+                else:
+                    from .genre_topics import generate_genre_topics
+                    generate_genre_topics(channel, count=shortage, scenes=8)
+                lessons = load_topics_for(channel)
+            except Exception as exc:
+                print(f"[daily_runner] {channel.id}: could not replenish unique topics ({exc})")
+
     category_scores = _analytics_category_scores(channel, lessons)
+    used_signatures = [
+        _lesson_signature(lessons[key])
+        for key in history
+        if key in lessons and not key.startswith("long_")
+    ]
 
     candidates = [
         (key, raw.get("category", "General"))
         for key, raw in lessons.items()
         if key not in today_topics and not key.startswith("long_")
+        and (channel.builtin or key not in history)
+        and not any(_too_similar_signature(_lesson_signature(raw), sig) for sig in used_signatures)
     ]
-    candidates.sort(
-        key=lambda item: (
-            history.get(item[0], TopicHistory(0, "")).count,
-            -category_scores.get(item[1], 0.0),
-            history.get(item[0], TopicHistory(0, "")).last_created_at,
-            item[0],
+    from .trending import is_trending_channel
+
+    if is_trending_channel(channel):
+        # News goes stale fast: publish the freshest scripts (the ones written
+        # last, which are today's trends) before any leftover from earlier days.
+        order = {key: index for index, key in enumerate(lessons)}
+        candidates.sort(key=lambda item: -order.get(item[0], 0))
+    else:
+        candidates.sort(
+            key=lambda item: (
+                history.get(item[0], TopicHistory(0, "")).count,
+                -category_scores.get(item[1], 0.0),
+                history.get(item[0], TopicHistory(0, "")).last_created_at,
+                item[0],
+            )
         )
-    )
 
     selected: list[str] = []
     selected_categories: set[str] = set()
+    selected_signatures: list[set[str]] = []
 
     for topic_key, category in candidates:
         if len(selected) >= count:
             break
         if category in selected_categories:
             continue
+        signature = _lesson_signature(lessons[topic_key])
+        if any(_too_similar_signature(signature, other) for other in selected_signatures):
+            continue
         selected.append(topic_key)
         selected_categories.add(category)
+        selected_signatures.append(signature)
 
     for topic_key, _category in candidates:
         if len(selected) >= count:
             break
         if topic_key not in selected:
+            signature = _lesson_signature(lessons[topic_key])
+            if any(_too_similar_signature(signature, other) for other in selected_signatures):
+                continue
             selected.append(topic_key)
+            selected_signatures.append(signature)
 
     return selected[:count]
 
 
 def _run_short_batch(
     count: int, upload: bool, channel: Channel, acquire_lock: bool,
+    queue: bool | None = None, is_daily: bool = False,
 ) -> list[tuple[str, str]]:
     lock_name = f"generation:{channel.id}"
     locked = False
@@ -183,7 +275,7 @@ def _run_short_batch(
         results: list[tuple[str, str]] = []
         for topic_key in select_daily_topics(count, channel):
             try:
-                assets = run_pipeline(load_lesson_for(channel, topic_key), upload=upload, channel=channel)
+                assets = run_pipeline(load_lesson_for(channel, topic_key), upload=upload, channel=channel, queue=queue, is_daily=is_daily)
                 results.append((topic_key, f"OK {assets.job_id}"))
             except Exception as exc:
                 results.append((topic_key, f"FAILED {exc}"))
@@ -195,10 +287,10 @@ def _run_short_batch(
 
 def run_daily_batch(
     count: int = 2, upload: bool = True, channel: Channel | None = None,
-    acquire_lock: bool = True,
+    acquire_lock: bool = True, queue: bool | None = None,
 ) -> list[tuple[str, str]]:
     channel = _resolve(channel)
-    return _run_short_batch(count, upload, channel, acquire_lock)
+    return _run_short_batch(count, upload, channel, acquire_lock, queue=queue, is_daily=True)
 
 
 def run_buffer_batch(
@@ -210,15 +302,16 @@ def run_buffer_batch(
     return _run_short_batch(count, upload, channel, acquire_lock)
 
 
-def run_daily_catchup(target_count: int = 2, upload: bool = True, start_hour: int = 8,
-                      channel: Channel | None = None) -> list[tuple[str, str]]:
+def run_daily_catchup(target_count: int = 3, upload: bool = True, start_hour: int = 8,
+                      channel: Channel | None = None,
+                      queue: bool | None = None) -> list[tuple[str, str]]:
     channel = _resolve(channel)
     if datetime.now().hour < start_hour:
         return [("catchup", f"SKIPPED before {start_hour:02}:00 local time")]
-    missing = max(0, target_count - videos_generated_today_count(channel.id))
+    missing = max(0, target_count - short_videos_generated_today_count(channel.id))
     if missing == 0:
         return [("catchup", "OK daily target already reached")]
-    return run_daily_batch(count=missing, upload=upload, channel=channel)
+    return run_daily_batch(count=missing, upload=upload, channel=channel, queue=queue)
 
 def long_videos_generated_today_count(channel_id: str) -> int:
     """Count today's completed/attempted long-form jobs independently of Shorts."""
@@ -228,7 +321,7 @@ def long_videos_generated_today_count(channel_id: str) -> int:
     conn = sqlite3.connect(settings.db_path)
     try:
         rows = conn.execute(
-            "SELECT created_at FROM videos WHERE channel = ? AND content_type = 'long'",
+            "SELECT created_at FROM videos WHERE channel = ? AND content_type = 'long' AND status NOT IN ('quality_failed', 'duplicate_blocked')",
             (channel_id,),
         ).fetchall()
     except sqlite3.OperationalError:
@@ -243,6 +336,16 @@ def long_videos_generated_today_count(channel_id: str) -> int:
 
 def _automatic_long_idea(channel: Channel) -> str:
     today_label = datetime.now().strftime("%B %d, %Y")
+    from .trending import is_trending_channel, trending_long_idea
+
+    if is_trending_channel(channel):
+        try:
+            idea = trending_long_idea(channel)
+        except Exception as exc:
+            print(f"[daily_runner] {channel.id}: trend lookup failed ({exc})")
+            idea = None
+        if idea:
+            return idea
     topics = load_topics_for(channel)
     candidates = [
         (key, raw) for key, raw in topics.items()
@@ -267,7 +370,7 @@ def run_long_video(
     prompt: str | None = None,
     upload: bool = True,
     scenes: int = 20,
-    queue: bool | None = None,
+    queue: bool | None = None, is_daily: bool = False,
 ):
     """Create one new ~5-minute 16:9 video for a selected channel."""
     from .genre_topics import generate_from_prompt
@@ -278,7 +381,7 @@ def run_long_video(
     key = generate_from_prompt(channel, idea, scenes=scenes, long_form=True)
     assets = run_pipeline(
         load_lesson_for(channel, key), upload=upload, channel=channel,
-        content_type="long", queue=queue,
+        content_type="long", queue=queue, is_daily=is_daily,
     )
     return key, assets
 
@@ -330,7 +433,7 @@ def run_daily_long_all(upload: bool = True, scenes: int = 20) -> list[tuple[str,
             continue
         try:
             key, assets = run_long_video(
-                channel, upload=upload, scenes=scenes,
+                channel, upload=upload, scenes=scenes, queue=False, is_daily=True,
             )
             results.append((channel.id, f"OK {key} {assets.job_id}"))
         except Exception as exc:

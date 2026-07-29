@@ -3,6 +3,7 @@ from __future__ import annotations
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Callable
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -63,7 +64,11 @@ def set_thumbnail(video_id: str, thumbnail_path: Path, attempts: int = 4,
             # Daily quota errors cannot recover seconds later. The queue retries later.
             if isinstance(exc, HttpError):
                 reason = str(exc).lower()
-                if "quotaexceeded" in reason or ("exceeded your" in reason and "quota" in reason):
+                if (
+                    "quotaexceeded" in reason
+                    or ("exceeded your" in reason and "quota" in reason)
+                    or "doesn't have permissions to upload and set custom video thumbnails" in reason
+                ):
                     break
             if attempt < attempts:
                 time.sleep(8 * attempt)
@@ -71,7 +76,9 @@ def set_thumbnail(video_id: str, thumbnail_path: Path, attempts: int = 4,
 
 
 def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, object],
-                 channel=None, publish_at: datetime | None = None) -> str:
+                 channel=None, publish_at: datetime | None = None,
+                 progress_callback: Callable[[int], None] | None = None,
+                 upload_thumbnail: bool = True) -> str:
     # Resolve per-channel credentials + settings; default = original kids behavior.
     if channel is not None:
         client_secret_file = channel.client_secret_path
@@ -108,16 +115,25 @@ def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, obj
             },
             "status": status_body,
         },
-        media_body=MediaFileUpload(str(video_path), chunksize=-1, resumable=True),
+        media_body=MediaFileUpload(str(video_path), chunksize=8 * 1024 * 1024, resumable=True),
     )
-    response = request.execute()
+    response = None
+    if progress_callback:
+        progress_callback(0)
+    while response is None:
+        status, response = request.next_chunk()
+        if status is not None and progress_callback:
+            progress_callback(max(1, min(99, int(status.progress() * 100))))
+    if progress_callback:
+        progress_callback(100)
     video_id = response["id"]
     video_url = f"https://www.youtube.com/watch?v={video_id}"
 
-    try:
-        set_thumbnail(video_id, thumbnail_path, client_secret_file=client_secret_file, token_file=token_file)
-    except Exception as exc:
-        raise ThumbnailUploadError(video_url, str(exc)) from exc
+    if upload_thumbnail:
+        try:
+            set_thumbnail(video_id, thumbnail_path, client_secret_file=client_secret_file, token_file=token_file)
+        except Exception as exc:
+            raise ThumbnailUploadError(video_url, str(exc)) from exc
     return video_url
 
 

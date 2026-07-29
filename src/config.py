@@ -38,6 +38,19 @@ class Settings:
     video_fps: int = int(os.getenv("VIDEO_FPS", "30"))
     enable_motion: bool = os.getenv("ENABLE_MOTION", "true").lower() == "true"
     enable_fades: bool = os.getenv("ENABLE_FADES", "true").lower() == "true"
+    # Render quality preset: fast | balanced | best. Controls the x264 quality,
+    # how much the camera-motion pass is supersampled (this is what removes the
+    # jittery, cheap-looking drift), and the image polish pass. "balanced" looks
+    # clearly better than the old output and still renders on a normal PC.
+    video_quality: str = os.getenv("VIDEO_QUALITY", "balanced").lower()
+    # Smooth crossfades between scenes instead of hard cuts. Audio stays exactly
+    # in sync because each clip carries the transition as extra tail time.
+    enable_transitions: bool = os.getenv("ENABLE_TRANSITIONS", "true").lower() == "true"
+    transition_seconds: float = float(os.getenv("TRANSITION_SECONDS", "0.45"))
+    # Sharpen + vignette + gentle grade. Free image providers cap at about half
+    # of 1080p, so this pass is what stops the upscale from looking soft.
+    enable_image_polish: bool = os.getenv("ENABLE_IMAGE_POLISH", "true").lower() == "true"
+    audio_bitrate: str = os.getenv("AUDIO_BITRATE", "192k")
     edge_voice: str = os.getenv("EDGE_TTS_VOICE", "en-US-AriaNeural")
     edge_rate: str = os.getenv("EDGE_TTS_RATE", "+0%")
     edge_volume: str = os.getenv("EDGE_TTS_VOLUME", "+0%")
@@ -52,6 +65,10 @@ class Settings:
     # using Edge-TTS word timings. Falls back to the plain caption if timings are
     # unavailable, so rendering never breaks.
     enable_karaoke_captions: bool = os.getenv("ENABLE_KARAOKE_CAPTIONS", "true").lower() == "true"
+    # Burn the narration text into the picture. YouTube/Facebook also show their
+    # OWN automatic captions when the viewer has CC on, which makes the text look
+    # doubled. Set this to false to keep only the platform's caption track.
+    enable_burned_captions: bool = os.getenv("ENABLE_BURNED_CAPTIONS", "true").lower() == "true"
     enable_whisper: bool = os.getenv("ENABLE_WHISPER", "false").lower() == "true"
     whisper_model_size: str = os.getenv("WHISPER_MODEL_SIZE", "base")
     ai_provider: str = os.getenv("AI_PROVIDER", "none").lower()
@@ -63,10 +80,26 @@ class Settings:
     auto_replace_low_quality_images: bool = os.getenv("AUTO_REPLACE_LOW_QUALITY_IMAGES", "true").lower() == "true"
     low_quality_image_bytes: int = int(os.getenv("LOW_QUALITY_IMAGE_BYTES", "200000"))
     enable_pollinations_images: bool = os.getenv("ENABLE_POLLINATIONS_IMAGES", "true").lower() == "true"
+    pollinations_api_key: str = os.getenv("POLLINATIONS_API_KEY", "")
     openai_image_model: str = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1")
     openai_image_size: str = os.getenv("OPENAI_IMAGE_SIZE", "1024x1536")
     openai_image_quality: str = os.getenv("OPENAI_IMAGE_QUALITY", "medium")
     openai_image_daily_limit: int = int(os.getenv("OPENAI_IMAGE_DAILY_LIMIT", "25"))
+    # Thumbnails: a dedicated click-worthy 16:9 image per video instead of a
+    # cropped scene frame. openai = paid gpt-image (best), pollinations = free,
+    # scene = old behavior (reuse the first scene image). Any provider failure
+    # silently falls back to the next one, so a video is never blocked on it.
+    # auto = genre-aware order: real-world channels lead with free Pexels stock
+    # photos, the cartoon kids channel leads with generated art. Force one with
+    # pexels / openai / pollinations, or "scene" to reuse the first scene image.
+    enable_ai_thumbnails: bool = os.getenv("ENABLE_AI_THUMBNAILS", "true").lower() == "true"
+    thumbnail_provider: str = os.getenv("THUMBNAIL_PROVIDER", "auto").lower()
+    # Free, license-clear stock photos: 200 requests/hour, 20k/month, no cost.
+    # Get a key at https://www.pexels.com/api/
+    pexels_api_key: str = os.getenv("PEXELS_API_KEY", "")
+    openai_thumbnail_model: str = os.getenv("OPENAI_THUMBNAIL_MODEL", os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1"))
+    openai_thumbnail_quality: str = os.getenv("OPENAI_THUMBNAIL_QUALITY", "high")
+    thumbnail_daily_limit: int = int(os.getenv("THUMBNAIL_DAILY_LIMIT", "40"))
     google_image_api_key: str = os.getenv("GOOGLE_IMAGE_API_KEY", "")
     google_image_cx: str = os.getenv("GOOGLE_IMAGE_CX", "")
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
@@ -97,16 +130,20 @@ class Settings:
     # the clock. Empty = keep the simple interval spacing above.
     youtube_schedule_daily_slots: str = os.getenv("YOUTUBE_SCHEDULE_DAILY_SLOTS", "")
     # Safety cap: max NEW uploads per day across all channels, so the automatic
-    # queue/retry never blows YouTube's daily API quota (~6 uploads = 10k units).
+    # queue/retry stays within the configured shared app budget.
     # Extra videos stay in the dashboard and upload after the quota resets.
     # 0 = no cap. Only limits the unattended queue/retry, not a manual "upload now".
-    youtube_upload_daily_limit: int = int(os.getenv("YOUTUBE_UPLOAD_DAILY_LIMIT", "6"))
+    youtube_upload_daily_limit: int = int(os.getenv("YOUTUBE_UPLOAD_DAILY_LIMIT", "8"))
     # Storage: clean big intermediate render files, and optionally push finals to Drive.
     enable_run_cleanup: bool = os.getenv("ENABLE_RUN_CLEANUP", "true").lower() == "true"
     # Generate fresh images every render (don't reuse the same cached images).
     enable_fresh_images: bool = os.getenv("ENABLE_FRESH_IMAGES", "true").lower() == "true"
     enable_drive_storage: bool = os.getenv("ENABLE_DRIVE_STORAGE", "false").lower() == "true"
     drive_folder: str = os.getenv("DRIVE_FOLDER", "StoryBot Videos")
+    # Trending world-news channel: which countries' search trends to read.
+    # Comma-separated Google Trends geo codes; the world news + Reddit sources
+    # are always added on top. Blank-safe — a bad code just skips that source.
+    trending_geos: str = os.getenv("TRENDING_GEOS", "US,GB,IN,PK,AE")
     telegram_bot_token: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
     telegram_chat_id: str = os.getenv("TELEGRAM_CHAT_ID", "")
 

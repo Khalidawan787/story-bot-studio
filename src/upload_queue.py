@@ -66,10 +66,27 @@ def queue_snapshot(channel_id: str) -> dict[str, object]:
     }
 
 
+def expected_upload_times() -> dict[int, str]:
+    """Estimated local-queue upload time for every queued video, globally spaced."""
+    cursor = next_allowed_upload()
+    conn = sqlite3.connect(settings.db_path)
+    try:
+        rows = conn.execute(
+            """SELECT id FROM videos
+               WHERE status = 'queued_for_upload' AND hidden_at IS NULL
+               ORDER BY created_at ASC, id ASC"""
+        ).fetchall()
+    finally:
+        conn.close()
+    result: dict[int, str] = {}
+    for (video_id,) in rows:
+        result[int(video_id)] = cursor.isoformat()
+        cursor += _interval()
+    return result
+
+
 def due_video_id() -> int | None:
     if datetime.now(timezone.utc) < next_allowed_upload():
-        return None
-    if daily_upload_cap_reached():
         return None
     conn = sqlite3.connect(settings.db_path)
     conn.row_factory = sqlite3.Row
@@ -83,6 +100,8 @@ def due_video_id() -> int | None:
         conn.close()
     for row in rows:
         channel_id = str(row["channel"] or "kids")
+        if daily_upload_cap_reached(channel_id):
+            continue
         if not auto_upload_queue_enabled(channel_id):
             continue
         if active_upload_backoff(channel_id):

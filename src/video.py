@@ -60,6 +60,55 @@ def _dimensions(content_type: str) -> tuple[int, int]:
         return 1920, 1080
     return settings.video_width, settings.video_height
 
+
+# Render quality tiers. `supersample` is the multiplier applied to the working
+# canvas before the camera move: zoompan can only step whole pixels, so a bigger
+# canvas is what turns visible stair-stepping into smooth motion, and the final
+# downscale sharpens the (half-resolution) free-provider images on the way out.
+_QUALITY_PRESETS = {
+    "fast": {"crf": "22", "preset": "veryfast", "supersample": 1, "polish": False},
+    "balanced": {"crf": "19", "preset": "medium", "supersample": 2, "polish": True},
+    "best": {"crf": "17", "preset": "slow", "supersample": 2, "polish": True},
+}
+
+
+def _quality() -> dict:
+    return _QUALITY_PRESETS.get(settings.video_quality, _QUALITY_PRESETS["balanced"])
+
+
+def _video_encode_args() -> list[str]:
+    quality = _quality()
+    return [
+        "-c:v", "libx264",
+        "-crf", quality["crf"],
+        "-preset", quality["preset"],
+        "-profile:v", "high",
+        "-level", "4.2",
+        # Keyframe every second: YouTube's transcoder keeps more detail and
+        # seeking/looping in the Shorts player stays sharp.
+        "-g", str(settings.video_fps * 2),
+        "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
+    ]
+
+
+def _audio_encode_args() -> list[str]:
+    return ["-c:a", "aac", "-b:a", settings.audio_bitrate, "-ar", "48000"]
+
+
+def _polish_filters() -> list[str]:
+    """Sharpen and grade the frame after the camera move."""
+    if not (settings.enable_image_polish and _quality()["polish"]):
+        return ["eq=saturation=1.12:contrast=1.05"]
+    return [
+        # Recover perceived detail lost when a ~576px-wide source is scaled to 1080p.
+        "unsharp=5:5:0.9:5:5:0.3",
+        "eq=saturation=1.16:contrast=1.08:gamma=1.02",
+        # A soft vignette pulls the eye to the middle and hides upscale mush at
+        # the edges — the single cheapest "this looks produced" touch.
+        "vignette=angle=PI/6",
+    ]
+
 def _title_drawtext(title_file: Path, duration: float, content_type: str = "short") -> str:
     font = font_path()
     font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
@@ -89,18 +138,9 @@ def _line_drawtext(line_file: Path, duration: float, content_type: str = "short"
     )
 
 
-def _drawtext_filter(title_file: Path, line_file: Path, duration: float, content_type: str = "short") -> str:
-    # Clean captions using drawtext's OWN padded background box (auto-sized and
-    # centred) instead of muddy full-width grey bars. The caption sits in the
-    # lower-middle, clear of YouTube Shorts' bottom-left title and right-side
-    # action buttons.
-    return ",".join(
-        [
-            _title_drawtext(title_file, duration, content_type),
-            _line_drawtext(line_file, duration, content_type),
-        ]
-    )
-
+def _drawtext_filter(line_file: Path, duration: float, content_type: str = "short") -> str:
+    """Draw narration captions only; scene-title boards are intentionally disabled."""
+    return _line_drawtext(line_file, duration, content_type)
 
 def _ass_timestamp(seconds: float) -> str:
     seconds = max(0.0, seconds)
@@ -130,7 +170,9 @@ def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, o
         next_start = words[i + 1][1] if i + 1 < len(words) else min(duration, start + dur)
         hold = max(1, int(round((next_start - start) * 100)))
         safe = word.replace("{", "(").replace("}", ")").replace("\\", "")
-        parts.append(f"{{\\k{hold}}}{safe} ")
+        # \kf sweeps the highlight across the word instead of snapping it on,
+        # which reads as smooth motion rather than a blinking word.
+        parts.append(f"{{\\kf{hold}}}{safe} ")
     text = "".join(parts).rstrip()
 
     header = (
@@ -145,8 +187,10 @@ def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, o
         "BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, "
         "BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
         # PrimaryColour = sung (yellow), SecondaryColour = not yet sung (white).
-        f"Style: Kids,Arial,{44 if content_type == 'long' else 58},&H0000E5FF,&H00FFFFFF,&H00202020,&H64000000,"
-        f"-1,0,0,0,100,100,0,0,1,4,2,2,{160 if content_type == 'long' else 110},{160 if content_type == 'long' else 110},{100 if content_type == 'long' else 470},1\n\n"
+        # Heavier face, thicker outline and a real drop shadow: captions have to
+        # survive being watched on a phone over a busy photo.
+        f"Style: Kids,Arial Black,{48 if content_type == 'long' else 64},&H0000E5FF,&H00FFFFFF,&H00101010,&H96000000,"
+        f"-1,0,0,0,100,100,1,0,1,5,3,2,{160 if content_type == 'long' else 110},{160 if content_type == 'long' else 110},{100 if content_type == 'long' else 470},1\n\n"
         "[Events]\n"
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
     )
@@ -156,24 +200,41 @@ def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, o
     return out_path
 
 
-def _motion_filter(duration: float, scene: Scene | None = None, content_type: str = "short") -> str:
+def _motion_filter(
+    duration: float,
+    scene: Scene | None = None,
+    content_type: str = "short",
+    edge_fades: bool = True,
+) -> str:
     """Dynamic, per-scene camera motion (free): each scene gets a different
-    move — zoom in / zoom out / pan right / pan left / pan up — for variety."""
+    move — zoom in / zoom out / pan right / pan left / pan up — for variety.
+
+    `edge_fades` is turned off when the scenes are joined with crossfades, so a
+    clip does not dip to black right where the next one is already fading in.
+    """
     W, H = _dimensions(content_type)
     frames = max(1, int(duration * settings.video_fps))
+    scale = _quality()["supersample"]
 
     if not settings.enable_motion:
-        base = f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H}"
-        filters = [base, "eq=saturation=1.12:contrast=1.05"]
+        base = (
+            f"scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,"
+            f"crop={W}:{H}"
+        )
+        filters = [base, *_polish_filters()]
     else:
+        # Supersampled working canvas -> smooth (sub-pixel) camera motion.
+        work_w, work_h = (W + 160) * scale, (H + 280) * scale
         cover = (
-            f"scale={W + 160}:{H + 280}:force_original_aspect_ratio=increase,"
-            f"crop={W + 160}:{H + 280}"
+            f"scale={work_w}:{work_h}:force_original_aspect_ratio=increase:flags=lanczos,"
+            f"crop={work_w}:{work_h}"
         )
         presets = ["zoom_in", "zoom_out", "pan_right", "pan_left", "pan_up"]
         key = sum(ord(c) for c in (scene.label if scene else "scene"))
         motion = presets[key % len(presets)]
-        p = f"(on/{frames})"
+        # Ease in/out instead of a constant slide: a linear move reads as a
+        # slideshow, an eased one reads as a camera.
+        p = f"(1-cos(PI*min(1,on/{frames})))/2"
         cx, cy = "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"
         if motion == "zoom_in":
             z, x, y = f"1+0.16*{p}", cx, cy
@@ -189,31 +250,29 @@ def _motion_filter(duration: float, scene: Scene | None = None, content_type: st
             f"zoompan=z='{z}':x='{x}':y='{y}':"
             f"d={frames}:s={W}x{H}:fps={settings.video_fps}"
         )
-        filters = [cover, zoompan, "eq=saturation=1.14:contrast=1.06"]
+        filters = [cover, zoompan, *_polish_filters()]
 
-    if settings.enable_fades and duration > 1.0:
+    if edge_fades and settings.enable_fades and duration > 1.0:
         filters.append("fade=t=in:st=0:d=0.3")
         filters.append(f"fade=t=out:st={max(0.0, duration - 0.3):.2f}:d=0.3")
     return ",".join(filters)
 
 
-def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None = None, channel=None, marks: list | None = None, content_type: str = "short") -> Path:
+def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None = None, channel=None, marks: list | None = None, content_type: str = "short", edge_fades: bool = True) -> Path:
     image_path = resolve_scene_image(
         scene, run_dir, channel, require_real_image=True,
         landscape=content_type == "long",
     )
     if not image_path or not image_path.exists():
         raise RuntimeError(f"Scene image missing for {scene.label}")
-    title_file = run_dir / f"{output_path.stem}_title.txt"
     line_file = run_dir / f"{output_path.stem}_line.txt"
-    title_file.write_text(scene.label, encoding="utf-8")
     line_text = scene.line.split(". ", 1)[1] if ". " in scene.line else scene.line
     wrap_width = 64 if content_type == "long" else 32
     line_text = "\n".join(textwrap.wrap(line_text, width=wrap_width)) or line_text
     line_file.write_text(line_text, encoding="utf-8")
     if image_path:
         input_args = ["-loop", "1", "-i", str(image_path)]
-        base_filter = _motion_filter(duration, scene, content_type)
+        base_filter = _motion_filter(duration, scene, content_type, edge_fades=edge_fades)
     else:
         input_args = [
             "-f",
@@ -224,20 +283,27 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
         base_filter = "format=yuv420p"
 
     # Word-by-word karaoke caption when timings are available; otherwise the
-    # original static caption. The title (top) is always drawn with drawtext.
+    # original static caption. Scene-title boards are never drawn.
     caption_filter = None
-    if settings.enable_karaoke_captions and marks:
+    if not settings.enable_burned_captions:
+        # Only the platform's own caption track is shown, so the text never
+        # appears twice on screen.
+        caption_filter = ""
+    elif settings.enable_karaoke_captions and marks:
         ass_file = run_dir / f"{output_path.stem}_caption.ass"
         if _write_karaoke_ass(marks, duration, ass_file, content_type):
             ass_path = escape_filter_path(str(ass_file))
             fonts_dir = escape_filter_path("C:/Windows/Fonts")
-            caption_filter = f"{_title_drawtext(title_file, duration, content_type)},ass=filename='{ass_path}':fontsdir='{fonts_dir}'"
+            caption_filter = f"ass=filename='{ass_path}':fontsdir='{fonts_dir}'"
     if caption_filter is None:
-        caption_filter = _drawtext_filter(title_file, line_file, duration, content_type)
+        caption_filter = _drawtext_filter(line_file, duration, content_type)
 
-    vf = f"{base_filter},{caption_filter}"
+    vf = f"{base_filter},{caption_filter}" if caption_filter else base_filter
     command = [
         ffmpeg_bin(),
+        "-hide_banner",
+        "-loglevel",
+        "error",
         "-y",
         *input_args,
     ]
@@ -250,16 +316,81 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
         vf,
         "-r",
         str(settings.video_fps),
-        "-c:v",
-        "libx264",
-        "-pix_fmt",
-        "yuv420p",
+        *_video_encode_args(),
     ])
     if audio_path:
-        command.extend(["-c:a", "aac", "-shortest"])
+        command.extend([*_audio_encode_args(), "-shortest"])
     else:
         command.append("-an")
     command.append(str(output_path))
+    subprocess.run(command, check=True)
+    return output_path
+
+
+_TRANSITIONS = ["fade", "smoothleft", "fade", "smoothup", "fade", "smoothright", "fade", "circleopen"]
+
+
+def _crossfade_join(
+    scene_files: list[Path],
+    scene_audio_paths: list[Path],
+    holds: list[float],
+    transition: float,
+    output_path: Path,
+) -> Path:
+    """Join clips with crossfades while keeping every word on its own picture.
+
+    Each clip is rendered `transition` seconds longer than the time its audio is
+    on screen, and the crossfade consumes exactly that tail. So clip i still
+    starts at sum(holds before i) — the same instant its narration starts — and
+    nothing drifts, no matter how many scenes there are.
+    """
+    command = [ffmpeg_bin(), "-hide_banner", "-loglevel", "error", "-y"]
+    for path in scene_files:
+        command.extend(["-i", str(path)])
+    for path in scene_audio_paths:
+        command.extend(["-i", str(path)])
+
+    count = len(scene_files)
+    parts: list[str] = []
+    if transition > 0:
+        previous = "0:v"
+        for index in range(1, count):
+            offset = sum(holds[:index])
+            label = f"vx{index}"
+            transition_name = _TRANSITIONS[(index - 1) % len(_TRANSITIONS)]
+            parts.append(
+                f"[{previous}][{index}:v]xfade=transition={transition_name}:"
+                f"duration={transition:.3f}:offset={offset:.3f}[{label}]"
+            )
+            previous = label
+    else:
+        # Same clips, plain cuts — used when a crossfade graph fails so a finished
+        # render is never thrown away. The clips still carry the transition tail,
+        # so trim it back off here or every scene would drift past its narration.
+        for index in range(count):
+            parts.append(
+                f"[{index}:v]trim=duration={holds[index]:.3f},setpts=PTS-STARTPTS[vc{index}]"
+            )
+        parts.append("".join(f"[vc{i}]" for i in range(count)) + f"concat=n={count}:v=1:a=0[vout]")
+        previous = "vout"
+
+    audio_labels: list[str] = []
+    for index, path in enumerate(scene_audio_paths):
+        pad = max(0.0, holds[index] - _audio_duration(path))
+        label = f"a{index}"
+        parts.append(f"[{count + index}:a]aresample=48000,apad=pad_dur={pad:.3f}[{label}]")
+        audio_labels.append(f"[{label}]")
+    parts.append(f"{''.join(audio_labels)}concat=n={len(audio_labels)}:v=0:a=1[aout]")
+
+    command.extend([
+        "-filter_complex", ";".join(parts),
+        "-map", "0:v" if previous == "0:v" else f"[{previous}]",
+        "-map", "[aout]",
+        "-r", str(settings.video_fps),
+        *_video_encode_args(),
+        *_audio_encode_args(),
+        str(output_path),
+    ])
     subprocess.run(command, check=True)
     return output_path
 
@@ -268,17 +399,51 @@ def render_video(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: P
     output_path.parent.mkdir(parents=True, exist_ok=True)
     scene_count = max(1, len(lesson.scenes))
 
+    # Per-scene on-screen time, decided up front so the crossfade maths below
+    # can line every clip up with its own narration.
+    holds: list[float] = []
+    if scene_audio_paths:
+        holds = [max(2.5, _audio_duration(path) + 0.35) for path in scene_audio_paths]
+    transition = 0.0
+    if settings.enable_transitions and len(holds) > 1:
+        # Never let a transition eat more than a third of the shortest scene.
+        transition = max(0.0, min(settings.transition_seconds, min(holds) * 0.35))
+
     scene_files = []
     for index, scene in enumerate(lesson.scenes, start=1):
         scene_file = run_dir / f"scene_{index:02}.mp4"
+        if scene_file.exists() and scene_file.stat().st_size > 100_000:
+            scene_files.append(scene_file)
+            continue
         scene_audio = scene_audio_paths[index - 1] if scene_audio_paths else None
         marks = scene_marks[index - 1] if scene_marks else None
         if scene_audio:
-            scene_duration = max(2.5, _audio_duration(scene_audio) + 0.35)
+            scene_duration = holds[index - 1] + transition
         else:
             total_duration = max(2.5 * scene_count, _audio_duration(audio_path))
             scene_duration = total_duration / scene_count
-        scene_files.append(_render_scene(scene, scene_duration, scene_file, run_dir, scene_audio, channel, marks, content_type))
+        # With crossfades the audio is added once at the join, so the clips stay
+        # silent here and carry a transition-length tail instead.
+        embedded_audio = None if transition else scene_audio
+        scene_files.append(_render_scene(
+            scene, scene_duration, scene_file, run_dir, embedded_audio, channel, marks,
+            content_type, edge_fades=not transition,
+        ))
+
+    if transition and len(scene_files) > 1:
+        for attempt_transition in (transition, 0.0):
+            try:
+                return _crossfade_join(
+                    scene_files, list(scene_audio_paths), holds,
+                    attempt_transition, output_path,
+                )
+            except subprocess.CalledProcessError as exc:
+                # Never lose a finished render over a filter-graph problem: retry
+                # with plain cuts, which only costs the transitions.
+                if attempt_transition:
+                    print(f"[video] crossfade join failed ({exc}); joining without transitions")
+                else:
+                    raise
 
     concat_file = run_dir / "concat.txt"
     concat_file.write_text(
@@ -289,6 +454,9 @@ def render_video(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: P
     subprocess.run(
         [
             ffmpeg_bin(),
+            "-hide_banner",
+            "-loglevel",
+            "error",
             "-y",
             "-f",
             "concat",
@@ -309,6 +477,9 @@ def render_video(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: P
     subprocess.run(
         [
             ffmpeg_bin(),
+            "-hide_banner",
+            "-loglevel",
+            "error",
             "-y",
             "-i",
             str(silent_video),
