@@ -81,7 +81,9 @@ class Settings:
     low_quality_image_bytes: int = int(os.getenv("LOW_QUALITY_IMAGE_BYTES", "200000"))
     enable_pollinations_images: bool = os.getenv("ENABLE_POLLINATIONS_IMAGES", "true").lower() == "true"
     pollinations_api_key: str = os.getenv("POLLINATIONS_API_KEY", "")
-    openai_image_model: str = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1")
+    # gpt-image-2 is the current flagship: better than gpt-image-1, cheaper, and
+    # gpt-image-1 is being retired on 23 Oct 2026. Same size/quality parameters.
+    openai_image_model: str = os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-2")
     openai_image_size: str = os.getenv("OPENAI_IMAGE_SIZE", "1024x1536")
     openai_image_quality: str = os.getenv("OPENAI_IMAGE_QUALITY", "medium")
     openai_image_daily_limit: int = int(os.getenv("OPENAI_IMAGE_DAILY_LIMIT", "25"))
@@ -105,7 +107,7 @@ class Settings:
     comfyui_checkpoint: str = os.getenv("COMFYUI_CHECKPOINT", "flux1-schnell-fp8.safetensors")
     comfyui_steps: int = int(os.getenv("COMFYUI_STEPS", "4"))
     comfyui_timeout: int = int(os.getenv("COMFYUI_TIMEOUT", "600"))
-    openai_thumbnail_model: str = os.getenv("OPENAI_THUMBNAIL_MODEL", os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1"))
+    openai_thumbnail_model: str = os.getenv("OPENAI_THUMBNAIL_MODEL", os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-2"))
     openai_thumbnail_quality: str = os.getenv("OPENAI_THUMBNAIL_QUALITY", "high")
     thumbnail_daily_limit: int = int(os.getenv("THUMBNAIL_DAILY_LIMIT", "40"))
     google_image_api_key: str = os.getenv("GOOGLE_IMAGE_API_KEY", "")
