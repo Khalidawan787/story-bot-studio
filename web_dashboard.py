@@ -51,7 +51,14 @@ def local_datetime(value):
         return str(value)
 
 
-PORT = 8000
+def _dashboard_port() -> int:
+    try:
+        return max(1, min(65535, int(os.getenv("DASHBOARD_PORT", "8000"))))
+    except ValueError:
+        return 8000
+
+
+PORT = _dashboard_port()
 JOBS = {}
 
 
@@ -1633,8 +1640,24 @@ def _daily_automation_check():
         timer.daemon = True
         timer.start()
 
+def _port_is_free(port: int) -> bool:
+    import socket
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        return probe.connect_ex(("127.0.0.1", port)) != 0
+
+
 if __name__ == "__main__":
     import webbrowser
+    # Starting a second copy used to fail in a way that looked like the app had
+    # opened, while the browser actually showed the OLD instance still holding
+    # the port. Say so plainly instead.
+    if not _port_is_free(PORT):
+        print(f"Port {PORT} is already in use — Story Bot Studio is probably already running.")
+        print(f"Open http://127.0.0.1:{PORT} , close the other window first, or")
+        print(f"start this copy on another port:  set DASHBOARD_PORT=8010")
+        input("Press Enter to close...")
+        raise SystemExit(1)
     print(f"Story Bot STUDIO: http://127.0.0.1:{PORT}  (close this window to stop)")
     _schedule_history_cleanup()
     queue_timer = threading.Timer(8.0, _schedule_auto_upload_queue)
