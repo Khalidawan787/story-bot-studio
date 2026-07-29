@@ -117,12 +117,31 @@ burned on top. Compositing (resize/crop, dark panel, accent bar, wrapped
 auto-sized title) is done with the **bundled ffmpeg** — no extra image library
 and no Node runtime, so the single-file Windows build keeps working.
 
-`THUMBNAIL_PROVIDER=auto` (default) picks the order per channel:
+**Your own picture always wins.** Drop a file in `data/thumbnails/` named after
+the topic key and the pipeline uses it instead of any generator — this is how a
+thumbnail made in Bing Image Creator, Canva or Photopea joins the automatic run:
+
+| file | behaviour |
+|---|---|
+| `data/thumbnails/<topic_key>.jpg` | used as the background, the title is drawn on top |
+| `data/thumbnails/<topic_key>.final.jpg` | used exactly as-is, nothing is drawn |
+
+Otherwise `THUMBNAIL_PROVIDER=auto` (default) picks the order per channel:
 
 | channel | order |
 |---|---|
 | crime / horror / love / motivation / trending | **Pexels** (free stock) → OpenAI → Pollinations |
 | kids (cartoon look) | OpenAI → Pollinations → Pexels |
+
+With `ENABLE_COMFYUI_THUMBNAILS=true`, a local **ComfyUI** server leads every
+order: unlimited images, no credits, no API bill. Start ComfyUI, put a
+FLUX.1-schnell (Apache-2.0) or SDXL checkpoint in `ComfyUI/models/checkpoints/`,
+and set `COMFYUI_CHECKPOINT`. The built-in graph is a standard FLUX-schnell
+workflow; to use your own, export it from ComfyUI in **API format** to
+`data/comfyui_workflow.json` — `{prompt}`, `{seed}`, `{width}` and `{height}`
+are substituted. If the server is not answering the run falls through to the
+next provider instead of stalling. **This needs a real GPU** (roughly 8-12 GB
+VRAM); on integrated graphics a single image takes many minutes.
 
 If all of them fail it falls back to the rendered scene image, then a generated
 backdrop — a thumbnail is always produced and a thumbnail problem never stops an

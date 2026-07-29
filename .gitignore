@@ -39,6 +39,9 @@ logs/
 data/thumbnail_disabled_channels.json
 data/thumbnail_reenabled_channels.json
 data/trending_history.json
+# Hand-made thumbnails you drop in (large, machine-specific)
+data/thumbnails/
+data/comfyui_workflow.json
 assets/
 audio/
 videos/

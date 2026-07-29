@@ -97,6 +97,14 @@ class Settings:
     # Free, license-clear stock photos: 200 requests/hour, 20k/month, no cost.
     # Get a key at https://www.pexels.com/api/
     pexels_api_key: str = os.getenv("PEXELS_API_KEY", "")
+    # ComfyUI running locally: truly unlimited images, no credits and no API bill.
+    # Needs ComfyUI started with --listen and a FLUX.1-schnell (Apache-2.0) or
+    # SDXL checkpoint. Off by default because it needs a real GPU to be usable.
+    enable_comfyui_thumbnails: bool = os.getenv("ENABLE_COMFYUI_THUMBNAILS", "false").lower() == "true"
+    comfyui_url: str = os.getenv("COMFYUI_URL", "http://127.0.0.1:8188").rstrip("/")
+    comfyui_checkpoint: str = os.getenv("COMFYUI_CHECKPOINT", "flux1-schnell-fp8.safetensors")
+    comfyui_steps: int = int(os.getenv("COMFYUI_STEPS", "4"))
+    comfyui_timeout: int = int(os.getenv("COMFYUI_TIMEOUT", "600"))
     openai_thumbnail_model: str = os.getenv("OPENAI_THUMBNAIL_MODEL", os.getenv("OPENAI_IMAGE_MODEL", "gpt-image-1"))
     openai_thumbnail_quality: str = os.getenv("OPENAI_THUMBNAIL_QUALITY", "high")
     thumbnail_daily_limit: int = int(os.getenv("THUMBNAIL_DAILY_LIMIT", "40"))

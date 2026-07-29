@@ -300,6 +300,139 @@ def generate_pollinations_thumbnail(lesson: Lesson, output_path: Path, channel=N
     return output_path
 
 
+# ------------------------------------------------- your own picture, dropped in
+
+MANUAL_THUMBNAIL_DIR = "data/thumbnails"
+
+
+def manual_thumbnail_for(lesson: Lesson) -> tuple[Path, bool] | None:
+    """A picture you made yourself (Bing Image Creator, Canva, Photopea, ...).
+
+    Drop it in data/thumbnails/ named after the topic key:
+      <topic_key>.jpg        -> used as the background, the title is added on top
+      <topic_key>.final.jpg  -> used exactly as-is, nothing is drawn on it
+
+    This is how a hand-made thumbnail joins the automatic pipeline: there is no
+    public API for Bing Image Creator, and driving its web page with a browser
+    breaks its terms of use, so the file is the supported route.
+    """
+    folder = settings.root / MANUAL_THUMBNAIL_DIR
+    for suffix in (".jpg", ".jpeg", ".png", ".webp"):
+        finished = folder / f"{lesson.topic_key}.final{suffix}"
+        if finished.exists():
+            return finished, True
+    for suffix in (".jpg", ".jpeg", ".png", ".webp"):
+        backdrop = folder / f"{lesson.topic_key}{suffix}"
+        if backdrop.exists():
+            return backdrop, False
+    return None
+
+
+# ------------------------------------------------------------------ ComfyUI
+
+def _comfyui_graph(prompt: str, seed: int) -> dict:
+    """FLUX.1-schnell workflow in ComfyUI's API format.
+
+    Drop your own exported API-format workflow at data/comfyui_workflow.json to
+    replace this; {prompt}, {seed}, {width} and {height} are substituted in it.
+    """
+    override = settings.root / "data" / "comfyui_workflow.json"
+    if override.exists():
+        raw = override.read_text(encoding="utf-8")
+        raw = (raw.replace("{prompt}", json.dumps(prompt)[1:-1])
+                  .replace("{seed}", str(seed))
+                  .replace("{width}", str(THUMB_WIDTH))
+                  .replace("{height}", str(THUMB_HEIGHT)))
+        return json.loads(raw)
+    return {
+        "1": {"class_type": "CheckpointLoaderSimple",
+              "inputs": {"ckpt_name": settings.comfyui_checkpoint}},
+        "2": {"class_type": "CLIPTextEncode",
+              "inputs": {"text": prompt, "clip": ["1", 1]}},
+        "3": {"class_type": "CLIPTextEncode",
+              "inputs": {"text": "text, letters, words, watermark, logo, border, collage",
+                         "clip": ["1", 1]}},
+        "4": {"class_type": "EmptySD3LatentImage",
+              "inputs": {"width": THUMB_WIDTH, "height": THUMB_HEIGHT, "batch_size": 1}},
+        "5": {"class_type": "KSampler",
+              "inputs": {"seed": seed, "steps": max(1, settings.comfyui_steps),
+                         "cfg": 1.0, "sampler_name": "euler", "scheduler": "simple",
+                         "denoise": 1.0, "model": ["1", 0], "positive": ["2", 0],
+                         "negative": ["3", 0], "latent_image": ["4", 0]}},
+        "6": {"class_type": "VAEDecode", "inputs": {"samples": ["5", 0], "vae": ["1", 2]}},
+        "7": {"class_type": "SaveImage",
+              "inputs": {"filename_prefix": "thumbnail", "images": ["6", 0]}},
+    }
+
+
+def comfyui_ready() -> bool:
+    """True when a local ComfyUI server answers, so we never block on a dead port."""
+    if not settings.enable_comfyui_thumbnails:
+        return False
+    try:
+        request = urllib.request.Request(f"{settings.comfyui_url}/system_stats")
+        with urllib.request.urlopen(request, timeout=4) as response:
+            return response.status == 200
+    except Exception:
+        return False
+
+
+def generate_comfyui_thumbnail(lesson: Lesson, output_path: Path, channel=None,
+                               content_type: str = "short") -> Path:
+    """Render the thumbnail on your own PC through a local ComfyUI server."""
+    prompt_text = build_thumbnail_prompt(lesson, channel, content_type)
+    seed = (sum(ord(char) for char in lesson.topic_key) * 7919 + random.randint(0, 9999)) % 2**31
+    payload = json.dumps({"prompt": _comfyui_graph(prompt_text, seed)}).encode("utf-8")
+    request = urllib.request.Request(
+        f"{settings.comfyui_url}/prompt", data=payload,
+        headers={"Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        prompt_id = json.loads(response.read().decode("utf-8")).get("prompt_id")
+    if not prompt_id:
+        raise RuntimeError("ComfyUI did not accept the workflow (no prompt_id returned).")
+
+    # Local generation is slow, so poll rather than hold one long connection.
+    deadline = time.monotonic() + max(30, settings.comfyui_timeout)
+    images: list[dict] = []
+    while time.monotonic() < deadline:
+        time.sleep(3)
+        try:
+            with urllib.request.urlopen(
+                f"{settings.comfyui_url}/history/{prompt_id}", timeout=15,
+            ) as response:
+                history = json.loads(response.read().decode("utf-8"))
+        except Exception:
+            continue
+        entry = history.get(str(prompt_id)) or {}
+        status = (entry.get("status") or {}).get("status_str", "")
+        if status == "error":
+            raise RuntimeError(f"ComfyUI reported an error running the workflow: {entry.get('status')}")
+        for node_output in (entry.get("outputs") or {}).values():
+            images.extend(node_output.get("images") or [])
+        if images:
+            break
+    if not images:
+        raise RuntimeError(
+            f"ComfyUI produced no image within {settings.comfyui_timeout}s "
+            "(a CPU-only machine is usually far slower than this)."
+        )
+
+    image = images[0]
+    params = urllib.parse.urlencode({
+        "filename": image.get("filename", ""),
+        "subfolder": image.get("subfolder", ""),
+        "type": image.get("type", "output"),
+    })
+    with urllib.request.urlopen(f"{settings.comfyui_url}/view?{params}", timeout=60) as response:
+        data = response.read()
+    if len(data) < MIN_USABLE_THUMBNAIL_BYTES:
+        raise RuntimeError(f"ComfyUI returned an unusably small image ({len(data)} bytes).")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(data)
+    return output_path
+
+
 # ------------------------------------------------------------------- Pexels
 
 _PEXELS_KEY_FILE = "data/pexels_api_key.txt"
@@ -423,13 +556,16 @@ def _thumbnail_provider_order(channel=None) -> list[str]:
     while the cartoon kids channel leads with generated art because stock photos
     do not match its look.
     """
+    known = ("comfyui", "pexels", "openai", "pollinations")
     configured = str(settings.thumbnail_provider or "auto").lower()
-    if configured in {"pexels", "openai", "pollinations"}:
-        return [configured, *[p for p in ("pexels", "openai", "pollinations") if p != configured]]
+    if configured in known:
+        return [configured, *[name for name in known if name != configured]]
     genre = str(getattr(channel, "genre", "kids") or "kids").lower()
+    # ComfyUI leads when it is switched on: it is free, unlimited and local.
+    lead = ["comfyui"] if settings.enable_comfyui_thumbnails else []
     if genre == "kids":
-        return ["openai", "pollinations", "pexels"]
-    return ["pexels", "openai", "pollinations"]
+        return [*lead, "openai", "pollinations", "pexels"]
+    return [*lead, "pexels", "openai", "pollinations"]
 
 
 def generate_thumbnail_art(lesson: Lesson, output_path: Path, channel=None,
@@ -441,6 +577,12 @@ def generate_thumbnail_art(lesson: Lesson, output_path: Path, channel=None,
 
     for provider in _thumbnail_provider_order(channel):
         try:
+            if provider == "comfyui":
+                if not comfyui_ready():
+                    if settings.enable_comfyui_thumbnails:
+                        errors.append(f"ComfyUI: no server answering at {settings.comfyui_url}")
+                    continue
+                return generate_comfyui_thumbnail(lesson, output_path, channel, content_type)
             if provider == "pexels":
                 if not pexels_key_configured():
                     errors.append("Pexels: no free API key saved")
@@ -545,6 +687,24 @@ def create_thumbnail(lesson: Lesson, image_path: Path | None, output_path: Path,
     Tries topic-specific AI artwork first and falls back to the rendered scene
     image, then to a plain card. Never raises for an artwork problem.
     """
+    # A picture you dropped in yourself always wins over any generator.
+    manual = manual_thumbnail_for(lesson)
+    if manual is not None:
+        manual_path, is_finished = manual
+        if is_finished:
+            print(f"[thumbnail] using your finished thumbnail: {manual_path.name}")
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            subprocess.run(
+                [_ffmpeg(), "-y", "-i", str(manual_path), "-frames:v", "1", "-update", "1",
+                 "-vf", f"scale={THUMB_WIDTH}:{THUMB_HEIGHT}:force_original_aspect_ratio=increase,"
+                        f"crop={THUMB_WIDTH}:{THUMB_HEIGHT}",
+                 "-q:v", "2", str(output_path)],
+                check=True, capture_output=True, text=True,
+            )
+            return output_path
+        print(f"[thumbnail] using your background image: {manual_path.name}")
+        return compose_thumbnail(lesson, manual_path, output_path, channel, content_type)
+
     art_path: Path | None = None
     try:
         art_path = generate_thumbnail_art(
