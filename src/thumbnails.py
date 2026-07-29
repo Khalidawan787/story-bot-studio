@@ -92,6 +92,13 @@ _TITLE_NOISE = re.compile(
 )
 
 
+_DANGLING_WORDS = {
+    "a", "an", "and", "at", "but", "by", "for", "from", "in", "into", "of",
+    "on", "or", "the", "their", "this", "to", "with", "your", "my", "our",
+    "is", "are", "was", "that", "it", "as",
+}
+
+
 def thumbnail_headline(lesson: Lesson, channel=None, content_type: str = "short",
                        max_words: int = 7) -> str:
     """Short, punchy text for the thumbnail — not the full SEO title.
@@ -119,7 +126,12 @@ def thumbnail_headline(lesson: Lesson, channel=None, content_type: str = "short"
     words = text.split()
     if len(words) > max_words:
         ends_as_question = text.endswith("?")
-        text = " ".join(words[:max_words]).rstrip(",;:- ")
+        kept = words[:max_words]
+        # "Rise From The" reads as a broken sentence; drop trailing filler words
+        # so the headline ends on something meaningful.
+        while len(kept) > 2 and kept[-1].lower().strip(",;:") in _DANGLING_WORDS:
+            kept.pop()
+        text = " ".join(kept).rstrip(",;:- ")
         if ends_as_question and not text.endswith("?"):
             text += "?"
     return text.upper()
@@ -166,10 +178,11 @@ def fit_headline(text: str, max_lines: int = 2) -> tuple[list[str], int]:
 
 _GENRE_ART_STYLE = {
     "kids": (
-        "bright 3D cartoon YouTube thumbnail for preschool kids, one huge "
-        "cute smiling subject filling the frame, bold saturated primary "
-        "colors, soft studio lighting, simple uncluttered background, "
-        "friendly and joyful"
+        "glossy Pixar-style 3D cartoon YouTube thumbnail for preschool kids, "
+        "one huge cute smiling character with big expressive eyes, magical "
+        "sparkles and glowing stars, rainbow accents, candy-bright saturated "
+        "colors, rim lighting and soft shadows, playful and exciting, the kind "
+        "of joyful poster art a 4 year old points at"
     ),
     "crime": (
         "dark cinematic true-crime YouTube thumbnail, moody teal and amber "
@@ -615,6 +628,81 @@ _BADGE_COLORS = {
     "trending": ("0x1971c2", "0xffffff"),
 }
 
+# How the title is drawn. "sticker" stacks three passes of the same text - a
+# fat dark outline, a bright mid outline, then the fill - which is what gives
+# kids' thumbnails the chunky cartoon lettering instead of flat white text.
+# "cinematic" keeps the plain white-on-dark look that suits crime and news.
+_TEXT_STYLES = {
+    "kids": {
+        "mode": "sticker",
+        "fills": ["0x21e6ff", "0x3bff6e", "0xffe23b"],  # cyan, green, yellow
+        "mid": "0xffffff", "outer": "0x1a1030",
+        "panel": None, "box": None,
+    },
+    "motivation": {
+        "mode": "sticker",
+        "fills": ["0xffd43b", "0xff922b"],  # yellow, orange
+        "mid": "0xffffff", "outer": "0x241503",
+        "panel": None, "box": None,
+    },
+    "love": {
+        "mode": "sticker",
+        "fills": ["0xffb3d1", "0xffe066"],  # pink, warm gold
+        "mid": "0xffffff", "outer": "0x3d0d24",
+        "panel": None, "box": None,
+    },
+    "_default": {
+        "mode": "cinematic",
+        "fills": ["0xffffff"],
+        "mid": None, "outer": "0x000000",
+        "panel": "black@0.48", "box": None,
+    },
+}
+
+
+def _text_style(genre: str) -> dict:
+    return _TEXT_STYLES.get(genre, _TEXT_STYLES["_default"])
+
+
+def _title_layers(lines: list[str], font_size: int, style: dict, font_arg: str,
+                  block_top: int, line_height: int, write_line) -> list[str]:
+    """One or three stacked drawtext passes per line, depending on the style."""
+    layers: list[str] = []
+    fills = style["fills"] or ["0xffffff"]
+    box = style.get("box")
+    for index, line in enumerate(lines):
+        line_file = write_line(index, line)
+        y = block_top + index * line_height
+        common = (
+            f"drawtext=textfile='{line_file}'{font_arg}:fontsize={font_size}:"
+            f"x=(w-text_w)/2:y={y}"
+        )
+        if style["mode"] == "sticker":
+            outer = max(12, int(font_size * 0.20))
+            mid = max(6, int(font_size * 0.11))
+            fill = fills[index % len(fills)]
+            # A fill the same colour as the mid outline merges into one blob and
+            # the letters stop being readable — drop back to the dark outline.
+            mid_color = style["outer"] if fill.lower() == str(style["mid"]).lower() else style["mid"]
+            box_arg = (
+                f":box=1:boxcolor={box}:boxborderw={max(14, font_size // 5)}"
+                if box else ""
+            )
+            layers += [
+                # Widest pass first; each later pass paints over the middle of it.
+                f"{common}:fontcolor={style['outer']}:borderw={outer}:bordercolor={style['outer']}"
+                f":shadowx=5:shadowy=7:shadowcolor=black@0.45{box_arg}",
+                f"{common}:fontcolor={mid_color}:borderw={mid}:bordercolor={mid_color}",
+                f"{common}:fontcolor={fill}",
+            ]
+        else:
+            layers.append(
+                f"{common}:fontcolor={fills[index % len(fills)]}:"
+                f"borderw={max(4, font_size // 15)}:bordercolor={style['outer']}:"
+                f"shadowx=3:shadowy=4:shadowcolor=black@0.7"
+            )
+    return layers
+
 
 def compose_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Path,
                       channel=None, content_type: str = "short") -> Path:
@@ -641,14 +729,11 @@ def compose_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Path,
 
     badge_width = int(48 + text_width_px(badge_text, 34) + 48)
     badge_file = _write_text(output_path.with_suffix(".channel.txt"), badge_text)
-    line_layers = []
-    for index, line in enumerate(lines):
-        line_file = _write_text(output_path.with_suffix(f".line{index}.txt"), line)
-        line_layers.append(
-            f"drawtext=textfile='{line_file}'{font_arg}:fontsize={font_size}:fontcolor=white:"
-            f"borderw={max(4, font_size // 15)}:bordercolor=black:"
-            f"x=(w-text_w)/2:y={block_top + index * line_height}"
-        )
+    style = _text_style(genre)
+    line_layers = _title_layers(
+        lines, font_size, style, font_arg, block_top, line_height,
+        lambda index, line: _write_text(output_path.with_suffix(f".line{index}.txt"), line),
+    )
 
     if art_path and Path(art_path).exists():
         input_args = ["-loop", "1", "-i", str(art_path)]
@@ -661,13 +746,21 @@ def compose_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Path,
         input_args = ["-f", "lavfi", "-i", f"color=c=0x1864ab:s={THUMB_WIDTH}x{THUMB_HEIGHT}:d=1"]
         base = ""
 
+    # The cinematic style needs a dark band to stay readable. The sticker style
+    # carries its own outline, so the artwork is left fully visible instead.
+    panel_layers = []
+    if style.get("panel"):
+        panel_layers = [
+            f"drawbox=x=0:y={panel_top}:w={THUMB_WIDTH}:h={panel_height}:color={style['panel']}:t=fill",
+            f"drawbox=x=0:y={panel_top}:w={THUMB_WIDTH}:h=6:color={badge_bg}@0.95:t=fill",
+        ]
+
     vf = ",".join([
         *([base.rstrip(",")] if base else []),
-        # Darkened panel behind the title so white text always reads.
-        f"drawbox=x=0:y={panel_top}:w={THUMB_WIDTH}:h={panel_height}:color=black@0.48:t=fill",
-        f"drawbox=x=0:y={panel_top}:w={THUMB_WIDTH}:h=6:color={badge_bg}@0.95:t=fill",
+        *panel_layers,
         f"drawbox=x=44:y=38:w={badge_width}:h=62:color={badge_bg}@0.95:t=fill",
-        f"drawtext=textfile='{badge_file}'{font_arg}:fontsize=34:fontcolor={badge_fg}:x=72:y=52",
+        f"drawtext=textfile='{badge_file}'{font_arg}:fontsize=34:fontcolor={badge_fg}:"
+        f"x=72:y=52:borderw=2:bordercolor=black@0.35",
         *line_layers,
     ])
 
