@@ -33,6 +33,8 @@ concurrency:
 
 permissions:
   contents: write
+  pages: write        # publish the status page
+  id-token: write     # required by actions/deploy-pages
 
 env:
   # Nobody can click a Google sign-in here, so fail loudly instead of hanging
@@ -110,6 +112,21 @@ jobs:
         if: always()
         run: python -m src.cli quota-status
 
+      # A readable table on the run's own page, instead of digging through logs.
+      - name: Write the run summary
+        if: always()
+        run: python scripts/build_status_page.py --summary >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build the status page
+        if: always()
+        run: python scripts/build_status_page.py site
+
+      - name: Package the status page
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
       # Saved even when a step failed, so a half-finished run is not repeated
       # from scratch and its videos are not built twice.
       - name: Save the bot's state
@@ -140,3 +157,15 @@ jobs:
             runs/**/thumbnail.jpg
           retention-days: 7
           if-no-files-found: ignore
+
+  publish-status-page:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Publish to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
