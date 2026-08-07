@@ -72,7 +72,7 @@ Long video chahiye to manually chalayein: Run workflow → **Also make one
 
 ## ⚠ 7 din wala masla — yeh sab se ahem hai
 
-Kids channel ka naya Cloud project `youtube-data-api-501120` abhi Google ki
+Kids channel ka naya Cloud project `your-kids-project` abhi Google ki
 nazar mein **Testing** mode mein hai. Testing mode mein Google ka refresh token
 **7 din baad expire** ho jata hai.
 

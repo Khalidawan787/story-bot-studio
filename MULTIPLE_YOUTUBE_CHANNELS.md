@@ -84,7 +84,7 @@ python -m src.cli quota-status
 
 ```
 CHANNEL      ACCOUNT    TODAY    CLOUD PROJECT                CONNECTED
-kids         main       2/2      valley-fulfillment-488503    yes
+kids         main       2/2      your-shared-project    yes
 kids         abc        0/2      kids-abc-uploader            yes
 ```
 

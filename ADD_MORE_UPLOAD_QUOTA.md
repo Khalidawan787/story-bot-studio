@@ -8,7 +8,7 @@ YouTube Data API upload quota **Google Cloud project** ko milti hai, channel ko 
 - Ek video upload = **1,600 units**
 - Yaani **~6 uploads/din per project**, chahe us project se kitne bhi channels juday hon
 
-Abhi saare channels ek hi project `valley-fulfillment-488503` use kar rahe hain,
+Abhi saare channels ek hi project `your-shared-project` use kar rahe hain,
 is liye teenon channels mil kar sirf 6 videos/din upload kar sakte hain.
 
 Project badalne ka faida **nahi** hai — naye project ko bhi wahi 6 milenge.
