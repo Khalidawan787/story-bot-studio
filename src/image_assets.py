@@ -4,6 +4,7 @@ import base64
 import html
 import importlib.util
 import json
+import math
 import random
 import re
 import subprocess
@@ -299,6 +300,110 @@ def _stock_fallback_allowed(scene: Scene, channel=None) -> bool:
     """Genre channels may use relevant stock; Kids must remain cartoon-only."""
     return channel is not None and not getattr(channel, "builtin", False)
 
+_NUMBER_WORDS = {
+    "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+    "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+    "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14,
+    "fifteen": 15, "sixteen": 16, "seventeen": 17, "eighteen": 18,
+    "nineteen": 19, "twenty": 20,
+}
+
+# Rotated per number so ten counting scenes are not ten pictures of apples.
+_COUNT_SUBJECTS = (
+    "red apples", "yellow rubber ducks", "blue balloons", "green frogs",
+    "orange pumpkins", "purple butterflies", "brown teddy bears",
+    "pink flowers", "white bunnies", "colourful building blocks",
+)
+
+
+def counting_scene_count(scene: Scene, channel=None) -> int | None:
+    """How many objects this scene should show, or None if it is not counting."""
+    if _is_genre(channel) or _category_from_scene(scene) != "numbers":
+        return None
+    count = _NUMBER_WORDS.get(str(scene.label).strip().lower())
+    return count if count and 1 <= count <= 20 else None
+
+
+def compose_counting_image(single: Path, count: int, output_path: Path,
+                           landscape: bool = False) -> Path:
+    """Tile ONE generated object exactly `count` times.
+
+    Diffusion models cannot count. Asked for three teddy bears they return five,
+    and they add stray digits however firmly the prompt forbids text — which is
+    fatal on a channel whose whole point is the number. So the model draws a
+    single object and this lays out exactly the right number of copies, which is
+    arithmetic rather than luck.
+    """
+    width, height = (1920, 1080) if landscape else (1080, 1920)
+    columns = min(5, max(1, math.ceil(math.sqrt(count))))
+    rows = math.ceil(count / columns)
+
+    margin = 0.06
+    cell_w = int(width * (1 - 2 * margin) / columns)
+    cell_h = int(height * (1 - 2 * margin) / rows)
+    size = max(48, int(min(cell_w, cell_h) * 0.86))
+    # Rows are as tall as the frame allows, which on a 9:16 canvas leaves the
+    # objects marooned in white. Pack them at their own height and centre the
+    # whole block instead.
+    cell_h = int(size * 1.12)
+    top = max(int(height * margin), (height - cell_h * rows) // 2)
+
+    # Fit the whole object inside its slot rather than cropping to a square:
+    # cropping cut the feet off every teddy bear. The padding is white and so is
+    # the canvas, so the tiles leave no visible seam.
+    # format/setsar normalise the tile so every overlay sees identical frame
+    # properties; without that ffmpeg aborts with "Error reinitializing filters"
+    # as soon as more than a few copies are stacked.
+    filters = [f"[1:v]scale={size}:{size}:force_original_aspect_ratio=decrease,"
+               f"pad={size}:{size}:(ow-iw)/2:(oh-ih)/2:color=white,"
+               f"format=rgb24,setsar=1[obj]"]
+    # Every copy is the same picture, so it is split into as many streams as
+    # there are slots and each one is dropped at its own coordinates.
+    filters.append("[obj]split=%d%s" % (count, "".join(f"[o{i}]" for i in range(count))))
+    current = "[0:v]"
+    for index in range(count):
+        row, column = divmod(index, columns)
+        in_row = min(columns, count - row * columns)
+        span_w = width * (1 - 2 * margin) / in_row
+        x = int(width * margin + span_w * (column % in_row) + (span_w - size) / 2)
+        y = int(top + cell_h * row + (cell_h - size) / 2)
+        label = f"[s{index}]" if index < count - 1 else "[out]"
+        filters.append(f"{current}[o{index}]overlay={x}:{y}{label}")
+        current = f"[s{index}]"
+
+    from .visuals import ffmpeg_bin
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(
+        [
+            ffmpeg_bin(), "-y",
+            "-f", "lavfi", "-i", f"color=c=white:s={width}x{height}:d=1,format=rgb24",
+            "-i", str(single),
+            "-filter_complex", ";".join(filters),
+            "-map", "[out]", "-frames:v", "1", str(output_path),
+        ],
+        check=True, capture_output=True, text=True,
+    )
+    return output_path
+
+
+def _singular(plural: str) -> str:
+    words = plural.split()
+    last = words[-1]
+    if last.endswith("ies"):
+        last = last[:-3] + "y"
+    elif last.endswith("es") and last[:-2].endswith(("ch", "sh", "s", "x")):
+        last = last[:-2]
+    elif last.endswith("s"):
+        last = last[:-1]
+    return " ".join(words[:-1] + [last])
+
+
+def _count_subject(label: str) -> str:
+    index = sum(ord(ch) for ch in str(label).lower()) % len(_COUNT_SUBJECTS)
+    return _COUNT_SUBJECTS[index]
+
+
 def _prompt_for_scene(scene: Scene, channel=None) -> str:
     # Genre channels (crime/love/horror/...) carry their own styled prompt.
     if _is_genre(channel):
@@ -317,7 +422,52 @@ def _prompt_for_scene(scene: Scene, channel=None) -> str:
             f"Main concept: {scene.label}. Show a clear visual comparison that children can understand, "
             "cute classroom/playground style, vertical 9:16, large centered subject, no readable text, no watermark."
         )
-    if category in {"shapes", "numbers", "alphabet", "fruits", "vegetables", "vehicles", "science"}:
+    if category == "numbers":
+        # Never ask an image model to draw the numeral. It cannot render glyphs
+        # reliably, and the old prompt asked for "Main subject: Nineteen" while
+        # also saying "no readable text" — so it produced blobs that looked like
+        # broken digits and did not match the narration at all. Counting is
+        # taught by the QUANTITY of objects, which a model draws well.
+        count = _NUMBER_WORDS.get(str(scene.label).strip().lower())
+        subject = _count_subject(scene.label)
+        if count is not None and 1 <= count <= 20:
+            # Only ONE object is generated; compose_counting_image lays out the
+            # right number of copies afterwards.
+            return (
+                "Professional 3D cartoon preschool illustration of exactly ONE "
+                f"{_singular(subject)}, centred, complete, nothing cut off, "
+                "plain flat white background, no shadow behind it, "
+                "no numbers, no letters, no text, no watermark."
+            )
+        if count is not None and count > 0:
+            # One apple is not "1 identical apples", and a dozen objects only
+            # stay countable when they are laid out in rows.
+            if count == 1:
+                what = f"exactly ONE {_singular(subject)}, alone in the picture"
+            elif count <= 10:
+                what = (f"EXACTLY {count} identical {subject}, clearly separated "
+                        "and easy to count, in a simple row or group")
+            else:
+                what = (f"EXACTLY {count} identical {subject}, laid out in neat "
+                        "rows of five so they can be counted at a glance")
+            return (
+                "Professional 3D cartoon preschool learning illustration. "
+                f"Show {what}. "
+                "Nothing else in the picture that could be miscounted. "
+                "Cute kids educational style, vertical 9:16, bright clean background, "
+                "no numbers, no letters, no text, no watermark."
+            )
+    if category == "alphabet":
+        # Same problem with letters: the letter itself is burned on by the
+        # renderer, so the picture only has to carry objects that start with it.
+        return (
+            "Professional 3D cartoon preschool learning illustration. "
+            f"Show two or three cheerful objects whose names start with the letter "
+            f"{str(scene.label).strip()[:1].upper()}, arranged clearly side by side. "
+            "Cute kids educational style, vertical 9:16, bright clean background, "
+            "no numbers, no letters, no text, no watermark."
+        )
+    if category in {"shapes", "fruits", "vegetables", "vehicles", "science"}:
         return (
             "Professional 3D cartoon preschool learning illustration. "
             f"Category: {category}. Main subject: {scene.label}. "

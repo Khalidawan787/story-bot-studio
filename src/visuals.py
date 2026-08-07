@@ -287,12 +287,26 @@ def resolve_scene_image(
     stem = Path(base_name).stem
     suffix = Path(base_name).suffix or ".jpg"
 
+    from .image_assets import compose_counting_image, counting_scene_count
+
+    # A counting scene asks the model for ONE object and lays out the right
+    # number of copies here. Diffusion models cannot count, and on a channel
+    # about numbers a picture showing five when the narrator says three is
+    # worse than no video at all.
+    wanted_count = counting_scene_count(scene, channel)
+
     for attempt in range(1, 5):
         fresh = run_dir / "gen" / f"{stem}_fresh_{attempt}{suffix}"
         try:
             generated = generate_fresh_image(
                 scene, fresh, channel, landscape=landscape,
             )
+            if wanted_count:
+                generated = compose_counting_image(
+                    generated, wanted_count,
+                    run_dir / "gen" / f"{stem}_count_{attempt}{suffix}",
+                    landscape=landscape,
+                )
             if claim_unique_image(generated, channel_id, scene.label):
                 return generated
             errors.append(f"attempt {attempt}: duplicate image rejected")
