@@ -34,6 +34,10 @@ def connect() -> sqlite3.Connection:
     cols = [row[1] for row in conn.execute("PRAGMA table_info(videos)").fetchall()]
     if "channel" not in cols:
         conn.execute("ALTER TABLE videos ADD COLUMN channel TEXT DEFAULT 'kids'")
+    if "account" not in cols:
+        # Which connected YouTube account of that channel the video belongs to.
+        # Everything created before multi-account support belongs to "main".
+        conn.execute("ALTER TABLE videos ADD COLUMN account TEXT NOT NULL DEFAULT 'main'")
     if "drive_url" not in cols:
         conn.execute("ALTER TABLE videos ADD COLUMN drive_url TEXT")
     if "publish_at" not in cols:
@@ -156,6 +160,7 @@ def save_video(
     content_type: str = "short",
     quality_report: str | None = None,
     is_daily: bool = False,
+    account: str = "main",
 ) -> int:
     conn = connect()
     try:
@@ -163,8 +168,9 @@ def save_video(
             """
             INSERT INTO videos (
                 job_id, topic, title, video_path, thumbnail_path, upload_date,
-                video_url, status, error, created_at, channel, publish_at, content_type, quality_report, is_daily
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                video_url, status, error, created_at, channel, publish_at, content_type, quality_report, is_daily,
+                account
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 job_id,
@@ -182,6 +188,7 @@ def save_video(
                 content_type,
                 quality_report,
                             1 if is_daily else 0,
+                account or "main",
             ),
         )
         conn.commit()
@@ -422,7 +429,14 @@ def reserve_publish_slot(
     interval_hours: float = 3.0,
     first_delay_hours: float = 1.0,
 ) -> str:
-    """Atomically reserve the next globally-spaced publish time."""
+    """Atomically reserve this channel's next spaced publish time.
+
+    The spacing is per channel, not global. A single global chain meant six
+    channels shared one 3-hour slot line, so publish dates ran days into the
+    future and videos uploaded today only went public much later. Each channel
+    now keeps its own line, and with a small daily upload budget its releases
+    stay inside the same day.
+    """
     gap = max(2.0, min(3.0, float(interval_hours)))
     now = datetime.now(timezone.utc)
     base = now + timedelta(hours=max(0.0, float(first_delay_hours)))
@@ -440,11 +454,13 @@ def reserve_publish_slot(
         row = conn.execute(
             """
             SELECT MAX(publish_at) FROM (
-                SELECT publish_at FROM videos WHERE publish_at IS NOT NULL
+                SELECT publish_at FROM videos
+                 WHERE publish_at IS NOT NULL AND channel = ?
                 UNION ALL
-                SELECT publish_at FROM publish_slots
+                SELECT publish_at FROM publish_slots WHERE channel = ?
             )
-            """
+            """,
+            (channel, channel),
         ).fetchone()
         candidate = base
         if row and row[0]:

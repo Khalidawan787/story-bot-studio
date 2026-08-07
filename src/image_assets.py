@@ -90,6 +90,149 @@ def save_pollinations_api_key(value: str) -> None:
         path.unlink(missing_ok=True)
 
 
+# --------------------------------------------------- Cloudflare Workers AI
+#
+# Free AI image generation with a generous daily allowance and no credit card.
+# Unlike Pexels this produces *generated art*, so it is the free provider that
+# can serve the cartoon kids channel, where stock photography is not allowed.
+
+_CLOUDFLARE_ACCOUNT_FILE = "data/cloudflare_account_id.txt"
+_CLOUDFLARE_TOKEN_FILE = "data/cloudflare_api_token.txt"
+
+
+def _read_key_file(relative_path: str) -> str:
+    try:
+        return (settings.root / relative_path).read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+
+
+def cloudflare_account_id() -> str:
+    return str(getattr(settings, "cloudflare_account_id", "") or "").strip() or _read_key_file(
+        _CLOUDFLARE_ACCOUNT_FILE
+    )
+
+
+def cloudflare_api_token() -> str:
+    return str(getattr(settings, "cloudflare_api_token", "") or "").strip() or _read_key_file(
+        _CLOUDFLARE_TOKEN_FILE
+    )
+
+
+def cloudflare_image_ready() -> bool:
+    return bool(cloudflare_account_id() and cloudflare_api_token())
+
+
+def save_cloudflare_credentials(account_id: str, api_token: str) -> None:
+    """Store the free Workers AI credentials without needing an app restart."""
+    for relative_path, value in (
+        (_CLOUDFLARE_ACCOUNT_FILE, account_id.strip()),
+        (_CLOUDFLARE_TOKEN_FILE, api_token.strip()),
+    ):
+        path = settings.root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if value:
+            path.write_text(value, encoding="utf-8")
+        else:
+            path.unlink(missing_ok=True)
+
+
+# Tried in order. Models differ in which parameters they accept, so each entry
+# carries its own body builder and the first one that returns a usable image
+# wins. flux-1-schnell leads on quality; the SDXL models honour width/height,
+# which frames a 9:16 scene properly instead of cropping a square.
+_CLOUDFLARE_MODELS = (
+    "@cf/black-forest-labs/flux-1-schnell",
+    "@cf/bytedance/stable-diffusion-xl-lightning",
+    "@cf/stabilityai/stable-diffusion-xl-base-1.0",
+)
+
+
+def _cloudflare_body(model: str, prompt: str, seed: int, landscape: bool) -> dict:
+    """Both families honour width/height; they differ on the step parameter."""
+    width, height = (1344, 768) if landscape else (768, 1344)
+    body = {"prompt": prompt, "width": width, "height": height, "seed": seed}
+    # flux-1-schnell caps steps at 8 and names the field "steps"; the SDXL
+    # models use "num_steps".
+    body["steps" if "flux" in model else "num_steps"] = 8
+    return body
+
+
+def _cloudflare_image_bytes(payload: bytes, content_type: str) -> bytes:
+    """Workers AI answers either with raw image bytes or base64 inside JSON."""
+    if "image" in content_type.lower() and not payload.lstrip().startswith(b"{"):
+        return payload
+    body = json.loads(payload.decode("utf-8"))
+    if not body.get("success", True):
+        errors = body.get("errors") or body.get("messages") or []
+        raise RuntimeError(str(errors)[:200] or "Cloudflare rejected the request")
+    result = body.get("result") or {}
+    encoded = result.get("image") if isinstance(result, dict) else None
+    if not encoded:
+        raise RuntimeError("Cloudflare returned no image data")
+    return base64.b64decode(encoded)
+
+
+def generate_cloudflare_scene_image(
+    scene: Scene,
+    output_path: Path,
+    channel=None,
+    landscape: bool = False,
+) -> Path:
+    """Generate one scene image with Cloudflare Workers AI (free tier)."""
+    account = cloudflare_account_id()
+    token = cloudflare_api_token()
+    if not (account and token):
+        raise RuntimeError(
+            "Cloudflare Workers AI is not configured. Add CLOUDFLARE_ACCOUNT_ID "
+            "and CLOUDFLARE_API_TOKEN (both free at dash.cloudflare.com)."
+        )
+    orientation = "landscape 16:9" if landscape else "vertical 9:16"
+    if _is_genre(channel):
+        prompt = _prompt_for_scene(scene, channel) + f" High quality, cinematic, {orientation}."
+    else:
+        prompt = (
+            _prompt_for_scene(scene, channel)
+            + f" High quality, kid friendly, colorful, professional YouTube illustration, {orientation}."
+        )
+    # A random seed keeps every render unique, so the duplicate-image guard in
+    # resolve_scene_image never rejects a repeat of the same picture.
+    seed = random.randint(0, 2_000_000_000)
+
+    errors: list[str] = []
+    for model in _CLOUDFLARE_MODELS:
+        request = urllib.request.Request(
+            f"https://api.cloudflare.com/client/v4/accounts/{account}/ai/run/{model}",
+            data=json.dumps(_cloudflare_body(model, prompt, seed, landscape)).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                "User-Agent": "StoryBotStudio/1.0",
+            },
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=120) as response:
+                payload = response.read()
+                content_type = response.headers.get("Content-Type", "")
+            data = _cloudflare_image_bytes(payload, content_type)
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", "replace")[:200] if exc.fp else ""
+            errors.append(f"{model.split('/')[-1]}: HTTP {exc.code} {detail}")
+            continue
+        except Exception as exc:
+            errors.append(f"{model.split('/')[-1]}: {exc}")
+            continue
+        if len(data) < 20_000:
+            errors.append(f"{model.split('/')[-1]}: image too small ({len(data)} bytes)")
+            continue
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_bytes(data)
+        _write_provider_marker(output_path, "cloudflare")
+        return output_path
+    raise RuntimeError(f"Cloudflare Workers AI failed. {' | '.join(errors)}")
+
+
 def scene_image_path(scene: Scene) -> Path:
     return settings.root / scene.image
 
@@ -348,6 +491,108 @@ def _write_openverse_metadata(output_path: Path, item: dict) -> None:
     output_path.with_suffix(output_path.suffix + ".openverse.json").write_text(
         json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8",
     )
+
+
+def pexels_image_ready() -> bool:
+    """Pexels needs a free key; the dashboard stores it in data/pexels_api_key.txt."""
+    from .thumbnails import pexels_api_key
+
+    return bool(pexels_api_key())
+
+
+def _pexels_scene_query(scene: Scene, channel=None) -> str:
+    """Search words taken from the scene itself, plus the channel's mood hint."""
+    from .thumbnails import _GENRE_STOCK_HINT
+
+    words = [
+        word.lower() for word in re.findall(r"[A-Za-z]{3,}", f"{scene.label} {scene.image_prompt or ''}")
+        if word.lower() not in _STOCK_STOP_WORDS
+    ][:5]
+    genre = str(getattr(channel, "genre", "") or "").lower()
+    return " ".join([*words, _GENRE_STOCK_HINT.get(genre, "")]).strip()[:120]
+
+
+def generate_pexels_scene_image(
+    scene: Scene,
+    output_path: Path,
+    channel=None,
+    landscape: bool = False,
+    attempts: int = 6,
+) -> Path:
+    """A free, license-clear Pexels photo for one scene.
+
+    This is the dependable stock fallback for real-world channels when the AI
+    providers are down (OpenAI billing limit, Pollinations HTTP 429). Photos are
+    picked from a random offset so repeat renders of the same scene get
+    different pictures instead of tripping the duplicate-image guard.
+    """
+    from .thumbnails import pexels_api_key
+
+    key = pexels_api_key()
+    if not key:
+        raise RuntimeError("No Pexels API key. Get a free one at pexels.com/api.")
+    query = _pexels_scene_query(scene, channel)
+    params = urllib.parse.urlencode({
+        "query": query,
+        "orientation": "landscape" if landscape else "portrait",
+        "size": "large",
+        "per_page": "40",
+    })
+    request = urllib.request.Request(
+        f"https://api.pexels.com/v1/search?{params}",
+        headers={"Authorization": key, "User-Agent": "StoryBotStudio/1.0"},
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    photos = list(payload.get("photos") or [])
+    if not photos:
+        raise RuntimeError(f"Pexels returned no photo for: {query}")
+
+    offset = random.randrange(len(photos))
+    errors: list[str] = []
+    best: tuple[bytes, dict] | None = None
+    for index in range(min(len(photos), max(1, attempts))):
+        photo = photos[(offset + index) % len(photos)]
+        source = photo.get("src") or {}
+        url = source.get("large2x") or source.get("original") or source.get("large")
+        if not url:
+            continue
+        try:
+            image_request = urllib.request.Request(
+                str(url), headers={"User-Agent": "StoryBotStudio/1.0"},
+            )
+            with urllib.request.urlopen(image_request, timeout=60) as response:
+                data = response.read()
+                content_type = response.headers.get("Content-Type", "")
+        except Exception as exc:
+            errors.append(str(exc))
+            continue
+        if "image" not in content_type.lower() or len(data) < 50_000:
+            continue
+        if best is None or len(data) > len(best[0]):
+            best = (data, photo)
+        if len(data) >= MIN_GOOD_IMAGE_BYTES:
+            break
+    if best is None:
+        detail = errors[-1] if errors else "downloaded files were too small"
+        raise RuntimeError(f"Pexels image download failed: {detail}")
+
+    data, photo = best
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_bytes(data)
+    _write_provider_marker(output_path, "pexels")
+    output_path.with_suffix(output_path.suffix + ".pexels.json").write_text(
+        json.dumps({
+            "provider": "pexels",
+            "creator": photo.get("photographer"),
+            "creator_url": photo.get("photographer_url"),
+            "source_page": photo.get("url"),
+            "width": photo.get("width"),
+            "height": photo.get("height"),
+        }, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return output_path
 
 
 def generate_openverse_scene_image(
@@ -746,12 +991,23 @@ def _generate_best_available_scene_image(scene: Scene, output_path: Path, channe
         except Exception as exc:
             errors.append(f"OpenAI: {exc}")
             _pause_provider("openai")
+    if cloudflare_image_ready() and _provider_available("cloudflare"):
+        try:
+            return generate_cloudflare_scene_image(scene, output_path, channel)
+        except Exception as exc:
+            errors.append(f"Cloudflare: {exc}")
+            _pause_provider("cloudflare", seconds=120)
     if pollinations_image_ready() and _provider_available("pollinations"):
         try:
             return generate_pollinations_scene_image(scene, output_path, channel)
         except Exception as exc:
             errors.append(f"Pollinations: {exc}")
             _pause_provider("pollinations", seconds=90)
+    if stock_allowed and pexels_image_ready():
+        try:
+            return generate_pexels_scene_image(scene, output_path, channel)
+        except Exception as exc:
+            errors.append(f"Pexels: {exc}")
     if stock_allowed and openverse_image_ready():
         try:
             return generate_openverse_scene_image(scene, output_path, channel)
@@ -835,6 +1091,15 @@ def generate_fresh_image(
         except Exception as exc:
             errors.append(f"OpenAI: {exc}")
             _pause_provider("openai")
+    # Free generated art. Ahead of Pollinations because the free Pollinations
+    # endpoint now rate-limits anonymous callers, and ahead of every stock
+    # source because only generated art suits the cartoon kids channel.
+    if cloudflare_image_ready() and _provider_available("cloudflare"):
+        try:
+            return generate_cloudflare_scene_image(scene, output_path, channel, landscape=landscape)
+        except Exception as exc:
+            errors.append(f"Cloudflare: {exc}")
+            _pause_provider("cloudflare", seconds=120)
     if pollinations_image_ready() and _provider_available("pollinations"):
         try:
             return generate_pollinations_scene_image(
@@ -844,6 +1109,16 @@ def generate_fresh_image(
         except Exception as exc:
             errors.append(f"Pollinations: {exc}")
             _pause_provider("pollinations", seconds=90)
+    # Pexels is the reliable stock source when both AI providers are down.
+    # Openverse/Wikimedia are searched afterwards because they return far fewer
+    # usable, on-topic photos.
+    if stock_allowed and pexels_image_ready():
+        try:
+            return generate_pexels_scene_image(
+                scene, output_path, channel, landscape=landscape, attempts=6,
+            )
+        except Exception as exc:
+            errors.append(f"Pexels: {exc}")
     if stock_allowed and openverse_image_ready():
         try:
             return generate_openverse_scene_image(

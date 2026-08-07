@@ -9,8 +9,10 @@ credentials/
 *.bak
 client_secret*.json
 *.WRONG-kids-bak
-# API keys the dashboard saves to disk
+# API keys and tokens the dashboard saves to disk
 data/*_api_key.txt
+data/*_api_token.txt
+data/cloudflare_account_id.txt
 
 # ============================================================
 #  Python
@@ -39,6 +41,8 @@ logs/
 data/thumbnail_disabled_channels.json
 data/thumbnail_reenabled_channels.json
 data/trending_history.json
+# Which YouTube accounts are connected on THIS machine
+data/youtube_accounts.json
 # Hand-made thumbnails you drop in (large, machine-specific)
 data/thumbnails/
 data/comfyui_workflow.json

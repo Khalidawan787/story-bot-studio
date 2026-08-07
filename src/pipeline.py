@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from .config import settings
-from .db import active_upload_backoff, apply_upload_error_backoff, approval_mode_enabled, auto_upload_queue_enabled, save_video, set_drive_url
+from .db import active_upload_backoff, apply_upload_error_backoff, approval_mode_enabled, save_video, set_drive_url
 from .models import Lesson, RenderedAssets, Scene
 from .music import add_background_music
 from .quality import inspect_video
@@ -110,6 +110,10 @@ def run_pipeline(
     # channel=None keeps the original kids behavior (voice/seo/upload unchanged).
     voice = channel.voice if channel is not None else None
     channel_id = channel.id if channel is not None else "kids"
+    # Which of the channel's connected YouTube accounts this video is for. The
+    # caller passes an account-specific channel object, so the upload below
+    # already uses that account's token.
+    account_id = str(getattr(channel, "account", "main") or "main")
 
     if content_type not in {"short", "long"}:
         raise ValueError(f"Unsupported content type: {content_type}")
@@ -168,15 +172,14 @@ def run_pipeline(
     _append_image_credits(metadata, run_dir)
 
     approval_required = upload and quality_report["passed"] and not is_daily and approval_mode_enabled(channel_id)
-    use_queue = auto_upload_queue_enabled(channel_id) if queue is None else queue
-    queue_requested = (
-        upload and quality_report["passed"] and not approval_required
-        and use_queue
-    )
+    # There is no timed upload queue: a rendered video uploads straight away,
+    # limited only by this channel's own daily budget. YouTube then keeps it
+    # private until its scheduled publish time. The `queue` argument is kept so
+    # older callers and saved scripts still work, but it no longer holds videos
+    # back.
     status = (
         "quality_failed" if not quality_report["passed"]
         else "awaiting_approval" if approval_required
-        else "queued_for_upload" if queue_requested
         else "daily_upload_pending" if is_daily
         else "rendered"
     )
@@ -184,7 +187,7 @@ def run_pipeline(
     error = None if quality_report["passed"] else "; ".join(quality_report["issues"])
     publish_at = None
     reservation_key = f"job:{job_id}"
-    if upload and quality_report["passed"] and not approval_required and not queue_requested:
+    if upload and quality_report["passed"] and not approval_required:
         backoff = active_upload_backoff(channel_id)
         if backoff:
             reason, retry_after = backoff
@@ -210,11 +213,15 @@ def run_pipeline(
                             f"Duplicate upload blocked ({duplicate[2]}); "
                             f"existing video #{duplicate[0]}: {duplicate[1]}"
                         )
-                    elif is_daily and daily_upload_cap_reached(channel_id):
+                    elif daily_upload_cap_reached(channel_id, account_id):
+                        # This channel already used its own daily budget. The
+                        # video waits as pending and the worker uploads it as
+                        # soon as the quota day resets.
                         status = "daily_upload_pending"
                         error = (
                             f"{channel.name} app upload cap reached "
-                            f"({upload_limit_for_channel(channel_id)}/day for this channel); "
+                            f"({upload_limit_for_channel(channel_id, account_id)}/day "
+                            "for this YouTube account); "
                             "automatic upload resumes after the YouTube quota day resets"
                         )
                     else:
@@ -258,6 +265,7 @@ def run_pipeline(
         content_type=content_type,
         quality_report=str(quality_report),
         is_daily=is_daily,
+        account=account_id,
         )
 
     # Cross-platform publishing is independent from YouTube. A social failure
@@ -270,7 +278,7 @@ def run_pipeline(
     except Exception as exc:
         print(f"[social] automatic publish skipped: {exc}")
     # Optional: push the final video to Google Drive and free the local copy.
-    if settings.enable_drive_storage and status not in {"queued_for_upload", "daily_upload_pending", "duplicate_blocked", "quality_failed"}:
+    if settings.enable_drive_storage and status not in {"daily_upload_pending", "duplicate_blocked", "quality_failed"}:
         try:
             from .drive_storage import upload_file
             link = upload_file(Path(video_path))

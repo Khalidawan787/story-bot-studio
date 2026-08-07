@@ -12,7 +12,7 @@
       "category_id": "27",
       "seo_suffix": "for Kids | Fun Learning Shorts",
       "image_style": "cute colorful cartoon for kids, bright, friendly",
-      "client_secret": "client_secret.json",
+      "client_secret": "client_secret_kids.json",
       "token": "token.json",
       "topics_per_day": 2
     },

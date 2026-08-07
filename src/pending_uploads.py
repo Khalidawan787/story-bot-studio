@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-import os
+import re
 import sqlite3
 import threading
 from datetime import datetime, timedelta, timezone
@@ -26,11 +26,30 @@ from .youtube_upload import ThumbnailUploadError, set_thumbnail, upload_video
 _UPLOAD_GATE = threading.Lock()
 
 
-def _channel_for(channel_id):
+def _channel_for(channel_id, account_id: str | None = None):
+    """The channel as one of its connected YouTube accounts sees it.
+
+    Falling back to the plain channel keeps working for rows written before
+    multi-account support, and for an account that was removed later.
+    """
+    try:
+        from .youtube_accounts import channel_for_account
+
+        return channel_for_account(channel_id or "kids", account_id)
+    except Exception:
+        pass
     try:
         return get_channel(channel_id or "kids")
     except Exception:
         return default_channel()
+
+
+def _row_channel(row):
+    try:
+        account = row["account"]
+    except (IndexError, KeyError):
+        account = None
+    return _channel_for(row["channel"], account)
 
 
 def _video_id_from_url(video_url: str) -> str:
@@ -66,7 +85,8 @@ def pending_rows(
         return conn.execute(
             f"""
             SELECT id, topic, video_path, thumbnail_path, video_url, status, error,
-                   upload_date, publish_at, channel, content_type, COALESCE(is_daily, 0) AS is_daily
+                   upload_date, publish_at, channel, COALESCE(account, 'main') AS account,
+                   content_type, COALESCE(is_daily, 0) AS is_daily
             FROM videos
             WHERE {' AND '.join(where)}
             ORDER BY id ASC
@@ -100,38 +120,68 @@ def _thumbnail_rate_limited_today(row: sqlite3.Row) -> bool:
 def _quota_day_start() -> datetime:
     """Start of the current YouTube quota day (midnight Pacific)."""
     return youtube_quota_day_start()
-def upload_limit_for_channel(channel_id: str) -> int:
-    """Return this channel's unattended daily upload cap."""
-    key = f"YOUTUBE_UPLOAD_DAILY_LIMIT_{channel_id.upper().replace('-', '_')}"
+def _env_int(key: str) -> int | None:
     raw = os.getenv(key, "").strip()
-    if raw:
-        try:
-            return max(0, int(raw))
-        except ValueError:
-            pass
+    if not raw:
+        return None
+    try:
+        return max(0, int(raw))
+    except ValueError:
+        return None
+
+
+def _env_suffix(value: str) -> str:
+    return str(value).upper().replace("-", "_")
+
+
+def upload_limit_for_channel(channel_id: str, account_id: str | None = None) -> int:
+    """Daily upload cap for one YouTube account of one channel.
+
+    Each connected account gets its own budget, because each is a separate
+    YouTube channel. Set a per-account cap with
+    YOUTUBE_UPLOAD_DAILY_LIMIT_<CHANNEL>_<ACCOUNT>; without one the channel's
+    own limit applies to every account it owns.
+    """
+    account = str(account_id or "").strip()
+    if account and account != "main":
+        specific = _env_int(
+            f"YOUTUBE_UPLOAD_DAILY_LIMIT_{_env_suffix(channel_id)}_{_env_suffix(account)}"
+        )
+        if specific is not None:
+            return specific
+    channel_limit = _env_int(f"YOUTUBE_UPLOAD_DAILY_LIMIT_{_env_suffix(channel_id)}")
+    if channel_limit is not None:
+        return channel_limit
     return max(0, int(settings.youtube_upload_daily_limit))
 
 
-def uploads_today_count(channel_id: str | None = None) -> int:
-    """How many videos reached YouTube for one channel since quota reset."""
+def uploads_today_count(channel_id: str | None = None, account_id: str | None = None) -> int:
+    """How many videos reached YouTube for one account since quota reset."""
     if not settings.db_path.exists():
         return 0
-    conn = sqlite3.connect(settings.db_path)
+    # db.connect() runs the schema migrations, so the account column exists even
+    # when this is the first thing a fresh process touches.
+    from .db import connect as _connect
+
+    conn = _connect()
     try:
         sql = "SELECT COUNT(*) FROM videos WHERE video_url IS NOT NULL AND upload_date >= ?"
         params: list[object] = [_quota_day_start().isoformat()]
         if channel_id:
             sql += " AND channel = ?"
             params.append(channel_id)
+        if account_id:
+            sql += " AND COALESCE(account, 'main') = ?"
+            params.append(account_id)
         row = conn.execute(sql, params).fetchone()
         return int(row[0] or 0)
     finally:
         conn.close()
 
 
-def daily_upload_cap_reached(channel_id: str) -> bool:
-    limit = upload_limit_for_channel(channel_id)
-    return limit > 0 and uploads_today_count(channel_id) >= limit
+def daily_upload_cap_reached(channel_id: str, account_id: str | None = None) -> bool:
+    limit = upload_limit_for_channel(channel_id, account_id)
+    return limit > 0 and uploads_today_count(channel_id, account_id) >= limit
 
 
 def _file_sha256(path: Path) -> str:
@@ -143,6 +193,27 @@ def _file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+# Long videos label every scene positionally — "The Beginning", "Part 2" …
+# "Part 20" — so two completely different long videos carried byte-identical
+# signatures and each new one was blocked as a duplicate of the last. A
+# positional label says nothing about content, so the narration line is used
+# instead wherever the label is one of these.
+_POSITIONAL_LABEL = re.compile(
+    r"^(?:part|scene|chapter|step|section)\s*\d+$"
+    r"|^(?:the\s+)?(?:beginning|start|intro|introduction|outro|ending|end|conclusion|finale)$"
+)
+
+# Below this many distinct scenes an overlap ratio is meaningless: a kids lesson
+# with three one-word labels ("red", "blue", "yellow") hits 0.66 by sharing two
+# ordinary colour words. Exact-topic and identical-file checks still apply.
+_MIN_SIGNATURE_FOR_NEAR_DUPLICATE = 4
+
+
+def _normalize_signature_text(value: object) -> str:
+    text = str(value or "").lower()
+    return " ".join("".join(ch if ch.isalnum() else " " for ch in text).split())
+
+
 def _topic_scene_signature(channel_id: str, topic: str) -> set[str]:
     try:
         lesson = load_lesson_for(_channel_for(channel_id), topic)
@@ -150,17 +221,20 @@ def _topic_scene_signature(channel_id: str, topic: str) -> set[str]:
         return set()
     result: set[str] = set()
     for scene in lesson.scenes:
-        value = str(getattr(scene, "label", "") or getattr(scene, "line", "")).lower()
-        normalized = " ".join(
-            "".join(ch if ch.isalnum() else " " for ch in value).split()
-        )
-        if normalized:
-            result.add(normalized)
+        label = _normalize_signature_text(getattr(scene, "label", ""))
+        if not label or _POSITIONAL_LABEL.match(label):
+            label = _normalize_signature_text(getattr(scene, "line", ""))
+        if label:
+            result.add(label)
     return result
 
 
 def _near_duplicate_signature(left: set[str], right: set[str]) -> bool:
-    return bool(left and right) and len(left & right) / min(len(left), len(right)) >= 0.66
+    if not left or not right:
+        return False
+    if min(len(left), len(right)) < _MIN_SIGNATURE_FOR_NEAR_DUPLICATE:
+        return False
+    return len(left & right) / min(len(left), len(right)) >= 0.66
 
 def _youtube_url_available(video_url: str, status: str, publish_at: str | None) -> bool | None:
     """Verify a public YouTube URL without consuming Data API quota."""
@@ -199,7 +273,10 @@ def find_uploaded_duplicate(
     conn.row_factory = sqlite3.Row
     try:
         rows = conn.execute(
-            """SELECT id, topic, video_path, video_url
+            # status and publish_at are read by _existing_copy_is_valid below;
+            # leaving them out made every duplicate check raise
+            # "IndexError: No item with that key" and fail the upload.
+            """SELECT id, topic, video_path, video_url, status, publish_at
                FROM videos
                WHERE channel = ? AND COALESCE(content_type, 'short') = ?
                  AND video_url IS NOT NULL AND status != 'remote_missing'
@@ -350,7 +427,7 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
     video_id = int(row["id"])
     video_path = Path(row["video_path"])
     thumbnail_path = Path(row["thumbnail_path"])
-    channel = _channel_for(row["channel"])
+    channel = _row_channel(row)
     reservation_key = f"video:{video_id}"
 
     # SAFETY: never auto-open OAuth for a genre channel that has no token yet.
@@ -401,9 +478,10 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
         # is spent, so it never exhausts YouTube's daily quota. The video stays
         # pending and uploads automatically after the quota resets.
         with _UPLOAD_GATE:
-            if not bypass_safety_cap and daily_upload_cap_reached(channel.id):
+            if not bypass_safety_cap and daily_upload_cap_reached(channel.id, channel.account):
                 return (f"{video_id}: {channel.name} app upload cap reached "
-                        f"({upload_limit_for_channel(channel.id)}/day for this channel) "
+                        f"({upload_limit_for_channel(channel.id, channel.account)}/day "
+                        "for this YouTube account) "
                         "— resumes after the YouTube quota day resets")
 
             metadata = build_metadata(
@@ -454,7 +532,8 @@ def daily_pending_rows(limit: int = 20) -> list[sqlite3.Row]:
     try:
         return conn.execute(
             """SELECT id, topic, video_path, thumbnail_path, video_url, status, error,
-                      upload_date, publish_at, channel, content_type, COALESCE(is_daily, 0) AS is_daily
+                      upload_date, publish_at, channel, COALESCE(account, 'main') AS account,
+                      content_type, COALESCE(is_daily, 0) AS is_daily
                FROM videos
                WHERE COALESCE(is_daily, 0) = 1
                  AND status IN ('daily_upload_pending', 'thumbnail_pending')
@@ -482,7 +561,7 @@ def _row_by_id(video_id: int) -> sqlite3.Row | None:
     try:
         return conn.execute(
             """
-            SELECT id, topic, video_path, thumbnail_path, video_url, status, error, upload_date, publish_at, channel, content_type, COALESCE(is_daily, 0) AS is_daily
+            SELECT id, topic, video_path, thumbnail_path, video_url, status, error, upload_date, publish_at, channel, COALESCE(account, 'main') AS account, content_type, COALESCE(is_daily, 0) AS is_daily
             FROM videos WHERE id = ?
             """,
             (video_id,),
@@ -527,7 +606,7 @@ def refresh_thumbnails(limit: int = 20, channel_id: str | None = None,
     messages: list[str] = []
     for row in _published_rows(limit, channel_id=channel_id):
         video_id = int(row["id"])
-        channel = _channel_for(row["channel"])
+        channel = _row_channel(row)
         if not thumbnail_upload_allowed(channel.id):
             messages.append(
                 f"{video_id}: skipped — custom thumbnails are off for '{channel.id}'. "

@@ -99,6 +99,12 @@ class Settings:
     # Free, license-clear stock photos: 200 requests/hour, 20k/month, no cost.
     # Get a key at https://www.pexels.com/api/
     pexels_api_key: str = os.getenv("PEXELS_API_KEY", "")
+    # Cloudflare Workers AI: free daily allowance, no credit card, no bill. This
+    # is the free AI generator that keeps the cartoon kids channel running when
+    # OpenAI billing is capped and Pollinations is rate-limiting. Get both values
+    # free at dash.cloudflare.com -> AI -> Workers AI (account id + API token).
+    cloudflare_account_id: str = os.getenv("CLOUDFLARE_ACCOUNT_ID", "")
+    cloudflare_api_token: str = os.getenv("CLOUDFLARE_API_TOKEN", "")
     # ComfyUI running locally: truly unlimited images, no credits and no API bill.
     # Needs ComfyUI started with --listen and a FLUX.1-schnell (Apache-2.0) or
     # SDXL checkpoint. Off by default because it needs a real GPU to be usable.

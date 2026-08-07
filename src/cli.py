@@ -55,6 +55,19 @@ def main() -> None:
 
     auth = sub.add_parser("authorize", help="Authorize ONE channel's YouTube account (one-time).")
     auth.add_argument("--channel", required=True, help="Channel id to authorize")
+    auth.add_argument("--account", default="main",
+                      help="Which connected YouTube account of that channel (default: main)")
+
+    acc = sub.add_parser(
+        "accounts",
+        help="Connect several YouTube channels to one dashboard channel.",
+    )
+    acc.add_argument("action", choices=["list", "add", "remove"], help="What to do")
+    acc.add_argument("--channel", required=True, help="Dashboard channel id, e.g. kids")
+    acc.add_argument("--account", default="", help="Account id for add/remove, e.g. abc")
+    acc.add_argument("--name", default="", help="Display name of that YouTube channel")
+    acc.add_argument("--client-secret", default="",
+                     help="Own client_secret file for a separate upload quota (optional)")
 
     retry = sub.add_parser("retry-uploads", help="Upload rendered/failed videos when internet is back.")
     retry.add_argument("--limit", default="20", help="Maximum pending videos to retry.")
@@ -85,8 +98,106 @@ def main() -> None:
     catchup.add_argument("--upload", default="true", help="true or false")
     catchup.add_argument("--start-hour", default="8", help="Local hour after which catch-up can run.")
 
+    imgtest = sub.add_parser(
+        "test-images",
+        help="Check every image provider for one channel and say which ones work.",
+    )
+    imgtest.add_argument("--channel", default="kids", help="Channel id")
+
+    sub.add_parser(
+        "quota-status",
+        help="Show which Cloud project each channel uploads through, and today's usage.",
+    )
+
     args = parser.parse_args()
 
+    if args.command == "test-images":
+        import tempfile
+        from pathlib import Path
+
+        from .image_assets import (
+            cloudflare_image_ready, generate_cloudflare_scene_image,
+            generate_openverse_scene_image, generate_pexels_scene_image,
+            generate_pollinations_scene_image, generate_openai_scene_image,
+            image_api_ready, openverse_image_ready, pexels_image_ready,
+            pollinations_image_ready, _stock_fallback_allowed,
+        )
+        from .models import Scene
+
+        channel = get_channel(args.channel)
+        scene = Scene(
+            label="Red", line="Red is a bright colour.", image="test_red.jpg",
+            image_prompt="a cheerful red balloon in a bright classroom",
+        )
+        stock_ok = _stock_fallback_allowed(scene, channel)
+        providers = [
+            ("OpenAI (paid)", image_api_ready(), generate_openai_scene_image, True),
+            ("Cloudflare (free)", cloudflare_image_ready(), generate_cloudflare_scene_image, True),
+            ("Pollinations (free)", pollinations_image_ready(), generate_pollinations_scene_image, True),
+            ("Pexels (free stock)", pexels_image_ready(), generate_pexels_scene_image, stock_ok),
+            ("Openverse (free stock)", openverse_image_ready(), generate_openverse_scene_image, stock_ok),
+        ]
+        print(f"Image providers for channel '{channel.id}':\n")
+        working = 0
+        with tempfile.TemporaryDirectory() as folder:
+            for name, configured, generate, allowed in providers:
+                if not allowed:
+                    print(f"  {name:24} n/a  (stock photos are not used on this channel)")
+                    continue
+                if not configured:
+                    print(f"  {name:24} OFF  (not configured)")
+                    continue
+                target = Path(folder) / f"{name.split()[0].lower()}.jpg"
+                try:
+                    result = generate(scene, target, channel)
+                    print(f"  {name:24} OK   ({result.stat().st_size:,} bytes)")
+                    working += 1
+                except Exception as exc:
+                    print(f"  {name:24} FAIL {str(exc)[:110]}")
+        print()
+        if working:
+            print(f"{working} provider(s) working - videos can be created.")
+        else:
+            print("No provider is working, so every video will stop before rendering.")
+            if not _stock_fallback_allowed(scene, channel):
+                print("This channel needs generated cartoon art, so add a free "
+                      "Cloudflare Workers AI token (see FREE_IMAGE_SETUP.md).")
+        return
+    if args.command == "quota-status":
+        import json as _json
+        from collections import defaultdict
+
+        from .channels import load_channels
+        from .pending_uploads import upload_limit_for_channel, uploads_today_count
+
+        from .youtube_accounts import list_accounts
+
+        by_project: dict[str, list[tuple[str, str]]] = defaultdict(list)
+        print(f"{'CHANNEL':<12} {'ACCOUNT':<10} {'TODAY':<8} {'CLOUD PROJECT':<28} CONNECTED")
+        for channel in load_channels():
+            for account in list_accounts(channel.id):
+                secret = account.client_secret_path
+                try:
+                    blob = _json.loads(secret.read_text(encoding="utf-8"))
+                    config = blob.get("installed") or blob.get("web") or {}
+                    project = str(config.get("project_id") or "unknown")
+                except Exception:
+                    project = "MISSING FILE"
+                used = uploads_today_count(channel.id, account.id)
+                limit = upload_limit_for_channel(channel.id, account.id)
+                # Only authorized accounts actually spend the project's quota.
+                if account.connected:
+                    by_project[project].append((channel.id, account.id))
+                print(f"{channel.id:<12} {account.id:<10} {f'{used}/{limit}':<8} {project:<28} "
+                      f"{'yes' if account.connected else 'no (not authorized)'}")
+        print()
+        # One project = 10,000 units/day and one upload costs 1,600 units.
+        for project, pairs in sorted(by_project.items()):
+            budget = sum(upload_limit_for_channel(cid, aid) for cid, aid in pairs)
+            names = ", ".join(f"{cid}/{aid}" for cid, aid in pairs)
+            note = "OK" if budget <= 6 else "OVER API QUOTA (max 6/day) - uploads will fail with HTTP 429"
+            print(f"{project}: {names} = {budget} uploads/day configured [{note}]")
+        return
     if args.command == "make":
         channel = get_channel(args.channel)
         lesson = load_lesson_for(channel, args.topic)
@@ -140,15 +251,47 @@ def main() -> None:
         return
     elif args.command == "authorize":
         from src.youtube_upload import _youtube as _get_service
-        channel = get_channel(args.channel)
+        from src.youtube_accounts import channel_for_account
+
+        channel = channel_for_account(args.channel, args.account)
         print("=" * 60)
-        print(f"Authorizing channel: {channel.name}  (genre: {channel.genre})")
+        print(f"Authorizing: {channel.name}  (channel: {args.channel}, "
+              f"account: {channel.account}, genre: {channel.genre})")
         print("A browser will open. IMPORTANT: on the Google screen, pick the")
-        print(f"YouTube channel that is meant for '{channel.genre}' content —")
-        print("NOT your kids channel. Each genre needs its OWN YouTube channel.")
+        print("YouTube channel this account is meant for. Every account must")
+        print("point at its OWN YouTube channel, or videos land on the wrong one.")
         print("=" * 60)
         _get_service(channel.client_secret_path, channel.token_path)
         print(f"Done. Token saved: {channel.token}")
+        return
+    elif args.command == "accounts":
+        from src.youtube_accounts import add_account, list_accounts, remove_account
+        from src.pending_uploads import upload_limit_for_channel, uploads_today_count
+
+        if args.action == "add":
+            account = add_account(
+                args.channel, args.account, args.name, args.client_secret,
+            )
+            print(f"Added '{account.id}' ({account.label}) to channel '{args.channel}'.")
+            print("Now authorize it against its own YouTube channel:")
+            print(f"  python -m src.cli authorize --channel {args.channel} --account {account.id}")
+            return
+        if args.action == "remove":
+            remove_account(args.channel, args.account)
+            print(f"Removed '{args.account}' from channel '{args.channel}'. "
+                  "Its token file was left on disk; delete it yourself if you want it gone.")
+            return
+        print(f"YouTube accounts for channel '{args.channel}':")
+        print()
+        print(f"  {'ACCOUNT':<12} {'TODAY':<8} {'NAME':<28} {'TOKEN':<28} CONNECTED")
+        for account in list_accounts(args.channel):
+            used = uploads_today_count(args.channel, account.id)
+            limit = upload_limit_for_channel(args.channel, account.id)
+            print(f"  {account.id:<12} {f'{used}/{limit}':<8} {account.label[:27]:<28} "
+                  f"{account.token[:27]:<28} {'yes' if account.connected else 'no'}")
+        print()
+        print("Add another YouTube channel here with:")
+        print(f"  python -m src.cli accounts add --channel {args.channel} --account <id> --name \"<name>\"")
         return
     elif args.command == "buffer":
         channel = get_channel(args.channel)

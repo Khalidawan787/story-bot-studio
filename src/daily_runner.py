@@ -163,8 +163,18 @@ def _lesson_signature(raw: dict) -> set[str]:
     return signature
 
 
+# A shorter lesson than this has too few scene labels for an overlap ratio to
+# mean anything. Kids lessons carry three one-word labels ("red", "blue",
+# "yellow"), so two shared colour words scored 0.66 and quietly blocked all
+# 1,203 kids topics against the 144 already published — the daily run then had
+# nothing to pick and produced no video at all.
+_MIN_SIGNATURE_FOR_SIMILARITY = 4
+
+
 def _too_similar_signature(left: set[str], right: set[str]) -> bool:
     if not left or not right:
+        return False
+    if min(len(left), len(right)) < _MIN_SIGNATURE_FOR_SIMILARITY:
         return False
     return len(left & right) / min(len(left), len(right)) >= 0.66
 
@@ -261,6 +271,32 @@ def select_daily_topics(count: int = 2, channel: Channel | None = None) -> list[
     return selected[:count]
 
 
+def publish_targets(channel: Channel) -> list[Channel]:
+    """One Channel per connected YouTube account of this channel.
+
+    A channel may publish to several YouTube channels at once. Each target is
+    the same channel wearing a different login, and the batch below gives every
+    target its OWN topics: topic history is kept per channel, so a topic used on
+    one account is never offered to another. That is what keeps the accounts
+    from carrying the same video, which YouTube would treat as reused content.
+
+    With nothing configured this returns exactly one target — the original
+    single-account behaviour.
+    """
+    try:
+        from .youtube_accounts import channel_for_account, connected_accounts
+
+        targets = [
+            channel_for_account(channel.id, account.id)
+            for account in connected_accounts(channel.id)
+        ]
+        if targets:
+            return targets
+    except Exception:
+        pass
+    return [channel]
+
+
 def _run_short_batch(
     count: int, upload: bool, channel: Channel, acquire_lock: bool,
     queue: bool | None = None, is_daily: bool = False,
@@ -273,12 +309,19 @@ def _run_short_batch(
             return [("lock", "SKIPPED another generation job is already running for this channel")]
     try:
         results: list[tuple[str, str]] = []
-        for topic_key in select_daily_topics(count, channel):
-            try:
-                assets = run_pipeline(load_lesson_for(channel, topic_key), upload=upload, channel=channel, queue=queue, is_daily=is_daily)
-                results.append((topic_key, f"OK {assets.job_id}"))
-            except Exception as exc:
-                results.append((topic_key, f"FAILED {exc}"))
+        for target in publish_targets(channel):
+            # Topics are chosen inside the loop, after the previous account's
+            # videos are already recorded, so no two accounts get the same one.
+            for topic_key in select_daily_topics(count, target):
+                label = topic_key if target.account == "main" else f"{topic_key} -> {target.account}"
+                try:
+                    assets = run_pipeline(
+                        load_lesson_for(target, topic_key), upload=upload,
+                        channel=target, queue=queue, is_daily=is_daily,
+                    )
+                    results.append((label, f"OK {assets.job_id}"))
+                except Exception as exc:
+                    results.append((label, f"FAILED {exc}"))
         return results
     finally:
         if locked:
@@ -401,15 +444,20 @@ def run_long_batch(
         while len(ideas) < count:
             ideas.append(None)
         results: list[tuple[str, str]] = []
-        for idea in ideas:
-            try:
-                key, assets = run_long_video(
-                    channel, prompt=idea, upload=upload, scenes=scenes,
-                    queue=queue,
-                )
-                results.append((key, f"OK {assets.job_id}"))
-            except Exception as exc:
-                results.append((str(idea or "auto")[:50], f"FAILED {exc}"))
+        # Each connected YouTube account gets its own freshly written long
+        # video, never a copy of another account's: generate_from_prompt writes
+        # a new script per call, so the accounts never share a topic.
+        for target in publish_targets(channel):
+            for idea in ideas:
+                try:
+                    key, assets = run_long_video(
+                        target, prompt=idea, upload=upload, scenes=scenes,
+                        queue=queue,
+                    )
+                    label = key if target.account == "main" else f"{key} -> {target.account}"
+                    results.append((label, f"OK {assets.job_id}"))
+                except Exception as exc:
+                    results.append((str(idea or "auto")[:50], f"FAILED {exc}"))
         return results
     finally:
         release_generation_lock(lock_name)

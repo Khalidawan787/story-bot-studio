@@ -9,7 +9,7 @@ from .models import Lesson
 # so a few long junk tags would silently crowd out the strong ones.
 TITLE_LIMIT = 100
 DESCRIPTION_LIMIT = 5000
-TAGS_TOTAL_LIMIT = 480
+TAGS_TOTAL_LIMIT = 450
 MAX_TAG_LENGTH = 45
 MIN_STRONG_TAGS = 12
 
@@ -91,16 +91,25 @@ def _keyword_phrases(lesson: Lesson, limit: int = 12) -> list[str]:
 
 
 def _pack_tags(candidates: list[str]) -> list[str]:
-    """Dedupe and fill YouTube's 500-character tag budget, strongest first."""
+    """Dedupe and fill YouTube's 500-character tag budget, strongest first.
+
+    YouTube rejects the whole upload with `invalidTags` when the budget is
+    exceeded, and it wraps any tag that contains a space in quotes before
+    counting, so a multi-word tag really costs len + 2. Counting only len + 1
+    overshot the real limit and made every upload fail with HTTP 400.
+    """
     tags: list[str] = []
     seen: set[str] = set()
     used = 0
     for raw in candidates:
-        tag = " ".join(str(raw or "").split()).strip(" ,.-").lower()
+        # `<` and `>` are rejected outright; quotes break YouTube's own quoting.
+        cleaned = "".join(ch for ch in str(raw or "") if ch not in '<>"')
+        tag = " ".join(cleaned.split()).strip(" ,.-").lower()
         if len(tag) < 3 or len(tag) > MAX_TAG_LENGTH or tag in seen:
             continue
-        # YouTube counts each tag plus its separator.
-        cost = len(tag) + 1
+        # Separator, plus the two quote characters YouTube adds around any
+        # tag containing a space.
+        cost = len(tag) + 1 + (2 if " " in tag else 0)
         if used + cost > TAGS_TOTAL_LIMIT:
             continue
         seen.add(tag)

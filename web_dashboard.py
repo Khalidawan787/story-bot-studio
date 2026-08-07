@@ -33,8 +33,8 @@ from src.genre_topics import generate_genre_topics
 from src.pending_uploads import retry_pending_uploads, upload_one, uploads_today_count, upload_limit_for_channel
 from src.image_assets import (asset_stats, generate_missing_assets, upgrade_low_quality_assets,
                               pollinations_key_configured, save_pollinations_api_key)
-from src.db import active_upload_backoff, api_usage_today, approval_mode_enabled, auto_upload_queue_enabled, cleanup_uploaded_videos, delete_video, mark_queued_for_upload, set_approval_mode, set_auto_upload_queue, set_drive_url, social_uploads_for_channel
-from src import drive_storage, youtube_analytics, social_accounts, social_publish, upload_queue
+from src.db import active_upload_backoff, api_usage_today, approval_mode_enabled, cleanup_uploaded_videos, delete_video, set_approval_mode, set_drive_url, social_uploads_for_channel
+from src import drive_storage, youtube_accounts, youtube_analytics, social_accounts, social_publish, upload_queue
 from src.notifier import is_configured as notifications_configured, notify
 
 app = Flask(__name__)
@@ -62,7 +62,8 @@ PORT = _dashboard_port()
 JOBS = {}
 
 
-def channel_rows(channel_id: str, content_type: str | None = None, view: str = "all") -> list[sqlite3.Row]:
+def channel_rows(channel_id: str, content_type: str | None = None, view: str = "all",
+                 account_id: str | None = None) -> list[sqlite3.Row]:
     if not settings.db_path.exists():
         return []
     conn = sqlite3.connect(settings.db_path)
@@ -70,6 +71,10 @@ def channel_rows(channel_id: str, content_type: str | None = None, view: str = "
     try:
         where = "channel = ? AND hidden_at IS NULL"
         params: list[object] = [channel_id]
+        # With several YouTube channels connected, show one at a time.
+        if account_id:
+            where += " AND COALESCE(account, 'main') = ?"
+            params.append(account_id)
         if content_type in {"short", "long"}:
             where += " AND COALESCE(content_type, 'short') = ?"
             params.append(content_type)
@@ -80,7 +85,8 @@ def channel_rows(channel_id: str, content_type: str | None = None, view: str = "
             SELECT id, job_id, topic, title, video_path, thumbnail_path,
                    video_url, status, error, created_at, drive_url, publish_at,
                    COALESCE(content_type, 'short') AS content_type, quality_report,
-                   COALESCE(upload_progress, 0) AS upload_progress
+                   COALESCE(upload_progress, 0) AS upload_progress,
+                   COALESCE(account, 'main') AS account
             FROM videos WHERE {where} ORDER BY id DESC
             """,
             params,
@@ -273,6 +279,9 @@ def _safe_media(raw_path: str) -> Path:
 
 @app.route("/")
 def home():
+    # Google returns here with ?code=…&state=… after a channel is picked.
+    if request.args.get("state") and (request.args.get("code") or request.args.get("error")):
+        return _finish_oauth()
     channels = load_channels()
     ch = current_channel()
     topics = load_topics_for(ch)
@@ -282,7 +291,14 @@ def home():
     selected_view = request.args.get("view", "all")
     if selected_view not in {"all", "unuploaded"}:
         selected_view = "all"
-    vids = channel_rows(ch.id, None if selected_type == "all" else selected_type, selected_view)
+    account_ids = [a.id for a in youtube_accounts.list_accounts(ch.id)]
+    selected_account = request.args.get("account", "all")
+    if selected_account not in account_ids:
+        selected_account = "all"
+    vids = channel_rows(
+        ch.id, None if selected_type == "all" else selected_type, selected_view,
+        None if selected_account == "all" else selected_account,
+    )
     uploaded = sum(1 for v in vids if v["status"] in ("uploaded", "scheduled"))
 
     analytics = youtube_analytics.snapshot(ch)
@@ -300,10 +316,18 @@ def home():
         topics=[(k, v.get("title", k)) for k, v in topics.items()],
         videos=vids, jobs=JOBS, assets=assets, storage=storage_info(),
         connected=ch.token_path.exists(), upload_pause=active_upload_backoff(ch.id),
-        selected_type=selected_type, selected_view=selected_view, analytics=analytics, approval_mode=approval_mode_enabled(ch.id),
+        selected_type=selected_type, selected_view=selected_view,
+        selected_account=selected_account, analytics=analytics, approval_mode=approval_mode_enabled(ch.id),
         upload_queue=upload_queue.queue_snapshot(ch.id),
+        accounts=[
+            {
+                "id": a.id, "name": a.label, "connected": a.connected,
+                "used_today": uploads_today_count(ch.id, a.id),
+                "limit": upload_limit_for_channel(ch.id, a.id),
+            }
+            for a in youtube_accounts.list_accounts(ch.id)
+        ],
         channel_uploads_today=uploads_today_count(ch.id), channel_upload_limit=upload_limit_for_channel(ch.id),
-        queue_times=upload_queue.expected_upload_times(),
         api=api_center(ch), calendar=upcoming_schedule(ch.id),
         social=social_accounts.public_status(ch.id), social_uploads=social_uploads_for_channel(ch.id),
         stats={"topics": len(topics), "videos": len(vids), "uploaded": uploaded,
@@ -320,22 +344,9 @@ def approval_mode_route():
     return redirect(url_for("home", channel=ch.id))
 
 
-@app.route("/queue-mode", methods=["POST"])
-def queue_mode_route():
-    ch = current_channel()
-    enabled = request.form.get("enabled") == "on"
-    set_auto_upload_queue(ch.id, enabled)
-    flash(f"Auto-upload queue {'enabled' if enabled else 'paused'} for {ch.name}.", "ok")
-    return redirect(url_for("home", channel=ch.id))
-
-
-@app.route("/queue-one", methods=["POST"])
-def queue_one_route():
-    ch = current_channel()
-    video_id = int(request.form.get("id", "0"))
-    mark_queued_for_upload(video_id)
-    flash(f"Video #{video_id} added to the timed YouTube queue.", "ok")
-    return redirect(url_for("home", channel=ch.id, view="unuploaded"))
+# The timed upload queue was removed: rendered videos upload straight away and
+# YouTube holds each one private until its scheduled publish time. /queue-mode
+# and /queue-one are gone with it.
 
 
 @app.route("/regenerate-one", methods=["POST"])
@@ -446,10 +457,9 @@ def daily():
 def long_auto():
     ch = current_channel()
     upload = request.form.get("upload") == "on"
-    queue = request.form.get("queue") == "on"
 
     def job():
-        results = run_long_batch(ch, count=1, upload=upload, scenes=20, queue=queue)
+        results = run_long_batch(ch, count=1, upload=upload, scenes=20, queue=False)
         return _long_job_summary(results)
 
     start_job(f"[{ch.id}] Auto 5-minute long video", job)
@@ -462,14 +472,13 @@ def long_custom():
     ch = current_channel()
     prompt = (request.form.get("prompt") or "").strip()
     upload = request.form.get("upload") == "on"
-    queue = request.form.get("queue") == "on"
     if not prompt:
         flash("Type a topic for the new long video.", "error")
         return redirect(url_for("home", channel=ch.id))
 
     def job():
         results = run_long_batch(
-            ch, count=1, upload=upload, prompts=[prompt], scenes=20, queue=queue,
+            ch, count=1, upload=upload, prompts=[prompt], scenes=20, queue=False,
         )
         return _long_job_summary(results)
 
@@ -483,7 +492,6 @@ def long_topic():
     ch = current_channel()
     topic_key = (request.form.get("topic") or "").strip()
     upload = request.form.get("upload") == "on"
-    queue = request.form.get("queue") == "on"
     topics = load_topics_for(ch)
     if topic_key not in topics:
         flash("Choose a valid topic for the long video.", "error")
@@ -493,7 +501,7 @@ def long_topic():
 
     def job():
         results = run_long_batch(
-            ch, count=1, upload=upload, prompts=[prompt], scenes=20, queue=queue,
+            ch, count=1, upload=upload, prompts=[prompt], scenes=20, queue=False,
         )
         return _long_job_summary(results)
 
@@ -507,10 +515,9 @@ def long_batch():
     ch = current_channel()
     count = max(1, min(20, int(request.form.get("count", "2"))))
     upload = request.form.get("upload") == "on"
-    queue = request.form.get("queue") == "on"
 
     def job():
-        results = run_long_batch(ch, count=count, upload=upload, scenes=20, queue=queue)
+        results = run_long_batch(ch, count=count, upload=upload, scenes=20, queue=False)
         return _long_job_summary(results)
 
     start_job(f"[{ch.id}] Long batch of {count}", job)
@@ -623,16 +630,7 @@ def upload_now_route():
 def upload_one_route():
     ch = current_channel()
     vid = int(request.form.get("id"))
-    # Approval and normal rendered videos enter the timed queue. Thumbnail
-    # repair keeps its immediate retry behavior because the video is online.
-    conn = sqlite3.connect(settings.db_path)
-    row = conn.execute("SELECT status FROM videos WHERE id = ? AND channel = ?", (vid, ch.id)).fetchone()
-    conn.close()
-    if row and row[0] in {"awaiting_approval", "rendered", "upload_failed"}:
-        mark_queued_for_upload(vid)
-        flash("Video approved and added to the timed YouTube queue.", "ok")
-        return redirect(url_for("home", channel=ch.id, view="unuploaded"))
-
+    # Only thumbnail repair reaches this route now; the video is already online.
     def job():
         return upload_one(vid)
 
@@ -808,29 +806,156 @@ def analytics_refresh():
     return redirect(url_for("home", channel=ch.id))
 
 
+# Google sign-in runs in the browser you already have open. The old button
+# started a background thread that tried to pop up a second browser window;
+# when that silently failed nothing at all appeared to happen. Now the click
+# navigates straight to Google and Google sends you back here.
+_PENDING_OAUTH: dict[str, dict] = {}
+
+
+def _oauth_flow(target, redirect_uri: str):
+    from google_auth_oauthlib.flow import InstalledAppFlow
+
+    from src.youtube_upload import SCOPES
+
+    flow = InstalledAppFlow.from_client_secrets_file(
+        str(target.client_secret_path), SCOPES,
+    )
+    flow.redirect_uri = redirect_uri
+    return flow
+
+
 @app.route("/connect", methods=["POST"])
 def connect():
     ch = current_channel()
+    return connect_account(ch.id, request.form.get("account", "main"))
 
-    def job():
-        from src.youtube_upload import connect_and_verify
-        name = connect_and_verify(ch.client_secret_path, ch.token_path)
-        return f"Connected to YouTube channel: {name}"
 
-    start_job(f"[{ch.id}] Connect YouTube", job)
-    flash("Opening Google sign-in in your browser — pick the CORRECT channel for this genre!", "ok")
-    return redirect(url_for("home", channel=ch.id))
+def _finish_oauth():
+    """Complete a Google sign-in that came back to the dashboard's own URL.
+
+    A Desktop OAuth client only accepts loopback redirects whose path is "/",
+    which is why Google returns here rather than to a dedicated callback route.
+    """
+    state = request.args.get("state", "")
+    pending = _PENDING_OAUTH.pop(state, None)
+    if not pending:
+        flash("That Google sign-in link expired. Press Connect again.", "error")
+        return redirect(url_for("home"))
+    channel_id, account_id = pending["channel"], pending["account"]
+    if request.args.get("error"):
+        flash(f"Google sign-in cancelled: {request.args['error']}", "error")
+        return redirect(url_for("home", channel=channel_id))
+    try:
+        target = youtube_accounts.channel_for_account(channel_id, account_id)
+        flow = _oauth_flow(target, pending["redirect_uri"])
+        flow.code_verifier = pending.get("code_verifier")
+        # oauthlib refuses to finish OAuth over plain http, and a loopback
+        # redirect is always http. google-auth-oauthlib solves this the same
+        # way in run_local_server: present the callback URL as https. Only this
+        # local string changes — the token request to Google is real HTTPS.
+        flow.fetch_token(
+            authorization_response=request.url.replace("http://", "https://", 1),
+        )
+        target.token_path.write_text(flow.credentials.to_json(), encoding="utf-8")
+    except Exception as exc:
+        flash(f"Google sign-in failed: {exc}", "error")
+        return redirect(url_for("home", channel=channel_id))
+
+    # Say which YouTube channel this actually linked to, so a wrong pick is
+    # obvious immediately instead of after videos land in the wrong place.
+    try:
+        from src.youtube_upload import _youtube
+
+        service = _youtube(target.client_secret_path, target.token_path)
+        items = service.channels().list(part="snippet", mine=True).execute().get("items", [])
+        name = items[0]["snippet"]["title"] if items else "(no channel on this account)"
+        # Show the real YouTube channel name in the row, so nobody has to type one.
+        youtube_accounts.set_account_name(channel_id, account_id, name)
+        flash(f"Connected '{account_id}' to YouTube channel: {name}", "ok")
+    except Exception as exc:
+        flash(f"Connected, but could not read the channel name: {exc}", "ok")
+    return redirect(url_for("home", channel=channel_id))
 
 
 @app.route("/disconnect", methods=["POST"])
 def disconnect():
     ch = current_channel()
-    tok = ch.token_path
+    account_id = request.form.get("account", "main")
+    target = youtube_accounts.channel_for_account(ch.id, account_id)
+    tok = target.token_path
     if tok.exists():
         tok.rename(tok.with_suffix(tok.suffix + ".bak"))
-        flash(f"Disconnected {ch.name}. You can Connect again to link a channel.", "ok")
+        flash(f"Disconnected {target.name}. Connect again to link a channel.", "ok")
     else:
-        flash("This channel was not connected.", "error")
+        flash("This account was not connected.", "error")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/account-add")
+def account_add():
+    """One button: make room for another YouTube channel and sign in to it.
+
+    The account id is generated and the display name is filled in from the
+    YouTube channel itself once the sign-in finishes, so the only thing to do
+    is pick the right channel in the Google window.
+    """
+    ch = current_channel()
+    try:
+        account = youtube_accounts.add_account(
+            ch.id,
+            request.form.get("account", "").strip() or youtube_accounts.next_account_id(ch.id),
+            request.form.get("name", ""),
+            request.form.get("client_secret", ""),
+        )
+    except Exception as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("home", channel=ch.id))
+    # Go straight to Google instead of making them find the Connect button.
+    return connect_account(ch.id, account.id)
+
+
+def connect_account(channel_id: str, account_id: str):
+    """Send the browser to Google's channel picker for one account."""
+    try:
+        target = youtube_accounts.channel_for_account(channel_id, account_id)
+    except Exception as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("home", channel=channel_id))
+    if not target.client_secret_path.is_file():
+        flash(f"Missing OAuth JSON file: {target.client_secret}", "error")
+        return redirect(url_for("home", channel=channel_id))
+    try:
+        redirect_uri = url_for("home", _external=True)
+        flow = _oauth_flow(target, redirect_uri)
+        # No include_granted_scopes: if this Google account already granted
+        # extra scopes elsewhere, Google would hand back a wider scope set than
+        # was asked for and the exchange fails with "Scope has changed".
+        auth_url, state = flow.authorization_url(
+            access_type="offline", prompt="consent",
+        )
+    except Exception as exc:
+        flash(f"Could not start Google sign-in: {exc}", "error")
+        return redirect(url_for("home", channel=channel_id))
+    _PENDING_OAUTH[state] = {
+        "channel": channel_id, "account": account_id, "redirect_uri": redirect_uri,
+        # PKCE: authorization_url() generated this verifier and Google saw only
+        # its hash. The callback builds a fresh Flow, so the verifier has to be
+        # carried across or the exchange fails with "Missing code verifier".
+        "code_verifier": flow.code_verifier,
+    }
+    return redirect(auth_url)
+
+
+@app.post("/account-remove")
+def account_remove():
+    ch = current_channel()
+    account_id = request.form.get("account", "")
+    try:
+        youtube_accounts.remove_account(ch.id, account_id)
+        flash(f"Removed '{account_id}' from {ch.name}.", "ok")
+    except Exception as exc:
+        flash(str(exc), "error")
     return redirect(url_for("home", channel=ch.id))
 
 
@@ -1017,7 +1142,7 @@ PAGE = r"""
   .st.uploaded{background:#123122;color:var(--ok)}.st.rendered{background:#2a2f4d;color:#b9c1e6}
   .st.scheduled{background:#1a2b4d;color:#8fb4ff}
   .st.thumbnail_pending{background:#3a2f12;color:var(--warn)}.st.upload_failed,.st.quality_failed,.st.duplicate_blocked{background:#331617;color:var(--err)}
-  .st.daily_upload_pending{background:#2d2754;color:#c9b7ff}.st.awaiting_approval{background:#3a2f12;color:var(--warn)}.st.queued_for_upload{background:#162d4d;color:#8fc7ff}
+  .st.daily_upload_pending{background:#2d2754;color:#c9b7ff}.st.awaiting_approval{background:#3a2f12;color:var(--warn)}
   .muted{color:var(--muted);font-size:13px}.err{color:var(--err);font-size:11px;margin-top:6px;max-height:48px;overflow:auto}
   .hint{font-size:12px;color:var(--muted);margin-top:8px}
   .bar{height:8px;background:#12162a;border-radius:999px;overflow:hidden;margin:8px 0}
@@ -1104,21 +1229,50 @@ PAGE = r"""
   {% endif %}
 
   <div class="card" style="margin-bottom:18px">
-    <div class="row" style="justify-content:space-between">
-      <div>
-        <strong>YouTube connection</strong> —
-        {% if connected %}<span style="color:var(--ok)">● Connected</span>{% else %}<span style="color:var(--warn)">● Not connected</span>{% endif %}
-        <div class="hint">Click "Connect &amp; verify" and it will show which YouTube channel this is linked to. Make sure a genre channel is NOT linked to your kids channel.</div>
-        {% if api.youtube_project.independent %}
-          <div class="hint" style="color:var(--ok)"><strong>Independent YouTube API project active</strong> for {{ch.name}}.</div>
-        {% else %}
-          <div class="hint" style="color:#ffd27a"><strong>Google quota is shared with:</strong> {{api.youtube_project.shared_with|join(', ')}}. Upload a separate OAuth JSON below for a truly separate quota.</div>
-        {% endif %}
-      </div>
-      <div class="row">
-        <form method="post" action="/connect"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green sm" type="submit">🔗 Connect &amp; verify</button></form>
-        {% if connected %}<form method="post" action="/disconnect" onsubmit="return confirm('Disconnect this channel?')"><input type="hidden" name="channel" value="{{ch.id}}"><button class="ghost sm" type="submit">Disconnect</button></form>{% endif %}
-      </div>
+    <div>
+      <strong>YouTube channels for {{ch.name}}</strong>
+      <div class="hint">{{ch.name}} can publish to as many YouTube channels as you like. Each one gets its <b>own topics</b> — the same video is never sent to two of them, so YouTube never sees reused content.</div>
+      {% if api.youtube_project.independent %}
+        <div class="hint" style="color:var(--ok)"><strong>Independent YouTube API project active</strong> for {{ch.name}}.</div>
+      {% else %}
+        <div class="hint" style="color:#ffd27a"><strong>Google quota is shared with:</strong> {{api.youtube_project.shared_with|join(', ')}}. Give an account its own OAuth JSON below for a truly separate quota.</div>
+      {% endif %}
+    </div>
+    <table style="width:100%;margin-top:12px;border-collapse:collapse">
+      <tr style="text-align:left;color:var(--muted);font-size:13px">
+        <th style="padding:6px 8px">Account</th><th style="padding:6px 8px">YouTube channel</th>
+        <th style="padding:6px 8px">Today</th><th style="padding:6px 8px">Status</th><th></th>
+      </tr>
+      {% for a in accounts %}
+      <tr style="border-top:1px solid var(--line)">
+        <td style="padding:8px"><span class="chip">{{a.id}}</span></td>
+        <td style="padding:8px">{{a.name}}</td>
+        <td style="padding:8px">{{a.used_today}} / {{a.limit}}</td>
+        <td style="padding:8px">{% if a.connected %}<span style="color:var(--ok)">● Connected</span>{% else %}<span style="color:var(--warn)">● Not connected</span>{% endif %}</td>
+        <td style="padding:8px"><div class="row" style="justify-content:flex-end">
+          <form method="post" action="/connect"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="account" value="{{a.id}}"><button class="{{'ghost' if a.connected else 'green'}} sm" type="submit">🔗 {{'Reconnect' if a.connected else 'Connect & verify'}}</button></form>
+          {% if a.connected %}<form method="post" action="/disconnect" onsubmit="return confirm('Disconnect {{a.name}}?')"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="account" value="{{a.id}}"><button class="ghost sm" type="submit">Disconnect</button></form>{% endif %}
+          {% if a.id != 'main' %}<form method="post" action="/account-remove" onsubmit="return confirm('Remove {{a.id}} from {{ch.name}}?')"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="account" value="{{a.id}}"><button class="red sm" type="submit">Remove</button></form>{% endif %}
+        </div></td>
+      </tr>
+      {% endfor %}
+    </table>
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+      <form method="post" action="/account-add" class="row" style="align-items:center;gap:12px">
+        <input type="hidden" name="channel" value="{{ch.id}}">
+        <button class="green" type="submit">➕ Connect another YouTube channel</button>
+        <span class="hint">One click — Google opens, you pick the channel, and it appears in the list above. No names or ids to fill in.</span>
+      </form>
+      <details style="margin-top:10px">
+        <summary class="hint" style="cursor:pointer">Advanced: give this new channel its own upload quota</summary>
+        <form method="post" action="/account-add" class="row" style="margin-top:10px;align-items:flex-end;gap:10px">
+          <input type="hidden" name="channel" value="{{ch.id}}">
+          <label style="flex:0 0 150px">Account id <span class="hint">(optional)</span><input name="account" placeholder="auto" pattern="[a-z0-9][a-z0-9_-]*"></label>
+          <label style="flex:1 1 260px">Own OAuth JSON file <span class="hint">(from a separate Cloud project)</span><input name="client_secret" placeholder="client_secret_{{ch.id}}_ch2.json"></label>
+          <button type="submit">Add &amp; connect</button>
+        </form>
+        <div class="hint" style="margin-top:8px">Accounts sharing one OAuth JSON also share its daily upload quota. Put the JSON file in the app folder first, then type its filename here.</div>
+      </details>
     </div>
   </div>
 
@@ -1193,12 +1347,10 @@ PAGE = r"""
 
   <div class="card" style="margin-bottom:16px;border-left:4px solid var(--ok)">
     <div class="row" style="justify-content:space-between">
-      <div><strong>Timed YouTube Upload Queue</strong><div class="hint"><strong>{{upload_queue.count}}</strong> video(s) waiting. Public releases stay {{upload_queue.gap_hours|round(0)|int}} hours apart. Next queue check: {{upload_queue.next_at[:16].replace('T',' ')}} UTC.</div><div class="hint"><strong>{{ch.name}} upload budget today:</strong> {{channel_uploads_today}} / {{channel_upload_limit}} for this channel. Manual Upload Now remains available.</div>{% if upload_pause %}<div class="hint" style="color:#ffd27a"><strong>Queue is ON but waiting for YouTube quota:</strong> 0% — resumes {{upload_pause[1]|localdt}}. Video creation remains active.</div>{% endif %}</div>
-      <div class="row">
-        <form method="post" action="/queue-mode"><input type="hidden" name="channel" value="{{ch.id}}"><label class="chk"><input type="checkbox" name="enabled" {{'checked' if upload_queue.enabled else ''}} onchange="this.form.submit()"> {{'Queue ON' if upload_queue.enabled else 'Queue PAUSED'}}</label></form>
-      </div>
+      <div><strong>Direct YouTube Upload</strong><div class="hint">Videos upload to YouTube as soon as they are rendered — there is no waiting queue. YouTube then releases each one publicly at its own scheduled time.</div><div class="hint"><strong>{{ch.name}} upload budget today:</strong> {{channel_uploads_today}} / {{channel_upload_limit}} for this channel.{% if upload_queue.count %} <strong>{{upload_queue.count}}</strong> video(s) waiting for the next quota day.{% endif %}</div>{% if upload_pause %}<div class="hint" style="color:#ffd27a"><strong>Waiting for YouTube quota:</strong> resumes {{upload_pause[1]|localdt}}. Video creation remains active.</div>{% endif %}</div>
     </div>
   </div>
+
   <div class="workspace-title">Create videos for {{ch.name}}</div>
   <div class="action-grid">
     <div class="card action-card">
@@ -1212,7 +1364,7 @@ PAGE = r"""
           </select>
         </label>
         <div class="row" style="margin-top:12px">
-          <label class="chk"><input type="checkbox" name="upload" checked> Add to timed queue</label>
+          <label class="chk"><input type="checkbox" name="upload" checked> Upload to YouTube</label>
           <button type="submit">Create One Short</button>
         </div>
       </form>
@@ -1239,7 +1391,7 @@ PAGE = r"""
         </form>
       </div>
       {% endif %}
-      <div class="action-note">Creates vertical Shorts for {{ch.name}} only. Finished videos enter Unuploaded Videos and the shared timed queue.</div>
+      <div class="action-note">Creates vertical Shorts for {{ch.name}} only. Finished videos upload to YouTube straight away.</div>
     </div>
 
     <div class="card action-card long">
@@ -1254,8 +1406,7 @@ PAGE = r"""
           </select>
         </label>
         <div class="row" style="margin-top:12px">
-          <label class="chk"><input type="checkbox" name="upload" checked onchange="syncQueue(this)"> Upload to YouTube</label>
-          <label class="chk"><input type="checkbox" name="queue" checked> Add to timed queue</label>
+          <label class="chk"><input type="checkbox" name="upload" checked> Upload to YouTube</label>
           <button class="pink" type="submit">Create One Long</button>
         </div>
       </form>
@@ -1263,15 +1414,13 @@ PAGE = r"""
       <div class="row" style="margin-top:14px">
         <form method="post" action="/long-auto" class="row">
           <input type="hidden" name="channel" value="{{ch.id}}">
-          <label class="chk"><input type="checkbox" name="upload" checked onchange="syncQueue(this)"> Upload to YouTube</label>
-          <label class="chk"><input type="checkbox" name="queue" checked> Add to timed queue</label>
+          <label class="chk"><input type="checkbox" name="upload" checked> Upload to YouTube</label>
           <button class="green" type="submit">Auto Long</button>
         </form>
         <form method="post" action="/long-batch" class="row">
           <input type="hidden" name="channel" value="{{ch.id}}">
           <input type="number" name="count" value="2" min="1" max="20" style="width:70px" title="long videos">
-          <label class="chk"><input type="checkbox" name="upload" checked onchange="syncQueue(this)"> Upload to YouTube</label>
-          <label class="chk"><input type="checkbox" name="queue" checked> Add to timed queue</label>
+          <label class="chk"><input type="checkbox" name="upload" checked> Upload to YouTube</label>
           <button class="ghost" type="submit">Create Batch</button>
         </form>
         <form method="post" action="/retry">
@@ -1287,12 +1436,11 @@ PAGE = r"""
           <input type="text" name="prompt" placeholder="e.g. A complete story about a brave little lion" required>
         </label>
         <div class="row" style="margin-top:12px">
-          <label class="chk"><input type="checkbox" name="upload" checked onchange="syncQueue(this)"> Upload to YouTube</label>
-          <label class="chk"><input type="checkbox" name="queue" checked> Add to timed queue</label>
+          <label class="chk"><input type="checkbox" name="upload" checked> Upload to YouTube</label>
           <button class="pink" type="submit">Create From My Topic</button>
         </div>
       </form>
-      <div class="action-note">Create as many long videos as needed for {{ch.name}}. <b>Upload to YouTube</b> off = video stays in the dashboard only (no upload). On + <b>timed queue</b> = uploads one-by-one with the shared 3-hour gap; on without the queue = uploads right away.</div>
+      <div class="action-note">Create as many long videos as needed for {{ch.name}}. <b>Upload to YouTube</b> off = the video stays in the dashboard only; on = it uploads to YouTube as soon as it is rendered.</div>
     </div>
 
     <details class="card action-card buffer full advanced-card">
@@ -1461,20 +1609,26 @@ PAGE = r"""
   <div class="row" style="justify-content:space-between;margin-top:22px">
     <h2 style="margin:0">Videos ? {{ch.name}}</h2>
     <div class="row">
-      <a class="tab {{'active' if selected_view=='all' and selected_type=='all' else ''}}" href="/?channel={{ch.id}}&amp;type=all&amp;view=all">All</a>
-      <a class="tab {{'active' if selected_view=='unuploaded' else ''}}" href="/?channel={{ch.id}}&amp;type=all&amp;view=unuploaded">Unuploaded ({{upload_queue.unuploaded_count}})</a>
-      <a class="tab {{'active' if selected_view=='all' and selected_type=='short' else ''}}" href="/?channel={{ch.id}}&amp;type=short&amp;view=all">Shorts</a>
-      <a class="tab {{'active' if selected_view=='all' and selected_type=='long' else ''}}" href="/?channel={{ch.id}}&amp;type=long&amp;view=all">Long Videos</a>
+      {% if accounts|length > 1 %}
+      <select onchange="location.href=this.value" title="Show videos of one YouTube channel">
+        <option value="/?channel={{ch.id}}&amp;type={{selected_type}}&amp;view={{selected_view}}&amp;account=all" {{'selected' if selected_account=='all' else ''}}>All YouTube channels</option>
+        {% for a in accounts %}<option value="/?channel={{ch.id}}&amp;type={{selected_type}}&amp;view={{selected_view}}&amp;account={{a.id}}" {{'selected' if selected_account==a.id else ''}}>{{a.name}}</option>{% endfor %}
+      </select>
+      {% endif %}
+      <a class="tab {{'active' if selected_view=='all' and selected_type=='all' else ''}}" href="/?channel={{ch.id}}&amp;type=all&amp;view=all&amp;account={{selected_account}}">All</a>
+      <a class="tab {{'active' if selected_view=='unuploaded' else ''}}" href="/?channel={{ch.id}}&amp;type=all&amp;view=unuploaded&amp;account={{selected_account}}">Unuploaded ({{upload_queue.unuploaded_count}})</a>
+      <a class="tab {{'active' if selected_view=='all' and selected_type=='short' else ''}}" href="/?channel={{ch.id}}&amp;type=short&amp;view=all&amp;account={{selected_account}}">Shorts</a>
+      <a class="tab {{'active' if selected_view=='all' and selected_type=='long' else ''}}" href="/?channel={{ch.id}}&amp;type=long&amp;view=all&amp;account={{selected_account}}">Long Videos</a>
     </div>
   </div>
-  <div class="grid vids" style="margin-top:12px">
+  <div class="grid vids" id="video-grid" style="margin-top:12px">
     {% for v in videos %}
     {% set vs=social_uploads.get(v['id'], {}) %}
-    <div class="card vid">
+    <div class="card vid" data-video-card="{{v['id']}}">
       {% if v['drive_url'] %}
         <div class="card" style="text-align:center;padding:28px"><a href="{{v['drive_url']}}" target="_blank">☁ On Google Drive ↗</a></div>
       {% elif v['video_path'] %}<video controls preload="metadata" src="/media?path={{v['video_path']|urlencode}}"></video>{% endif %}
-      <div class="t">{{v['title']}} <span class="chip">{{v['content_type']}}</span></div>
+      <div class="t">{{v['title']}} <span class="chip">{{v['content_type']}}</span>{% if accounts|length > 1 %} <span class="chip">{{v['account']}}</span>{% endif %}</div>
       <div class="hint">Created: {{v['created_at']|localdt}}</div>
       <div class="row" style="justify-content:space-between;margin:2px 0 8px">
         <span class="st {{v['status']}}" data-video-status="{{v['id']}}">{{v['status']}}</span>
@@ -1484,17 +1638,17 @@ PAGE = r"""
         <div class="row" style="justify-content:space-between"><span class="hint">Uploading to YouTube</span><strong class="upload-percent">{{v['upload_progress']}}%</strong></div>
         <div class="bar" style="margin-top:5px"><i style="width:{{v['upload_progress']}}%"></i></div>
       </div>
-      {% if upload_pause and not v['video_url'] and v['status'] in ('rendered','upload_failed','daily_upload_pending','queued_for_upload') %}
+      {% if upload_pause and not v['video_url'] and v['status'] in ('rendered','upload_failed','daily_upload_pending') %}
       <div style="margin:8px 0;padding:9px 10px;border:1px solid #705b20;border-radius:9px;background:#302912">
         <div class="row" style="justify-content:space-between"><span class="hint">Waiting for YouTube quota reset</span><strong>0%</strong></div>
         <div class="bar" style="margin-top:5px"><i style="width:0%"></i></div>
         <div class="hint">Automatic retry: {{upload_pause[1]|localdt}}. Video creation continues while uploads wait.</div>
       </div>
       {% endif %}
-      {% if v['status']=='queued_for_upload' and queue_times.get(v['id']) %}<div class="hint" style="margin:6px 0;color:#9fc4ff"><strong>Expected YouTube upload:</strong> {{queue_times.get(v['id'])|localdt}}</div>{% elif v['status']=='daily_upload_pending' %}<div class="hint" style="margin:6px 0;color:#9fc4ff"><strong>Daily direct upload:</strong> {% if upload_pause %}YouTube quota paused. Automatic retry: {{upload_pause[1]|localdt}}.{% else %}Ready; automatic upload retry will start shortly.{% endif %}</div>{% endif %}      {% if vs %}<div class="social-state">{% for platform,item in vs.items() %}<span class="chip {{item.status}}">{{platform|title}}: {{item.status}}</span>{% if item.post_url %}<a href="{{item.post_url}}" target="_blank">Open</a>{% endif %}{% endfor %}</div>{% endif %}      {% if v['status']=='scheduled' and v['publish_at'] %}<div class="hint"><strong>Goes public on YouTube:</strong> {{v['publish_at']|localdt}}</div>{% endif %}
+      {% if v['status']=='daily_upload_pending' %}<div class="hint" style="margin:6px 0;color:#9fc4ff"><strong>Daily direct upload:</strong> {% if upload_pause %}YouTube quota paused. Automatic retry: {{upload_pause[1]|localdt}}.{% else %}Ready; automatic upload retry will start shortly.{% endif %}</div>{% endif %}      {% if vs %}<div class="social-state">{% for platform,item in vs.items() %}<span class="chip {{item.status}}">{{platform|title}}: {{item.status}}</span>{% if item.post_url %}<a href="{{item.post_url}}" target="_blank">Open</a>{% endif %}{% endfor %}</div>{% endif %}      {% if v['status']=='scheduled' and v['publish_at'] %}<div class="hint"><strong>Goes public on YouTube:</strong> {{v['publish_at']|localdt}}</div>{% endif %}
       <div class="row">
         <a href="/media?path={{v['video_path']|urlencode}}" download><button class="ghost sm" type="button">Download</button></a>
-        {% if upload_pause and not v['video_url'] and v['status'] in ('rendered','upload_failed','daily_upload_pending','queued_for_upload') %}<button class="ghost sm" type="button" disabled>Waiting for YouTube quota</button>{% elif v['status']=='daily_upload_pending' %}<form method="post" action="/upload-now"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><input type="hidden" name="type" value="{{selected_type}}"><button class="green sm" type="submit">Upload Now</button></form>{% elif v['status'] in ('awaiting_approval','rendered','upload_failed') %}<form method="post" action="/upload-now"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><input type="hidden" name="type" value="{{selected_type}}"><button class="green sm" type="submit">Upload to YouTube</button></form><form method="post" action="/upload-one"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="ghost sm" type="submit">Add to Timed Queue</button></form>{% elif v['status']=='thumbnail_pending' %}<form method="post" action="/upload-one"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="green sm" type="submit">Retry Thumbnail</button></form>{% endif %}
+        {% if upload_pause and not v['video_url'] and v['status'] in ('rendered','upload_failed','daily_upload_pending') %}<button class="ghost sm" type="button" disabled>Waiting for YouTube quota</button>{% elif v['status']=='daily_upload_pending' %}<form method="post" action="/upload-now"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><input type="hidden" name="type" value="{{selected_type}}"><button class="green sm" type="submit">Upload Now</button></form>{% elif v['status'] in ('awaiting_approval','rendered','upload_failed') %}<form method="post" action="/upload-now"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><input type="hidden" name="type" value="{{selected_type}}"><button class="green sm" type="submit">Upload to YouTube</button></form>{% elif v['status']=='thumbnail_pending' %}<form method="post" action="/upload-one"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="green sm" type="submit">Retry Thumbnail</button></form>{% endif %}
         {% if v['status'] in ('quality_failed','awaiting_approval','rendered','thumbnail_pending','uploaded','scheduled') %}<form method="post" action="/regenerate-one"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="ghost sm" type="submit">Regenerate</button></form>{% endif %}
         {% if social.facebook.configured and not (vs.get('facebook') and vs.get('facebook').status=='submitted') %}<form method="post" action="/social-upload"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><input type="hidden" name="platform" value="facebook"><input type="hidden" name="type" value="{{selected_type}}"><input type="hidden" name="view" value="{{selected_view}}"><button class="ghost sm" type="submit">Share Facebook</button></form>{% endif %}
         {% if social.tiktok.configured and not (vs.get('tiktok') and vs.get('tiktok').status=='submitted') %}<form method="post" action="/social-upload" onsubmit="return confirm('Send this video to TikTok? Direct Post mode confirms your consent for this upload.')"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><input type="hidden" name="platform" value="tiktok"><input type="hidden" name="consent" value="on"><input type="hidden" name="type" value="{{selected_type}}"><input type="hidden" name="view" value="{{selected_view}}"><button class="ghost sm" type="submit">Send TikTok</button></form>{% endif %}        <form method="post" action="/delete-one" onsubmit="return confirm('Delete this video?')"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="red sm" type="submit">Delete</button></form>
@@ -1506,18 +1660,6 @@ PAGE = r"""
   </section>
 </div>
 <script>
-// Long-video upload controls: when "Upload to YouTube" is off, the video is
-// only rendered into the dashboard (no upload), so the timed-queue choice no
-// longer applies — grey it out. When on again, restore the queue default.
-function syncQueue(cb){
-  var q = cb.form ? cb.form.querySelector('input[name=queue]') : null;
-  if(!q) return;
-  q.disabled = !cb.checked;
-  q.checked = cb.checked;
-}
-document.querySelectorAll('input[name=upload]').forEach(function(cb){
-  if(cb.form && cb.form.querySelector('input[name=queue]')) syncQueue(cb);
-});
 function showPlatform(name){
   const valid=['youtube','facebook','tiktok'];
   if(!valid.includes(name)) name='youtube';
@@ -1564,11 +1706,77 @@ async function poll(){
       const badge=document.querySelector('[data-video-status="'+id+'"]');
       if(badge && badge.textContent.trim()!==item.status){ badge.textContent=item.status; badge.className='st '+item.status; }
     });
-    if(!running && window.__was){ window.__was=false; setTimeout(()=>location.reload(),900); }
+    if(!running && window.__was){ window.__was=false; setTimeout(refreshVideos,900); }
     if(running) window.__was=true;
   }catch(e){}
 }
 setInterval(poll,1500); poll();
+
+// ---------------------------------------------------------------- no reloads
+// Clicking Upload Now used to POST, redirect, and reload the whole page, which
+// threw the reader back to the top of a long video list. Action forms are now
+// sent in the background and only the video grid is refreshed afterwards, so
+// the scroll position and the open tab both survive.
+function toast(message, kind){
+  var box=document.getElementById('inline-toast');
+  if(!box){
+    box=document.createElement('div');
+    box.id='inline-toast';
+    box.style.cssText='position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:99;'+
+      'padding:11px 18px;border-radius:10px;font-size:14px;box-shadow:0 6px 22px rgba(0,0,0,.45);max-width:min(560px,92vw)';
+    document.body.appendChild(box);
+  }
+  box.style.background = kind==='error' ? '#4a1f22' : '#173a24';
+  box.style.color = kind==='error' ? '#ffb4b4' : '#b7f5cd';
+  box.textContent=message;
+  box.style.display='block';
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer=setTimeout(function(){ box.style.display='none'; }, 4500);
+}
+
+async function refreshVideos(){
+  var grid=document.getElementById('video-grid');
+  if(!grid) return;
+  try{
+    const response=await fetch(window.location.href, {headers:{'X-Requested-With':'fetch'}});
+    const parsed=new DOMParser().parseFromString(await response.text(), 'text/html');
+    const fresh=parsed.getElementById('video-grid');
+    // A playing <video> would restart if its card were replaced, so keep any
+    // card the reader has open and only swap the rest.
+    const playing=grid.querySelector('video:not([paused])');
+    if(fresh && !(playing && !playing.paused)) grid.innerHTML=fresh.innerHTML;
+  }catch(e){}
+}
+
+document.addEventListener('submit', function(event){
+  const form=event.target;
+  if(form.method.toLowerCase()!=='post') return;
+  const action=(form.getAttribute('action')||'');
+  // Only the per-video action buttons; creation forms keep their normal flow
+  // so their job cards and flash messages appear as before.
+  const inline=['/upload-now','/upload-one','/delete-one','/regenerate-one','/social-upload'];
+  if(!inline.includes(action)) return;
+  event.preventDefault();
+  const button=form.querySelector('button');
+  const label=button?button.textContent:'';
+  if(button){ button.disabled=true; button.textContent='Working...'; }
+  fetch(action, {method:'POST', body:new FormData(form), headers:{'X-Requested-With':'fetch'}})
+    .then(function(response){
+      if(!response.ok) throw new Error('HTTP '+response.status);
+      if(action==='/delete-one'){
+        const card=form.closest('[data-video-card]');
+        if(card) card.remove();
+        toast('Video deleted.');
+        return;
+      }
+      toast(action==='/upload-now' ? 'Uploading to YouTube now. It stays private until its scheduled release time.'
+                                   : 'Done.');
+      window.__was=true;   // let the poller refresh the grid when the job ends
+      poll();
+    })
+    .catch(function(error){ toast('Failed: '+error.message, 'error'); })
+    .finally(function(){ if(button){ button.disabled=false; button.textContent=label; } });
+});
 </script>
 </body></html>
 """
