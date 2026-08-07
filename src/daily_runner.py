@@ -309,7 +309,14 @@ def _run_short_batch(
             return [("lock", "SKIPPED another generation job is already running for this channel")]
     try:
         results: list[tuple[str, str]] = []
-        for target in publish_targets(channel):
+        targets = publish_targets(channel)
+        # Building for a channel nobody signed in to only produces videos that
+        # cannot be published. Skip it when an upload was asked for; a
+        # build-only run still renders, which is what a first-time setup wants.
+        if upload and not any(getattr(t, "token_path", None) and t.token_path.is_file()
+                              for t in targets):
+            return [(channel.id, "SKIPPED not connected to YouTube")]
+        for target in targets:
             # Topics are chosen inside the loop, after the previous account's
             # videos are already recorded, so no two accounts get the same one.
             for topic_key in select_daily_topics(count, target):
