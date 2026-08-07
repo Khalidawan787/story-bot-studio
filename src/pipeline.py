@@ -99,6 +99,21 @@ def _interactive_kids_lesson(lesson: Lesson) -> Lesson:
     )
 
 
+def _needs_interactive_rewrite(lesson: Lesson, channel) -> bool:
+    """True only for the built-in kids bank, whose scenes are bare words.
+
+    Those entries carry a label ("Red") and a stub line, so the pipeline turns
+    them into spoken question-and-answer. A written script — an AI-generated
+    kids topic, for instance — already has real narration; rewriting it would
+    flatten every video back into the same four sentences, which is exactly the
+    sameness that makes a channel look mass-produced.
+    """
+    if channel is not None and not getattr(channel, "builtin", False):
+        return False
+    words = [len(str(scene.line or "").split()) for scene in lesson.scenes]
+    return not words or max(words) <= 8
+
+
 def _connected(channel) -> bool:
     """True when this channel/account already has a saved YouTube login."""
     try:
@@ -125,7 +140,7 @@ def run_pipeline(
 
     if content_type not in {"short", "long"}:
         raise ValueError(f"Unsupported content type: {content_type}")
-    if content_type == "short" and (channel is None or getattr(channel, "builtin", False)):
+    if content_type == "short" and _needs_interactive_rewrite(lesson, channel):
         lesson = _interactive_kids_lesson(lesson)
     run_dir = Path(resume_run_dir).resolve() if resume_run_dir else settings.runs_dir / datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     job_id = run_dir.name

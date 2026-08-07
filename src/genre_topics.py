@@ -204,16 +204,40 @@ def _script_json(prompt: str) -> dict:
 def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) -> dict:
     tone = GENRE_TONE.get(channel.genre, "engaging and well-paced")
     avoid = "; ".join(avoid_titles[-40:]) if avoid_titles else "none yet"
-    prompt = (
-        f"You are a scriptwriter for a {channel.genre} YouTube channel. Tone: {tone}.\n"
-        f"Write ONE fresh {channel.genre} short video script about an original, "
-        f"click-worthy topic. Do NOT reuse any of these titles: {avoid}.\n"
+    schema = (
         f"Return ONLY JSON: {{\"title\": str, \"intro\": str, \"outro\": str, "
         f"\"scenes\": [{{\"label\": str, \"line\": str, \"image_prompt\": str}}]}}.\n"
         f"Use exactly {scenes} scenes. 'line' = one narrated sentence. "
         f"'label' = a 2-4 word on-screen caption. 'image_prompt' = a visual "
         f"description of that scene (scene only, no art-style words)."
     )
+    if channel.builtin:
+        # Preschool needs a different brief from the story channels: a real
+        # challenge with a pause before the answer, a little story, and no
+        # brands or existing cartoon characters — using those on a kids channel
+        # is a copyright strike waiting to happen.
+        prompt = (
+            "You write short videos for a preschool learning YouTube channel "
+            "(ages 2-6). Tone: cheerful, warm, completely safe.\n"
+            "Write ONE fresh episode teaching a single simple idea: a colour, a "
+            "number, a shape, an animal, an opposite, a daily habit, a season, a "
+            "feeling or a sound.\n"
+            "Rules that matter:\n"
+            "- Open with a CHALLENGE the child can act on within two seconds.\n"
+            "- Do NOT answer your own question in the same sentence. Build a "
+            "short moment of searching or counting FIRST, reveal the answer LATER.\n"
+            "- Give it a tiny story or a funny moment, not a list of facts.\n"
+            "- Never name a brand, a company, or any existing cartoon character. "
+            "Invent your own friendly animal helper if you want one.\n"
+            "- Short sentences, simple words, nothing frightening.\n"
+            f"Do NOT reuse any of these titles: {avoid}.\n" + schema
+        )
+    else:
+        prompt = (
+            f"You are a scriptwriter for a {channel.genre} YouTube channel. Tone: {tone}.\n"
+            f"Write ONE fresh {channel.genre} short video script about an original, "
+            f"click-worthy topic. Do NOT reuse any of these titles: {avoid}.\n" + schema
+        )
     raw = _script_json(prompt)
 
     title = raw.get("title", "Untitled").strip()
@@ -479,10 +503,13 @@ def generate_genre_topics(channel: Channel, count: int = 5, scenes: int = 8) -> 
 
     scenes controls video length: ~5 scenes ≈ 30 sec, ~40 scenes ≈ 5-7 min.
     """
+    # The kids channel has a 1,200-topic bank, but those entries are bare words
+    # that all render into the same four sentences. Fresh written topics go
+    # alongside them in custom_kids_lessons.json and keep their own narration.
     if channel.builtin:
-        raise ValueError("The kids channel uses the built-in topic bank, not Gemini.")
-
-    lessons = load_genre_lessons(channel)
+        lessons = load_custom_lessons(channel)
+    else:
+        lessons = load_genre_lessons(channel)
     existing_titles = [v.get("title", "") for v in lessons.values()]
     added: list[str] = []
 
@@ -499,7 +526,7 @@ def generate_genre_topics(channel: Channel, count: int = 5, scenes: int = 8) -> 
         existing_titles.append(one["title"])
         added.append(key)
 
-    path = channel.lessons_path
+    path = channel.custom_lessons_path if channel.builtin else channel.lessons_path
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(lessons, indent=2, ensure_ascii=False), encoding="utf-8")
     return added

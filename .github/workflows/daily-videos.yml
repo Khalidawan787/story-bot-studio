@@ -19,7 +19,7 @@ on:
       long_videos:
         description: "Also make one ~5-minute video per channel"
         type: boolean
-        default: false
+        default: true
       upload:
         description: "Upload to YouTube (off = build only)"
         type: boolean
@@ -100,8 +100,11 @@ jobs:
             --upload ${{ github.event.inputs.upload || 'true' }} \
             --count "${{ github.event.inputs.shorts_per_channel }}"
 
+      # Runs on the schedule too. daily-long-all makes at most one per channel
+      # per day and skips a channel that already has today's, so it cannot run
+      # away with the upload budget.
       - name: Build and upload today's long videos
-        if: ${{ github.event.inputs.long_videos == 'true' }}
+        if: ${{ github.event.inputs.long_videos != 'false' }}
         run: python -m src.cli daily-long-all --upload ${{ github.event.inputs.upload || 'true' }}
 
       - name: Upload anything still waiting

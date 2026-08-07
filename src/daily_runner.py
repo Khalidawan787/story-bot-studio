@@ -178,11 +178,42 @@ def _too_similar_signature(left: set[str], right: set[str]) -> bool:
         return False
     return len(left & right) / min(len(left), len(right)) >= 0.66
 
+def load_custom_lessons_safe(channel: Channel) -> dict:
+    """Written topics for a channel; empty when none have been generated yet."""
+    try:
+        from .genre_topics import load_custom_lessons
+
+        return load_custom_lessons(channel)
+    except Exception:
+        return {}
+
+
 def select_daily_topics(count: int = 2, channel: Channel | None = None) -> list[str]:
     channel = _resolve(channel)
     lessons = load_topics_for(channel)
     history = _topic_history(channel.id)
     today_topics = _topics_generated_today(channel.id)
+
+    # The kids bank holds 1,200 bare-word entries that all render into the same
+    # four sentences. Freshly written topics are mixed in daily so the channel
+    # is not just that one template over and over.
+    if channel.builtin and settings.kids_fresh_topics_per_day > 0:
+        fresh_today = sum(
+            1 for key in today_topics if key in load_custom_lessons_safe(channel)
+        )
+        shortage = max(0, settings.kids_fresh_topics_per_day - fresh_today)
+        if shortage:
+            try:
+                from .genre_topics import generate_genre_topics
+
+                new_keys = generate_genre_topics(channel, count=shortage, scenes=6)
+                if new_keys:
+                    print(f"[daily_runner] kids: wrote {len(new_keys)} fresh topic(s)")
+                    lessons = load_topics_for(channel)
+            except Exception as exc:
+                # A written topic is a bonus, never a blocker: the 1,200-entry
+                # bank still carries the day if the model is unreachable.
+                print(f"[daily_runner] kids: could not write fresh topics ({exc})")
 
     # Genre channels start with a small seed bank. Replenish it before selection
     # and never auto-publish a genre topic that already exists in video history.

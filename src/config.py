@@ -119,6 +119,9 @@ class Settings:
     google_image_api_key: str = os.getenv("GOOGLE_IMAGE_API_KEY", "")
     google_image_cx: str = os.getenv("GOOGLE_IMAGE_CX", "")
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
+    # How many freshly written kids topics to add each day, on top of the
+    # built-in bank. 0 turns it off and the channel goes back to bank-only.
+    kids_fresh_topics_per_day: int = int(os.getenv("KIDS_FRESH_TOPICS_PER_DAY", "2"))
     gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
     # Second free Gemini model tried when the primary model's daily free quota
     # is exhausted. On the free tier each model has its OWN daily limit, so a
