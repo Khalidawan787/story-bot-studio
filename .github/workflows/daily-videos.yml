@@ -1,0 +1,142 @@
+name: Daily videos
+
+# Builds today's videos and uploads them to YouTube without this PC being on.
+#
+# State (the database and the generated topic banks) lives on a separate
+# "bot-state" branch. Without it every run would start blank, pick the same
+# topics again and re-upload videos that are already on YouTube.
+
+on:
+  schedule:
+    # 02:30 UTC = 07:30 in Pakistan. GitHub's scheduler is often 5-20 minutes
+    # late under load; that is normal and harmless here.
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+    inputs:
+      shorts_per_channel:
+        description: "Shorts per channel (0 = skip shorts)"
+        default: "2"
+      long_videos:
+        description: "Also make one ~5-minute video per channel"
+        type: boolean
+        default: false
+      upload:
+        description: "Upload to YouTube (off = build only)"
+        type: boolean
+        default: true
+
+# Never let two runs build at once: they would pick the same topics and fight
+# over the same state branch.
+concurrency:
+  group: daily-videos
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  # Nobody can click a Google sign-in here, so fail loudly instead of hanging
+  # on a browser prompt for a channel that was never connected.
+  NO_INTERACTIVE_AUTH: "1"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Restore the bot's state
+        run: |
+          set -e
+          if git ls-remote --exit-code --heads origin bot-state >/dev/null 2>&1; then
+            git fetch --depth=1 origin bot-state
+            git archive origin/bot-state | tar -x -C .
+            echo "State restored from the bot-state branch:"
+            ls -la bot.sqlite3 2>/dev/null || echo "  (no database yet)"
+          else
+            echo "No bot-state branch yet — this run starts fresh and creates it."
+          fi
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          ffmpeg -version | head -1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python packages
+        run: |
+          python -m pip install --upgrade pip -q
+          pip install -q -r requirements.txt
+
+      - name: Restore private files
+        env:
+          BOT_SECRETS_B64: ${{ secrets.BOT_SECRETS_B64 }}
+        run: python scripts/ci_secrets.py unpack
+
+      - name: Use Linux ffmpeg, not the Windows paths from .env
+        run: |
+          sed -i '/^FFMPEG_BIN=/d;/^FFPROBE_BIN=/d' .env
+          echo "FFMPEG_BIN=$(which ffmpeg)"   >> .env
+          echo "FFPROBE_BIN=$(which ffprobe)" >> .env
+
+      - name: Show what each channel is allowed to upload today
+        run: python -m src.cli quota-status
+
+      - name: Build and upload today's Shorts
+        if: ${{ github.event.inputs.shorts_per_channel != '0' }}
+        run: |
+          python -m src.cli daily-all \
+            --upload ${{ github.event.inputs.upload || 'true' }} \
+            --count "${{ github.event.inputs.shorts_per_channel }}"
+
+      - name: Build and upload today's long videos
+        if: ${{ github.event.inputs.long_videos == 'true' }}
+        run: python -m src.cli daily-long-all --upload ${{ github.event.inputs.upload || 'true' }}
+
+      - name: Upload anything still waiting
+        if: always()
+        run: python -m src.cli retry-uploads --limit 20
+
+      - name: Report
+        if: always()
+        run: python -m src.cli quota-status
+
+      # Saved even when a step failed, so a half-finished run is not repeated
+      # from scratch and its videos are not built twice.
+      - name: Save the bot's state
+        if: always()
+        run: |
+          set -e
+          git config user.name  "storybot"
+          git config user.email "storybot@users.noreply.github.com"
+          git checkout --orphan state-push
+          git rm -rf --cached . >/dev/null
+          # Only state travels: no source, no videos, no private files.
+          git add -f bot.sqlite3 data/*.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+          else
+            git commit -q -m "state $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push -f origin state-push:bot-state
+            echo "State saved to the bot-state branch."
+          fi
+
+      - name: Keep the finished videos for a week
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: videos-${{ github.run_number }}
+          path: |
+            runs/**/video.mp4
+            runs/**/thumbnail.jpg
+          retention-days: 7
+          if-no-files-found: ignore

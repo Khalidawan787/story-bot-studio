@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -38,6 +39,15 @@ def _credentials(client_secret_file: Path | None = None, token_file: Path | None
     if not creds or not creds.valid:
         if not client_secret_file.exists():
             raise FileNotFoundError(f"Missing YouTube client secret: {client_secret_file}")
+        # Opening a browser is only ever right on a real desktop. On a server or
+        # a CI runner there is nobody to click, so the flow would block until
+        # the job is killed; say what is wrong instead.
+        if os.getenv("NO_INTERACTIVE_AUTH", "").strip().lower() in {"1", "true", "yes"}:
+            raise RuntimeError(
+                f"No usable YouTube login in {token_file.name} and this machine "
+                "cannot open a browser. Connect the channel on your PC first, "
+                "then re-run scripts/setup_github_actions.py."
+            )
         flow = InstalledAppFlow.from_client_secrets_file(str(client_secret_file), SCOPES)
         creds = flow.run_local_server(port=0)
         token_file.write_text(creds.to_json(), encoding="utf-8")

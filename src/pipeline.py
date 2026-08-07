@@ -99,6 +99,14 @@ def _interactive_kids_lesson(lesson: Lesson) -> Lesson:
     )
 
 
+def _connected(channel) -> bool:
+    """True when this channel/account already has a saved YouTube login."""
+    try:
+        return bool(channel is not None and channel.token_path.is_file())
+    except Exception:
+        return False
+
+
 def run_pipeline(
     lesson: Lesson, upload: bool = False, channel=None, content_type: str = "short",
     queue: bool | None = None, resume_run_dir: Path | None = None,
@@ -187,7 +195,14 @@ def run_pipeline(
     error = None if quality_report["passed"] else "; ".join(quality_report["issues"])
     publish_at = None
     reservation_key = f"job:{job_id}"
-    if upload and quality_report["passed"] and not approval_required:
+    if upload and quality_report["passed"] and not approval_required and not _connected(channel):
+        # Rendered fine, but this YouTube account was never authorized. Keep the
+        # video and say so, instead of opening a sign-in nobody may be there to
+        # answer (which is what hangs an unattended run).
+        status = "daily_upload_pending" if is_daily else "rendered"
+        error = (f"{getattr(channel, 'name', channel_id)} is not connected to YouTube. "
+                 f"Connect it in the dashboard, then this video uploads by itself.")
+    elif upload and quality_report["passed"] and not approval_required:
         backoff = active_upload_backoff(channel_id)
         if backoff:
             reason, retry_after = backoff

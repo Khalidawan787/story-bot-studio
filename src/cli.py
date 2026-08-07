@@ -39,6 +39,8 @@ def main() -> None:
 
     daily_all = sub.add_parser("daily-all", help="Run the daily batch for EVERY channel.")
     daily_all.add_argument("--upload", default="true", help="true or false")
+    daily_all.add_argument("--count", default="",
+                           help="Videos per channel; blank = each channel's own topics_per_day.")
 
     daily_long = sub.add_parser("daily-long-all", help="Create one ~5-minute video for every connected channel.")
     daily_long.add_argument("--upload", default="true", help="true or false")
@@ -216,8 +218,9 @@ def main() -> None:
             print(f"[{channel.id}] {topic}: {status}")
         return
     elif args.command == "daily-all":
+        override = str(getattr(args, "count", "") or "").strip()
         for channel in load_channels():
-            n = channel.topics_per_day
+            n = max(1, int(override)) if override.isdigit() else channel.topics_per_day
             print(f"=== Channel: {channel.name} ({n}/day) ===")
             for topic, status in run_daily_batch(count=n, upload=_bool(args.upload), channel=channel):
                 print(f"[{channel.id}] {topic}: {status}")
