@@ -169,9 +169,10 @@ def main() -> None:
         import json as _json
         from collections import defaultdict
 
-        from .channels import load_channels
+        # load_channels is already imported at module level. Importing it again
+        # here made it a local of main(), so every OTHER branch — daily-all
+        # included — died with UnboundLocalError before doing any work.
         from .pending_uploads import upload_limit_for_channel, uploads_today_count
-
         from .youtube_accounts import list_accounts
 
         by_project: dict[str, list[tuple[str, str]]] = defaultdict(list)
