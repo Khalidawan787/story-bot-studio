@@ -423,6 +423,11 @@ def claim_unique_image(image_path: Path, channel: str, scene_label: str) -> bool
     finally:
         conn.close()
 
+def _as_utc(value: str) -> datetime:
+    moment = datetime.fromisoformat(value)
+    return moment.replace(tzinfo=timezone.utc) if moment.tzinfo is None else moment
+
+
 def reserve_publish_slot(
     reservation_key: str,
     channel: str,
@@ -437,9 +442,13 @@ def reserve_publish_slot(
     now keeps its own line, and with a small daily upload budget its releases
     stay inside the same day.
     """
-    gap = max(2.0, min(3.0, float(interval_hours)))
+    gap = max(1.0, min(8.0, float(interval_hours)))
     now = datetime.now(timezone.utc)
-    base = now + timedelta(hours=max(0.0, float(first_delay_hours)))
+    # Stagger the channels against each other. Without this every channel starts
+    # its line at exactly the same moment, so all of the day's releases land in
+    # the same minute — three videos appearing together look like a dump.
+    offset = (sum(ord(ch) for ch in str(channel)) % 5) * 24
+    base = now + timedelta(hours=max(0.0, float(first_delay_hours)), minutes=offset)
     conn = connect()
     try:
         conn.commit()
@@ -451,23 +460,31 @@ def reserve_publish_slot(
         if existing:
             conn.commit()
             return str(existing[0])
-        row = conn.execute(
-            """
-            SELECT MAX(publish_at) FROM (
-                SELECT publish_at FROM videos
-                 WHERE publish_at IS NOT NULL AND channel = ?
-                UNION ALL
-                SELECT publish_at FROM publish_slots WHERE channel = ?
-            )
-            """,
-            (channel, channel),
-        ).fetchone()
+        # Chaining off the LAST reserved time made the line drift: yesterday's
+        # tail pushed today's releases into the small hours, and the day after
+        # further still. Start from today's base every time and walk forward to
+        # the first free slot instead, so a channel always publishes inside the
+        # same part of the day.
+        taken = [
+            _as_utc(str(value))
+            for (value,) in conn.execute(
+                """
+                SELECT publish_at FROM (
+                    SELECT publish_at FROM videos
+                     WHERE publish_at IS NOT NULL AND channel = ?
+                    UNION ALL
+                    SELECT publish_at FROM publish_slots WHERE channel = ?
+                ) WHERE publish_at >= ?
+                """,
+                (channel, channel, (now - timedelta(hours=1)).isoformat()),
+            ).fetchall()
+            if value
+        ]
         candidate = base
-        if row and row[0]:
-            last = datetime.fromisoformat(str(row[0]))
-            if last.tzinfo is None:
-                last = last.replace(tzinfo=timezone.utc)
-            candidate = max(base, last + timedelta(hours=gap))
+        for _ in range(48):
+            if not any(abs((candidate - slot).total_seconds()) < gap * 1800 for slot in taken):
+                break
+            candidate += timedelta(hours=gap)
         publish_at = candidate.isoformat()
         conn.execute(
             "INSERT INTO publish_slots (reservation_key, channel, publish_at, created_at) VALUES (?, ?, ?, ?)",

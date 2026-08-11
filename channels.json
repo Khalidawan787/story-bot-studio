@@ -30,7 +30,7 @@
       "image_style": "dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore",
       "client_secret": "client_secret.json",
       "token": "token_crime.json",
-      "topics_per_day": 1
+      "topics_per_day": 2
     },
     {
       "id": "love",
@@ -46,7 +46,7 @@
       "image_style": "romantic cinematic illustration, warm soft golden light, beautiful, tasteful",
       "client_secret": "client_secret.json",
       "token": "token_love.json",
-      "topics_per_day": 1
+      "topics_per_day": 2
     },
     {
       "id": "horror",
@@ -62,7 +62,7 @@
       "image_style": "spooky dark atmospheric illustration, eerie moody lighting, cinematic, not gory",
       "client_secret": "client_secret.json",
       "token": "token_horror.json",
-      "topics_per_day": 1
+      "topics_per_day": 2
     },
     {
       "id": "motivation",
@@ -78,7 +78,7 @@
       "image_style": "inspiring cinematic illustration, golden hour light, epic, uplifting",
       "client_secret": "client_secret.json",
       "token": "token_motivation.json",
-      "topics_per_day": 1
+      "topics_per_day": 2
     },
     {
       "id": "trending",

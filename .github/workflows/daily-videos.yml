@@ -98,7 +98,7 @@ jobs:
         run: |
           python -m src.cli daily-all \
             --upload ${{ github.event.inputs.upload || 'true' }} \
-            --count "${{ github.event.inputs.shorts_per_channel }}"
+            --count "${{ github.event.inputs.shorts_per_channel || '2' }}"
 
       # Runs on the schedule too. daily-long-all makes at most one per channel
       # per day and skips a channel that already has today's, so it cannot run
