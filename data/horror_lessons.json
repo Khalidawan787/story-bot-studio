@@ -1,0 +1,58 @@
+{
+  "the_echoing_house_that_remembers": {
+    "title": "The Echoing House That Remembers",
+    "category": "Horror",
+    "intro": "Some houses hold memories. But what if a house could hold *everything*? Every whisper, every cry, every secret… waiting to be heard. Tonight, we step inside a place where the past isn't just remembered; it replays.",
+    "outro": "The Echoing House stands silent now, its echoes fading back into the silence. But the question remains: what unseen currents of memory are flowing through the walls of your own home? Sleep well.",
+    "scenes": [
+      {
+        "label": "Old House",
+        "line": "This is the Blackwood Residence, a place abandoned decades ago after a series of unsettling events.",
+        "image": "assets/generated/the_echoing_house_that_remembers_01.jpg",
+        "image_prompt": "A dilapidated Victorian house, overgrown with vines, under a perpetually overcast sky., spooky dark atmospheric illustration, eerie moody lighting, cinematic, not gory"
+      },
+      {
+        "label": "Dusty Room",
+        "line": "Locals claim that if you listen closely, the house doesn't just creak; it whispers.",
+        "image": "assets/generated/the_echoing_house_that_remembers_02.jpg",
+        "image_prompt": "A dimly lit room filled with dust motes, furniture draped in white sheets., spooky dark atmospheric illustration, eerie moody lighting, cinematic, not gory"
+      },
+      {
+        "label": "Faint Sound",
+        "line": "It's said to replay fragments of conversations, arguments, and even the last desperate moments of its former inhabitants.",
+        "image": "assets/generated/the_echoing_house_that_remembers_03.jpg",
+        "image_prompt": "Close-up on a cobweb-covered ear against a peeling wallpapered wall., spooky dark atmospheric illustration, eerie moody lighting, cinematic, not gory"
+      },
+      {
+        "label": "Footsteps Heard",
+        "line": "One night, a curious explorer decided to test the legend, armed only with a recorder.",
+        "image": "assets/generated/the_echoing_house_that_remembers_04.jpg",
+        "image_prompt": "A shadowy figure silhouetted in a dark doorway, holding a vintage audio recorder., spooky dark atmospheric illustration, eerie moody lighting, cinematic, not gory"
+      },
+      {
+        "label": "Whispers Begin",
+        "line": "As they ventured deeper, a faint murmuring filled the air, too layered to be just wind.",
+        "image": "assets/generated/the_echoing_house_that_remembers_05.jpg",
+        "image_prompt": "A swirling mist of indistinct shapes and faint, overlapping whispers., spooky dark atmospheric illustration, eerie moody lighting, cinematic, not gory"
+      },
+      {
+        "label": "Echoes of Laughter",
+        "line": "The explorer captured faint, disembodied laughter echoing from empty rooms, chillingly clear.",
+        "image": "assets/generated/the_echoing_house_that_remembers_06.jpg",
+        "image_prompt": "A child's antique rocking horse swaying gently in an empty nursery, unseen forces at play., spooky dark atmospheric illustration, eerie moody lighting, cinematic, not gory"
+      },
+      {
+        "label": "The Final Word",
+        "line": "Then, just before the recording abruptly ended, a single, terrified scream pierced the silence.",
+        "image": "assets/generated/the_echoing_house_that_remembers_07.jpg",
+        "image_prompt": "A vintage microphone covered in a thick layer of dust, its needle vibrating intensely., spooky dark atmospheric illustration, eerie moody lighting, cinematic, not gory"
+      },
+      {
+        "label": "Silence Returns",
+        "line": "The house fell silent again, leaving only the recording as proof of its haunting symphony.",
+        "image": "assets/generated/the_echoing_house_that_remembers_08.jpg",
+        "image_prompt": "The exterior of the Blackwood Residence at twilight, looking ominously still and silent., spooky dark atmospheric illustration, eerie moody lighting, cinematic, not gory"
+      }
+    ]
+  }
+}
