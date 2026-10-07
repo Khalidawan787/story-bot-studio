@@ -25,12 +25,6 @@ on:
         type: boolean
         default: true
 
-# Never let two runs build at once: they would pick the same topics and fight
-# over the same state branch.
-concurrency:
-  group: daily-videos
-  cancel-in-progress: false
-
 permissions:
   contents: write
   pages: write        # publish the status page
@@ -45,6 +39,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 330
+    # Never let two runs build at once: they would pick the same topics and
+    # fight over the same state branch. Kept on this job only, so a status
+    # page publish that hangs cannot hold back the next day's videos.
+    concurrency:
+      group: daily-videos
+      cancel-in-progress: false
 
     steps:
       - name: Check out the code
