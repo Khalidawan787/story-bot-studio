@@ -2,6 +2,9 @@
 flask
 edge-tts
 python-dotenv
+# Layered animation of cartoon scenes (cut the character out of the picture)
+opencv-python-headless
+numpy
 
 # YouTube + Google Drive
 google-api-python-client

@@ -152,9 +152,12 @@ def _ass_timestamp(seconds: float) -> str:
     return f"{hours}:{minutes:02}:{secs:02}.{cs:02}"
 
 
-def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, out_path: Path, content_type: str = "short") -> Path | None:
+def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, out_path: Path, content_type: str = "short", pop: bool = False) -> Path | None:
     """Build an ASS subtitle where each word lights up (white -> yellow) as it is
-    spoken. Returns the file path, or None if there is nothing usable to show."""
+    spoken. Returns the file path, or None if there is nothing usable to show.
+
+    With `pop`, each group of words springs in slightly oversized and settles,
+    which suits the animated cartoon scenes."""
     words = [(w.strip(), s, d) for (w, s, d) in marks if w and w.strip()]
     if not words:
         return None
@@ -192,7 +195,8 @@ def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, o
             # \kf sweeps the highlight across the word instead of snapping it on,
             # which reads as smooth motion rather than a blinking word.
             parts.append(f"{{\\kf{hold}}}{safe} ")
-        events.append((begin, end, "".join(parts).rstrip()))
+        spring = r"{\fscx70\fscy70\t(0,110,\fscx108\fscy108)\t(110,200,\fscx100\fscy100)}" if pop else ""
+        events.append((begin, end, spring + "".join(parts).rstrip()))
 
     header = (
         "[Script Info]\n"
@@ -338,19 +342,59 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
     )
     if not image_path or not image_path.exists():
         raise RuntimeError(f"Scene image missing for {scene.label}")
+    layers = _scene_layers(image_path, output_path, run_dir, channel, content_type)
+    if layers:
+        try:
+            return _encode_scene(
+                scene, duration, output_path, run_dir, audio_path, marks,
+                content_type, edge_fades, layers=layers,
+            )
+        except subprocess.CalledProcessError as exc:
+            # The plain still render below is always available.
+            print(f"[video] {output_path.stem}: layered animation failed ({exc}); using a still image")
+            output_path.unlink(missing_ok=True)
     return _encode_scene(
         scene, duration, output_path, run_dir, audio_path, marks,
         content_type, edge_fades, image_path=image_path,
     )
 
 
-def _encode_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None, marks: list | None, content_type: str, edge_fades: bool, image_path: Path | None = None, clip_path: Path | None = None) -> Path:
+def _scene_layers(image_path: Path, output_path: Path, run_dir: Path, channel, content_type: str) -> tuple[Path, Path] | None:
+    """Character and background layers for an animated scene, or None."""
+    from .animate import animation_enabled, prepare_layers
+
+    if not (settings.enable_motion and animation_enabled(channel)):
+        return None
+    try:
+        return prepare_layers(image_path, run_dir, output_path.stem, *_dimensions(content_type))
+    except Exception as exc:
+        print(f"[video] {output_path.stem}: not animated ({exc}); using a still image")
+        return None
+
+
+def _encode_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None, marks: list | None, content_type: str, edge_fades: bool, image_path: Path | None = None, clip_path: Path | None = None, layers: tuple[Path, Path] | None = None) -> Path:
     line_file = run_dir / f"{output_path.stem}_line.txt"
     line_text = scene.line.split(". ", 1)[1] if ". " in scene.line else scene.line
     wrap_width = 64 if content_type == "long" else 32
     line_text = "\n".join(textwrap.wrap(line_text, width=wrap_width)) or line_text
     line_file.write_text(line_text, encoding="utf-8")
-    if clip_path:
+    graph = ""
+    if layers:
+        from .animate import build_animation
+
+        # Several inputs (background, character, floating sprites) composed in
+        # a filter graph; the polish and fades then run on the finished frame.
+        W, H = _dimensions(content_type)
+        input_args, graph = build_animation(
+            scene, duration, layers[0], layers[1], run_dir, W, H,
+            settings.video_fps, _quality()["supersample"],
+        )
+        finish = _polish_filters()
+        if edge_fades and settings.enable_fades and duration > 1.0:
+            finish.append("fade=t=in:st=0:d=0.3")
+            finish.append(f"fade=t=out:st={max(0.0, duration - 0.3):.2f}:d=0.3")
+        base_filter = ",".join(finish)
+    elif clip_path:
         # Loop the clip so footage shorter than the narration still fills it.
         input_args = ["-stream_loop", "-1", "-i", str(clip_path)]
         base_filter = _clip_filter(duration, content_type, edge_fades=edge_fades)
@@ -375,7 +419,7 @@ def _encode_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
         caption_filter = ""
     elif settings.enable_karaoke_captions and marks:
         ass_file = run_dir / f"{output_path.stem}_caption.ass"
-        if _write_karaoke_ass(marks, duration, ass_file, content_type):
+        if _write_karaoke_ass(marks, duration, ass_file, content_type, pop=bool(layers)):
             ass_path = escape_filter_path(str(ass_file))
             fonts_dir = escape_filter_path("C:/Windows/Fonts")
             caption_filter = f"ass=filename='{ass_path}':fontsdir='{fonts_dir}'"
@@ -393,16 +437,18 @@ def _encode_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
     ]
     if audio_path:
         command.extend(["-i", str(audio_path)])
-    # Picture from the first input only. Some stock clips carry their own sound,
-    # and without this ffmpeg may pick it over the narration.
-    command.extend(["-map", "0:v:0"])
+    audio_input = input_args.count("-i")
+    if graph:
+        command.extend(["-filter_complex", f"{graph};[anim]{vf}[vout]", "-map", "[vout]"])
+    else:
+        # Picture from the first input only. Some stock clips carry their own
+        # sound, and without this ffmpeg may pick it over the narration.
+        command.extend(["-map", "0:v:0", "-vf", vf])
     if audio_path:
-        command.extend(["-map", "1:a:0"])
+        command.extend(["-map", f"{audio_input}:a:0"])
     command.extend([
         "-t",
         f"{duration:.3f}",
-        "-vf",
-        vf,
         "-r",
         str(settings.video_fps),
         *_video_encode_args(),

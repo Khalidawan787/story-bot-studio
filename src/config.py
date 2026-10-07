@@ -59,6 +59,14 @@ class Settings:
         for part in os.getenv("STOCK_VIDEO_CHANNELS", "crime,trending").split(",")
         if part.strip()
     )
+    # Channels whose still images are animated in layers (character moves over
+    # the background, with floating bubbles/sparkles). Free and CPU-only; meant
+    # for cartoon art. A scene that cannot be cut out cleanly stays a still.
+    animated_channels: frozenset = frozenset(
+        part.strip().lower()
+        for part in os.getenv("ANIMATED_CHANNELS", "kids").split(",")
+        if part.strip()
+    )
     audio_bitrate: str = os.getenv("AUDIO_BITRATE", "192k")
     edge_voice: str = os.getenv("EDGE_TTS_VOICE", "en-US-AriaNeural")
     edge_rate: str = os.getenv("EDGE_TTS_RATE", "+0%")

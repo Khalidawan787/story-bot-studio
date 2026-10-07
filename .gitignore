@@ -45,6 +45,8 @@ data/trending_history.json
 data/youtube_accounts.json
 # Hand-made thumbnails you drop in (large, machine-specific)
 data/thumbnails/
+# Downloaded on first use (170 MB cut-out model for the layered animation)
+data/models/
 data/comfyui_workflow.json
 assets/
 audio/
