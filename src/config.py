@@ -50,6 +50,15 @@ class Settings:
     # Sharpen + vignette + gentle grade. Free image providers cap at about half
     # of 1080p, so this pass is what stops the upscale from looking soft.
     enable_image_polish: bool = os.getenv("ENABLE_IMAGE_POLISH", "true").lower() == "true"
+    # Channels whose scenes use free Pexels stock video clips instead of a still
+    # picture with a camera move (comma-separated channel ids, blank = none). A
+    # scene with no matching clip falls back to its normal image. The cartoon
+    # kids channel must stay off this list: stock footage is real-world only.
+    stock_video_channels: frozenset = frozenset(
+        part.strip().lower()
+        for part in os.getenv("STOCK_VIDEO_CHANNELS", "crime,trending").split(",")
+        if part.strip()
+    )
     audio_bitrate: str = os.getenv("AUDIO_BITRATE", "192k")
     edge_voice: str = os.getenv("EDGE_TTS_VOICE", "en-US-AriaNeural")
     edge_rate: str = os.getenv("EDGE_TTS_RATE", "+0%")

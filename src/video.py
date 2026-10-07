@@ -258,19 +258,81 @@ def _motion_filter(
     return ",".join(filters)
 
 
+def _clip_filter(duration: float, content_type: str = "short", edge_fades: bool = True) -> str:
+    """Fit real footage to the frame. No camera move: the clip already moves."""
+    W, H = _dimensions(content_type)
+    filters = [
+        f"scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos",
+        f"crop={W}:{H}",
+        f"fps={settings.video_fps}",
+        "setsar=1",
+        # Footage is already sharp, so only the grade and vignette are applied;
+        # the sharpening meant for upscaled stills would add halos here.
+        "eq=saturation=1.08:contrast=1.05",
+        "vignette=angle=PI/6",
+    ]
+    if edge_fades and settings.enable_fades and duration > 1.0:
+        filters.append("fade=t=in:st=0:d=0.3")
+        filters.append(f"fade=t=out:st={max(0.0, duration - 0.3):.2f}:d=0.3")
+    return ",".join(filters)
+
+
+def _scene_clip(scene: Scene, duration: float, output_path: Path, run_dir: Path, channel, content_type: str) -> Path | None:
+    """A stock video clip for this scene, or None to use a still image."""
+    from .stock_video import fetch_scene_clip, stock_video_enabled
+
+    if not stock_video_enabled(channel):
+        return None
+    clip_path = run_dir / f"clip_{output_path.stem}.mp4"
+    if clip_path.exists() and clip_path.stat().st_size > 100_000:
+        return clip_path
+    try:
+        return fetch_scene_clip(
+            scene, clip_path, run_dir, channel,
+            landscape=content_type == "long", min_seconds=duration,
+        )
+    except Exception as exc:
+        print(f"[video] {output_path.stem}: {exc}; using a still image")
+        return None
+
+
 def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None = None, channel=None, marks: list | None = None, content_type: str = "short", edge_fades: bool = True) -> Path:
+    clip_path = _scene_clip(scene, duration, output_path, run_dir, channel, content_type)
+    if clip_path:
+        try:
+            return _encode_scene(
+                scene, duration, output_path, run_dir, audio_path, marks,
+                content_type, edge_fades, clip_path=clip_path,
+            )
+        except subprocess.CalledProcessError as exc:
+            # A clip ffmpeg cannot read must not cost the scene: use an image.
+            print(f"[video] {output_path.stem}: stock clip failed to render ({exc}); using a still image")
+            output_path.unlink(missing_ok=True)
+            clip_path.unlink(missing_ok=True)
+            clip_path.with_suffix(".pexels.json").unlink(missing_ok=True)
     image_path = resolve_scene_image(
         scene, run_dir, channel, require_real_image=True,
         landscape=content_type == "long",
     )
     if not image_path or not image_path.exists():
         raise RuntimeError(f"Scene image missing for {scene.label}")
+    return _encode_scene(
+        scene, duration, output_path, run_dir, audio_path, marks,
+        content_type, edge_fades, image_path=image_path,
+    )
+
+
+def _encode_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None, marks: list | None, content_type: str, edge_fades: bool, image_path: Path | None = None, clip_path: Path | None = None) -> Path:
     line_file = run_dir / f"{output_path.stem}_line.txt"
     line_text = scene.line.split(". ", 1)[1] if ". " in scene.line else scene.line
     wrap_width = 64 if content_type == "long" else 32
     line_text = "\n".join(textwrap.wrap(line_text, width=wrap_width)) or line_text
     line_file.write_text(line_text, encoding="utf-8")
-    if image_path:
+    if clip_path:
+        # Loop the clip so footage shorter than the narration still fills it.
+        input_args = ["-stream_loop", "-1", "-i", str(clip_path)]
+        base_filter = _clip_filter(duration, content_type, edge_fades=edge_fades)
+    elif image_path:
         input_args = ["-loop", "1", "-i", str(image_path)]
         base_filter = _motion_filter(duration, scene, content_type, edge_fades=edge_fades)
     else:
@@ -309,6 +371,11 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
     ]
     if audio_path:
         command.extend(["-i", str(audio_path)])
+    # Picture from the first input only. Some stock clips carry their own sound,
+    # and without this ffmpeg may pick it over the narration.
+    command.extend(["-map", "0:v:0"])
+    if audio_path:
+        command.extend(["-map", "1:a:0"])
     command.extend([
         "-t",
         f"{duration:.3f}",

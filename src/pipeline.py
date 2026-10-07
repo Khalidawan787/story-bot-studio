@@ -73,6 +73,16 @@ def _append_image_credits(metadata: dict, run_dir: Path) -> None:
                     credits.append(credit)
         except Exception:
             continue
+    for path in sorted(run_dir.glob("clip_scene_*.pexels.json")):
+        try:
+            row = json.loads(path.read_text(encoding="utf-8"))
+            creator = str(row.get("creator") or "").strip()
+            if creator:
+                credit = f"- Stock footage — {creator} (Pexels)"
+                if credit not in credits:
+                    credits.append(credit)
+        except Exception:
+            continue
     if credits:
         base = str(metadata.get("description") or "")
         block = "\n\nImage credits:\n" + "\n".join(credits)
