@@ -160,20 +160,39 @@ def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, o
         return None
 
     W, H = _dimensions(content_type)
-    # Karaoke \k timings are in centiseconds; each word holds its highlight until
-    # the next word begins (last word holds to the end of the clip).
-    parts: list[str] = []
-    lead = int(round(words[0][1] * 100))
-    if lead > 0:
-        parts.append(f"{{\\k{lead}}}")
-    for i, (word, start, dur) in enumerate(words):
-        next_start = words[i + 1][1] if i + 1 < len(words) else min(duration, start + dur)
-        hold = max(1, int(round((next_start - start) * 100)))
-        safe = word.replace("{", "(").replace("}", ")").replace("\\", "")
-        # \kf sweeps the highlight across the word instead of snapping it on,
-        # which reads as smooth motion rather than a blinking word.
-        parts.append(f"{{\\kf{hold}}}{safe} ")
-    text = "".join(parts).rstrip()
+    # A few words on screen at a time, not the whole scene's narration: a long
+    # line used to fill four rows and cover the picture. Each group stays up
+    # until the next one starts, and breaks early at the end of a sentence.
+    max_words = 7 if content_type == "long" else 4
+    groups: list[list[tuple[str, float, float]]] = [[]]
+    for item in words:
+        groups[-1].append(item)
+        sentence_end = item[0].rstrip("\"')").endswith((".", "!", "?"))
+        if len(groups[-1]) >= max_words or (len(groups[-1]) >= 3 and sentence_end):
+            groups.append([])
+    groups = [group for group in groups if group]
+    # Never leave one stray word alone on screen at the end.
+    if len(groups) > 1 and len(groups[-1]) == 1:
+        groups[-2].extend(groups.pop())
+
+    events: list[tuple[float, float, str]] = []
+    for g, group in enumerate(groups):
+        begin = 0.0 if g == 0 else group[0][1]
+        end = max(groups[g + 1][0][1] if g + 1 < len(groups) else duration, begin + 0.1)
+        # Karaoke \k timings are in centiseconds, counted from the start of the
+        # group; each word holds its highlight until the next word begins.
+        parts: list[str] = []
+        lead = int(round((group[0][1] - begin) * 100))
+        if lead > 0:
+            parts.append(f"{{\\k{lead}}}")
+        for i, (word, start, dur) in enumerate(group):
+            next_start = group[i + 1][1] if i + 1 < len(group) else min(end, start + dur)
+            hold = max(1, int(round((next_start - start) * 100)))
+            safe = word.replace("{", "(").replace("}", ")").replace("\\", "")
+            # \kf sweeps the highlight across the word instead of snapping it on,
+            # which reads as smooth motion rather than a blinking word.
+            parts.append(f"{{\\kf{hold}}}{safe} ")
+        events.append((begin, end, "".join(parts).rstrip()))
 
     header = (
         "[Script Info]\n"
@@ -194,7 +213,10 @@ def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, o
         "[Events]\n"
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
     )
-    dialogue = f"Dialogue: 0,{_ass_timestamp(0)},{_ass_timestamp(duration)},Kids,,0,0,0,,{text}\n"
+    dialogue = "".join(
+        f"Dialogue: 0,{_ass_timestamp(begin)},{_ass_timestamp(end)},Kids,,0,0,0,,{text}\n"
+        for begin, end, text in events
+    )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(header + dialogue, encoding="utf-8")
     return out_path
