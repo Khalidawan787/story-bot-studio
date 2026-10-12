@@ -475,7 +475,8 @@ def render(data: dict) -> str:
 
 <footer class="wrap">
   Built automatically by the daily GitHub Actions run. This page only reports —
-  to build or upload something, use <b>Actions → Daily videos → Run workflow</b>.
+  to build or upload something, use <b>Actions → Daily videos → Run workflow</b>.<br>
+  <a href="privacy.html">Privacy policy</a> · <a href="terms.html">Terms of service</a>
 </footer>
 </body></html>
 """
@@ -522,6 +523,10 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     page = render(collect())
     (out_dir / "index.html").write_text(page, encoding="utf-8")
+    # Home, privacy and terms links for the Google sign-in screen.
+    import legal_pages
+
+    legal_pages.write(out_dir)
     # Stops GitHub Pages running the file through Jekyll, which would mangle it.
     (out_dir / ".nojekyll").write_text("", encoding="utf-8")
     print(f"Wrote {out_dir / 'index.html'} ({len(page) // 1024} KB)")
