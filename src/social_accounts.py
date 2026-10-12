@@ -57,6 +57,8 @@ def save_account(channel_id: str, platform: str, values: dict[str, object]) -> d
                 if not value and key not in {"mode", "privacy"}:
                     continue  # blank secret/input keeps the existing value
             current[key] = value
+            if key in {"page_id", "page_access_token", "access_token"}:
+                current.pop("verified_name", None)  # verify again after a change
         if platform == "tiktok":
             current.setdefault("mode", "draft")
             current.setdefault("privacy", "SELF_ONLY")
@@ -64,6 +66,15 @@ def save_account(channel_id: str, platform: str, values: dict[str, object]) -> d
         channel[platform] = current
         _save_all(data)
         return dict(current)
+
+
+def mark_verified(channel_id: str, platform: str, name: str) -> None:
+    """Remember the Page/account name a successful Verify returned ("" = failed)."""
+    with _LOCK:
+        data = _load_all()
+        current = data.setdefault(channel_id, {}).setdefault(platform, {})
+        current["verified_name"] = name
+        _save_all(data)
 
 
 def public_status(channel_id: str) -> dict:
@@ -75,6 +86,7 @@ def public_status(channel_id: str) -> dict:
             "configured": bool(fb.get("page_id") and fb.get("page_access_token")),
             "page_id": fb.get("page_id", ""),
             "auto_upload": bool(fb.get("auto_upload")),
+            "verified_name": fb.get("verified_name", ""),
         },
         "tiktok": {
             "configured": bool(tt.get("access_token")),

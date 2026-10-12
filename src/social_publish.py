@@ -101,9 +101,54 @@ def verify_facebook(channel_id: str) -> str:
     page_id, token = cfg.get("page_id"), cfg.get("page_access_token")
     if not page_id or not token:
         raise RuntimeError("Save Facebook Page ID and Page Access Token first.")
+    from .social_accounts import mark_verified
+
     query = urlencode({"fields": "id,name", "access_token": token})
-    data = _request_json(f"https://graph.facebook.com/{FB_API_VERSION}/{page_id}?{query}")
-    return str(data.get("name") or data.get("id") or "Facebook Page")
+    try:
+        data = _request_json(f"https://graph.facebook.com/{FB_API_VERSION}/{page_id}?{query}")
+    except Exception:
+        mark_verified(channel_id, "facebook", "")
+        raise
+    name = str(data.get("name") or data.get("id") or "Facebook Page")
+    mark_verified(channel_id, "facebook", name)
+    return name
+
+
+def facebook_from_user_token(channel_id: str, user_token: str, page_id: str = "") -> str:
+    """Save a Page's ID and token found through the user's own token.
+
+    Spares the me/accounts step in the Graph API Explorer: the person pastes
+    the user token the Explorer gave them and picks nothing else, unless they
+    manage several Pages (then the Page ID field picks one). Returns a message
+    for the dashboard; warns when the token will expire.
+    """
+    from .social_accounts import save_account
+
+    user_token = user_token.strip()
+    if not user_token:
+        raise RuntimeError("Paste the token from the Graph API Explorer first.")
+    query = urlencode({"fields": "id,name,access_token", "access_token": user_token, "limit": "100"})
+    pages = _request_json(f"https://graph.facebook.com/{FB_API_VERSION}/me/accounts?{query}").get("data") or []
+    if not pages:
+        raise RuntimeError(
+            "This token sees no Pages. In the Explorer, tick the Page when Facebook asks, "
+            "and add pages_show_list, pages_read_engagement and pages_manage_posts."
+        )
+    wanted = str(page_id or "").strip()
+    page = next((p for p in pages if p.get("id") == wanted), None) if wanted else (pages[0] if len(pages) == 1 else None)
+    if page is None:
+        listing = "; ".join(f"{p.get('name')} = {p.get('id')}" for p in pages)
+        raise RuntimeError(f"This account manages several Pages. Put the right one's ID in Facebook Page ID and press again: {listing}")
+    save_account(channel_id, "facebook", {"page_id": page["id"], "page_access_token": page["access_token"]})
+    name = verify_facebook(channel_id)
+    debug = _request_json(
+        f"https://graph.facebook.com/{FB_API_VERSION}/debug_token?"
+        + urlencode({"input_token": page["access_token"], "access_token": page["access_token"]})
+    ).get("data") or {}
+    if int(debug.get("expires_at") or 0):
+        return (f"Saved {name}, but this Page token expires soon because the pasted token was short-lived. "
+                "Extend the user token in the Access Token Debugger and paste the long one here again.")
+    return f"Saved and verified: {name}. The Page token does not expire."
 
 
 def _facebook_reel(video: Path, title: str, token: str) -> tuple[str, str]:

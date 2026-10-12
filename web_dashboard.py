@@ -772,6 +772,35 @@ def social_verify_route():
     return redirect(url_for("home", channel=ch.id))
 
 
+@app.post("/facebook-user-token")
+def facebook_user_token_route():
+    ch = current_channel()
+    try:
+        flash(social_publish.facebook_from_user_token(
+            ch.id, request.form.get("user_token", ""), request.form.get("page_id", ""),
+        ), "ok")
+    except Exception as exc:
+        flash(f"Facebook: {exc}", "error")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.get("/guide/app-icon.png")
+def guide_app_icon():
+    """A plain 1024x1024 icon for Meta's App settings, which require one."""
+    import cv2
+    import numpy as np
+
+    size = 1024
+    y, x = np.mgrid[0:size, 0:size].astype(np.float32) / size
+    t = (x * 0.6 + y * 0.4)[..., None]
+    img = ((1 - t) * np.array([140, 70, 20]) + t * np.array([230, 110, 120])).astype(np.uint8)
+    cv2.circle(img, (size // 2, size // 2), 330, (255, 255, 255), 18, cv2.LINE_AA)
+    cv2.fillPoly(img, [np.array([[440, 360], [440, 664], [690, 512]], np.int32)], (255, 255, 255), cv2.LINE_AA)
+    ok, png = cv2.imencode(".png", img)
+    return app.response_class(png.tobytes(), mimetype="image/png", headers={
+        "Content-Disposition": 'attachment; filename="app-icon-1024.png"'})
+
+
 @app.route("/social-upload", methods=["POST"])
 def social_upload_route():
     ch = current_channel()
@@ -1556,6 +1585,9 @@ PAGE = r"""
   .setup-steps{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:10px}
   .setup-steps li{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
   .setup-steps li.done{border-color:rgba(61,220,151,.4)}
+  .fb-steps{line-height:1.7;font-size:14px;padding-left:22px}
+  .fb-steps li{margin-bottom:10px}
+  .fb-steps ul{margin:4px 0;padding-left:18px}
   .slot-row{margin-top:10px;gap:10px;align-items:center;font-size:14px}
   .slot-row select{min-width:0;max-width:280px;flex:0 1 auto}
   .email{font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#cfe0ff}
@@ -1993,7 +2025,7 @@ PAGE = r"""
     </div>
 
     <div class="platform-panel" id="platform-facebook">
-      <div class="row" style="justify-content:space-between"><div><strong>Facebook Page</strong> <span class="chip">{{'configured' if social.facebook.configured else 'setup required'}}</span><div class="hint">Shorts publish as Page Reels; long videos publish as Page videos.</div></div><a href="{{social.guides.facebook_app}}" target="_blank"><button class="ghost sm" type="button">Create Meta App</button></a></div>
+      <div class="row" style="justify-content:space-between"><div><strong>Facebook Page</strong> {% if social.facebook.configured and social.facebook.verified_name %}<span class="chip" style="background:rgba(61,220,151,.18);color:var(--ok);border-color:rgba(61,220,151,.5)">✅ Connected: {{social.facebook.verified_name}}</span>{% if social.facebook.auto_upload %} <span class="chip" style="color:var(--ok)">auto-publish ON</span>{% else %} <span class="chip">auto-publish off</span>{% endif %}{% elif social.facebook.configured %}<span class="chip" style="color:var(--warn)">⚠ Saved — press Connect &amp; Verify</span>{% else %}<span class="chip">setup required</span>{% endif %}<div class="hint">Shorts publish as Page Reels; long videos publish as Page videos.</div></div><a href="{{social.guides.facebook_app}}" target="_blank"><button class="ghost sm" type="button">Create Meta App</button></a></div>
       <form method="post" action="/social-settings" style="margin-top:14px">
         <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="facebook">
         <div class="platform-grid">
@@ -2003,18 +2035,38 @@ PAGE = r"""
         <div class="row" style="margin-top:12px"><label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.facebook.auto_upload else ''}}> Automatically publish new videos</label><button class="green sm" type="submit">Save Facebook Settings</button></div>
       </form>
       <form method="post" action="/social-verify" style="margin-top:10px"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="facebook"><button class="ghost sm" type="submit">Connect &amp; Verify Facebook Page</button></form>
-      <details class="guide-box"><summary>Facebook setup guide + official URLs (one time per Page, ~15 minutes)</summary>
-        <div class="hint" style="margin:8px 0">Sign in to Facebook with an account that is <b>admin of the Page</b>. Menu names on Meta's site change from time to time; pick the closest one.</div>
-        <ol>
-          <li><b>Make an app:</b> <a href="https://developers.facebook.com/apps/" target="_blank">Meta for Developers → My Apps ↗</a> → <b>Create app</b>. Use case: <b>“Manage everything on your Page”</b> (or “Other” → type <b>Business</b>). Name: e.g. “Story Bot”.</li>
-          <li><b>App settings → Basic:</b> Privacy Policy URL <code class="cp">{{branding[1][1]}}</code>, Terms of Service URL <code class="cp">{{branding[2][1]}}</code>, User data deletion: the same privacy URL, an app icon and a category → <b>Save</b>. Then switch the app from <b>Development</b> to <b>Live</b> at the top. <span class="hint">Posts made by an app in Development mode are only visible to the app's own admins.</span></li>
-          <li><b>Get a user token:</b> <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Graph API Explorer ↗</a> → pick your app → <b>Add permissions</b>: <code>pages_show_list</code>, <code>pages_read_engagement</code>, <code>pages_manage_posts</code>, <code>publish_video</code> → <b>Generate Access Token</b> → allow, and tick the Page.</li>
-          <li><b>Make it last:</b> copy that token into the <a href="https://developers.facebook.com/tools/debug/accesstoken/" target="_blank">Access Token Debugger ↗</a> → <b>Debug</b> → <b>Extend Access Token</b> at the bottom → copy the new long token.</li>
-          <li><b>Get the Page token:</b> back in the Graph API Explorer, paste the long token in “Access Token”, type <code>me/accounts</code> and press <b>Submit</b>. Find your Page: copy its <b>id</b> (Page ID) and its <b>access_token</b> (Page Access Token). A Page token taken from a long-lived user token does not expire.</li>
-          <li><b>Here:</b> paste both above, tick <b>Automatically publish new videos</b>, press <b>Save Facebook Settings</b>, then <b>Connect &amp; Verify Facebook Page</b>: it should show the Page's name.</li>
-          <li><b>For the daily GitHub run:</b> press <b>⬆ Send to GitHub</b> on the setup card above. From the next run, each new video is also posted to the Page (Shorts as Reels, long videos as Page videos).</li>
+      <form method="post" action="/facebook-user-token" class="row" style="margin-top:12px;align-items:flex-end;gap:10px;padding:12px;border:1px dashed var(--line);border-radius:10px">
+        <input type="hidden" name="channel" value="{{ch.id}}">
+        <input type="hidden" name="page_id" value="{{social.facebook.page_id}}">
+        <label class="field" style="flex:1 1 320px">⚡ Fast way: paste the token from Graph API Explorer (step 5 of the guide)
+          <input type="password" name="user_token" autocomplete="new-password" placeholder="EAA… (user token)"></label>
+        <button class="green sm" type="submit">Get Page token &amp; verify</button>
+        <span class="hint" style="flex-basis:100%">The bot finds the Page, saves its ID and its non-expiring Page token, and verifies it. If you manage several Pages, put the Page ID above first.</span>
+      </form>
+      <details class="guide-box" {{'open' if not social.facebook.verified_name else ''}}><summary>📘 Facebook setup guide with direct links (one time per Page, ~10 minutes)</summary>
+        <div class="hint" style="margin:8px 0">Sign in to Facebook as an <b>admin of the Page</b>. Click a grey value to copy it. Meta renames menus now and then; pick the closest one.</div>
+        <ol class="fb-steps">
+          <li><b>Create the app:</b> <a href="https://developers.facebook.com/apps/creation/" target="_blank">Create app ↗</a> → app name (e.g. the Page's name) and your email → <b>Next</b>.
+            <br>Use cases: click <b>Content management</b> on the left → tick only <b>“Manage everything on your Page”</b> → <b>Next</b>. <span class="hint">Do not tick ads, Threads or anything else.</span>
+            <br>Business: <b>“I don't want to connect a business portfolio yet”</b> → <b>Next</b> → <b>Next</b> → <b>Create app</b>.</li>
+          <li><b>Permissions:</b> on the app's Dashboard → <b>“Customize the Manage everything on your Page use case”</b> → <b>Add</b> next to <code class="cp">pages_show_list</code> <code class="cp">pages_read_engagement</code> <code class="cp">pages_manage_posts</code> (and <code class="cp">publish_video</code> if listed).</li>
+          <li><b>App settings → Basic</b> (left menu), then <b>Save changes</b>:
+            <ul>
+              <li>App domains: <code class="cp">{{branding[3][1]}}</code></li>
+              <li>Privacy policy URL: <code class="cp">{{branding[1][1]}}</code></li>
+              <li>Terms of Service URL: <code class="cp">{{branding[2][1]}}</code></li>
+              <li>User data deletion: “Data deletion instructions URL” → <code class="cp">{{branding[1][1]}}</code></li>
+              <li>Category: <b>Business and pages</b></li>
+              <li>App icon: <a href="/guide/app-icon.png">⬇ download a ready 1024×1024 icon</a></li>
+            </ul>
+            <span class="hint">“Something went wrong” on Save: fill the data deletion link, save the links first and the icon separately, or try an Incognito window (extensions can break Meta's form).</span></li>
+          <li><b>Do not press Publish.</b> Meta asks for a Business verification there. The app stays in Development mode, which can post to your own Page; check visibility with the test in step 7.</li>
+          <li><b>Get a token:</b> <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Graph API Explorer ↗</a> → Meta App: your app → <b>Permissions</b> tab → <b>Add a Permission</b>: the three from step 2 → <b>Generate Access Token</b> → tick the <b>Page</b> → Continue → copy the token with 📋.
+            <br><span class="hint">“No configurations available” is fine; use the Permissions tab. For a token that never expires, first paste it in the <a href="https://developers.facebook.com/tools/debug/accesstoken/" target="_blank">Access Token Debugger ↗</a> → Debug → <b>Extend Access Token</b>, and use the long one.</span></li>
+          <li><b>Here:</b> paste it in <b>⚡ Fast way</b> above → <b>Get Page token &amp; verify</b>. The badge turns <b>✅ Connected: Page name</b>.</li>
+          <li><b>Test, then switch on:</b> Video Library → <b>Share Facebook</b> on one video → open the Page in an Incognito window, logged out. Visible? Tick <b>Automatically publish new videos</b> → <b>Save Facebook Settings</b> → <b>⬆ Send to GitHub</b> on the setup card. Each new video then goes to the Page too (Shorts as Reels, long videos as Page videos).</li>
         </ol>
-        <div class="hint">If Facebook later says the token is invalid (password changed, Page role removed), repeat steps 3–6. Reference: <a href="{{social.guides.facebook}}" target="_blank">Reels publishing API ↗</a></div>
+        <div class="hint">Token stopped working (Facebook password changed, Page role removed)? Repeat steps 5–6. Never send a token in a chat or a screenshot. Reference: <a href="{{social.guides.facebook}}" target="_blank">Reels publishing API ↗</a></div>
       </details>
     </div>
 
