@@ -23,7 +23,7 @@ from flask import Flask, request, redirect, url_for, send_file, render_template_
 
 from src.config import settings
 from src.channels import load_channels, get_channel
-from src import channel_factory
+from src import channel_factory, setup_guide
 from src.daily_runner import (
     run_daily_batch, run_long_batch, run_long_video, run_offline_buffer,
     videos_generated_today_count, short_videos_generated_today_count, long_videos_generated_today_count,
@@ -1066,6 +1066,57 @@ def channel_delete():
     return redirect(url_for("home"))
 
 
+@app.get("/guide")
+def guide():
+    ch = current_channel()
+    status = channel_factory.setup_status(ch)
+    return render_template_string(
+        GUIDE_PAGE, style=_page_style(), ch=ch, channels=load_channels(),
+        steps=setup_guide.steps_for(status.get("project_id", "")), who=setup_guide.WHO,
+        project_id=status.get("project_id", ""),
+    )
+
+
+@app.post("/guide/shot/<step_id>")
+def guide_shot_save(step_id):
+    uploaded = request.files.get("shot")
+    try:
+        if not uploaded:
+            raise ValueError("No screenshot received.")
+        setup_guide.save_shot(step_id, uploaded.read(6 * 1024 * 1024 + 1))
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    return jsonify({"ok": True})
+
+
+@app.post("/guide/shot/<step_id>/delete")
+def guide_shot_delete(step_id):
+    try:
+        setup_guide.delete_shot(step_id)
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 400
+    return jsonify({"ok": True})
+
+
+@app.get("/guide/shot/<step_id>")
+def guide_shot(step_id):
+    path = setup_guide.shot_path(step_id)
+    if not path:
+        abort(404)
+    response = send_file(path)
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.get("/guide/client")
+def guide_client():
+    page = setup_guide.client_guide_html(request.args.get("email", ""))
+    return app.response_class(
+        page, mimetype="text/html",
+        headers={"Content-Disposition": 'attachment; filename="connect-your-youtube-channel.html"'},
+    )
+
+
 @app.post("/github-sync")
 def github_sync():
     ch = current_channel()
@@ -1228,6 +1279,140 @@ NEW_CHANNEL_PAGE = r"""
 """
 
 
+GUIDE_PAGE = r"""
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setup guide · Story Bot STUDIO</title>
+{{ style|safe }}
+<style>
+  .gd{max-width:900px}
+  .gd h3{margin:26px 0 4px;font-size:18px}
+  .gd .part-ur{color:var(--muted);margin:0 0 12px;font-size:13px}
+  .step{display:grid;grid-template-columns:42px 1fr;gap:12px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel);margin-bottom:12px}
+  .num{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+  .step h4{margin:4px 0 6px;font-size:16px}
+  .step p{margin:4px 0;line-height:1.55}
+  .step .ur{color:var(--muted);font-size:14px}
+  .step .tip{color:var(--muted);font-size:13px}
+  .step .go{display:inline-block;margin:8px 0 2px;padding:8px 12px;border-radius:10px;background:rgba(108,140,255,.15);border:1px solid rgba(108,140,255,.4);font-weight:600;font-size:14px}
+  .shot{margin-top:10px;border:2px dashed var(--line);border-radius:12px;padding:14px;text-align:center;color:var(--muted);font-size:13px;cursor:pointer;outline:none}
+  .shot:focus{border-color:var(--accent);color:var(--text)}
+  .shot img{display:block;max-width:100%;height:auto;border-radius:8px;margin:0 auto}
+  .shot.has{border-style:solid;padding:6px}
+  .shot-tools{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+  .client-box{border:1px solid rgba(61,220,151,.45);background:rgba(61,220,151,.07);border-radius:14px;padding:16px;margin:18px 0}
+  .client-box textarea{width:100%;margin-top:8px;background:#12162a;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font:inherit;font-size:13px}
+</style></head><body>
+<header><div class="logo">📘</div><div><h1>Google Cloud setup guide</h1>
+  <div class="sub">For: {{ch.name}}{% if project_id %} · project <b>{{project_id}}</b> (links open on it){% endif %}</div></div></header>
+<div class="wrap gd">
+  <div class="tabs"><a class="tab" href="/?channel={{ch.id}}">← Back to {{ch.name}}</a></div>
+
+  <div class="card">
+    <strong>Screenshots: add them once, use them for every client</strong>
+    <div class="hint">While you do one real setup, take a screenshot at each step (<b>Win + Shift + S</b>), click that step's dashed box below and press <b>Ctrl + V</b>. Or click the box to pick an image file. Screenshots are saved on this PC only, in <code>data/guide/</code>. Before sending them to a client, make sure they do not show anything private.</div>
+  </div>
+
+  <div class="client-box" id="client">
+    <strong>📤 Send the client their part</strong>
+    <div class="hint">The client only does Part 1 (4 steps). Type your Gmail once; it goes into the guide and the message.</div>
+    <div class="row" style="margin-top:8px;align-items:flex-end;gap:10px">
+      <label class="field" style="flex:0 1 280px">Your Gmail<input type="text" id="guide-email" placeholder="you@gmail.com"></label>
+      <a class="btn-link green" id="client-download" href="/guide/client">⬇ Download client guide (one file, with screenshots)</a>
+      <button type="button" class="ghost sm" id="guide-copy">📋 Copy WhatsApp message</button>
+    </div>
+    <textarea id="guide-message" readonly rows="7"></textarea>
+    <div class="hint">Send the downloaded file with the message. It opens in any browser, on a phone too.</div>
+  </div>
+
+  {% set ns = namespace(part='', n=0) %}
+  {% for step in steps %}
+    {% if step.who != ns.part %}{% set ns.part = step.who %}
+      <h3>{{ who[step.who][0] }}</h3><div class="part-ur">{{ who[step.who][1] }}</div>
+    {% endif %}
+    {% set ns.n = ns.n + 1 %}
+    <div class="step">
+      <div class="num">{{ns.n}}</div>
+      <div>
+        <h4>{{step.title}} <span class="hint">· {{step.urdu}}</span></h4>
+        <p>{{step.do|safe}}</p>
+        <p class="ur">{{step.do_urdu|safe}}</p>
+        {% if step.link %}<a class="go" href="{{step.link}}" target="_blank" rel="noopener">{{step.link_label}} ↗</a>{% endif %}
+        {% if step.tip %}<p class="tip">💡 {{step.tip}}</p>{% endif %}
+        <div class="shot {{'has' if step.has_shot else ''}}" tabindex="0" data-step="{{step.id}}">
+          {% if step.has_shot %}<img src="/guide/shot/{{step.id}}" alt="Screenshot of step {{ns.n}}">
+          {% else %}📷 No screenshot yet. Click here, then press <b>Ctrl + V</b> (or click again to choose a file).{% endif %}
+        </div>
+        {% if step.has_shot %}<div class="shot-tools"><button type="button" class="ghost sm" data-delete="{{step.id}}">Remove screenshot</button></div>{% endif %}
+      </div>
+    </div>
+  {% endfor %}
+  <input type="file" id="shot-file" accept="image/png,image/jpeg" hidden>
+</div>
+<script>
+(function () {
+  var email = document.getElementById('guide-email'), box = document.getElementById('guide-message'),
+      copy = document.getElementById('guide-copy'), dl = document.getElementById('client-download');
+  try { email.value = localStorage.getItem('guide-email') || ''; } catch (e) {}
+  function render() {
+    var who = email.value.trim() || '[my Gmail]';
+    dl.href = '/guide/client?email=' + encodeURIComponent(email.value.trim());
+    box.value = "Assalam o Alaikum! Aap ka YouTube channel bot se jorne ke liye computer par 2 minute ka kaam hai. " +
+      "Saath wali file (connect-your-youtube-channel.html) kholen, us mein screenshots ke saath 4 qadam hain.\n\n" +
+      "Short version:\n" +
+      "1. https://console.cloud.google.com/projectcreate kholen, naam \"My YouTube Bot\" likhen, Create dabayen.\n" +
+      "2. https://console.cloud.google.com/iam-admin/iam kholen, \"Grant access\" dabayen.\n" +
+      "3. " + who + " likhen, role \"Basic > Editor\", Save.\n" +
+      "4. \"Project ID\" copy karke mujhe bhej dein.\n\n" +
+      "Is se aap ka password ya Gmail mere paas nahi aata. Shukriya!";
+  }
+  email.addEventListener('input', function () { try { localStorage.setItem('guide-email', email.value.trim()); } catch (e) {} render(); });
+  copy.addEventListener('click', function () {
+    box.select();
+    var done = function () { copy.textContent = '✅ Copied'; setTimeout(function () { copy.textContent = '📋 Copy WhatsApp message'; }, 1500); };
+    if (navigator.clipboard) { navigator.clipboard.writeText(box.value).then(done, function () { document.execCommand('copy'); done(); }); }
+    else { document.execCommand('copy'); done(); }
+  });
+  render();
+
+  // Screenshots: paste into the focused box, or click a focused box to pick a file.
+  var picker = document.getElementById('shot-file'), target = null;
+  function upload(step, file) {
+    var fd = new FormData(); fd.append('shot', file);
+    var el = document.querySelector('.shot[data-step="' + step + '"]');
+    if (el) el.textContent = 'Saving…';
+    fetch('/guide/shot/' + step, { method: 'POST', body: fd }).then(function (r) { return r.json(); }).then(function (j) {
+      if (!j.ok) { alert(j.error || 'Could not save'); }
+      location.hash = ''; location.reload();
+    });
+  }
+  document.querySelectorAll('.shot').forEach(function (el) {
+    el.addEventListener('click', function () {
+      if (document.activeElement === el && el.dataset.armed) { target = el.dataset.step; picker.click(); }
+      el.dataset.armed = '1'; el.focus();
+    });
+    el.addEventListener('blur', function () { delete el.dataset.armed; });
+  });
+  picker.addEventListener('change', function () { if (picker.files[0] && target) upload(target, picker.files[0]); });
+  document.addEventListener('paste', function (e) {
+    var el = document.activeElement;
+    if (!el || !el.classList || !el.classList.contains('shot')) return;
+    var items = (e.clipboardData || {}).items || [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') === 0) { e.preventDefault(); upload(el.dataset.step, items[i].getAsFile()); return; }
+    }
+  });
+  document.querySelectorAll('[data-delete]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      fetch('/guide/shot/' + b.dataset.delete + '/delete', { method: 'POST' }).then(function () { location.reload(); });
+    });
+  });
+})();
+</script>
+</body></html>
+"""
+
+
 PAGE = r"""
 <!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1298,9 +1483,10 @@ PAGE = r"""
   .setup-steps{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:10px}
   .setup-steps li{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
   .setup-steps li.done{border-color:rgba(61,220,151,.4)}
-  .setup-guide{margin-top:12px}
-  .setup-guide h4{margin:14px 0 6px;font-size:14px}
-  .setup-guide ol,.setup-guide ul{margin:6px 0;padding-left:22px;line-height:1.65;font-size:14px}
+  .setup-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .btn-link{display:inline-block;padding:9px 14px;border-radius:10px;font-weight:600;font-size:14px;border:1px solid var(--line)}
+  .btn-link.green{background:rgba(61,220,151,.15);border-color:rgba(61,220,151,.45);color:var(--ok)}
+  .btn-link.ghost{color:var(--text)}
   input[type=text],input[type=password]{background:#12162a;border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:10px;outline:none;font:inherit}
   .action-note{margin-top:12px;padding:10px 12px;border-radius:10px;background:#14192d;color:var(--muted);font-size:12px;line-height:1.45}
   .analytics-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:14px 0}
@@ -1388,69 +1574,10 @@ PAGE = r"""
         {% if not setup.github %}<form method="post" action="/github-sync" style="margin-top:6px"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green sm" type="submit">⬆ Send to GitHub</button></form>{% endif %}
       </li>
     </ol>
-    {% set q = '?project=' ~ setup.project_id if setup.project_id else '' %}
-    <details class="guide-box setup-guide" {{'open' if not (setup.project and setup.youtube) else ''}}>
-      <summary>📘 Google Cloud setup guide (har naye channel ke liye ek dafa, ~10 minute)</summary>
-      {% if setup.project_id %}<div class="hint" style="margin-top:6px">Is channel ka project: <b>{{setup.project_id}}</b>. Neeche ke links seedhe isi project par khulenge.</div>{% endif %}
-
-      <h4>Hissa 1 — Client ka kaam (2 minute)</h4>
-      <ol>
-        <li>Client apne Gmail se <a href="https://console.cloud.google.com/projectcreate" target="_blank">New Project ↗</a> khole, koi bhi naam de (maslan "My YouTube Bot") aur <b>Create</b> dabaye.</li>
-        <li>Phir <a href="https://console.cloud.google.com/iam-admin/iam" target="_blank">IAM ↗</a> → <b>Grant access</b> → "New principals" mein <b>aap ki Gmail</b> → Role <b>Editor</b> → <b>Save</b>.</li>
-      </ol>
-      <div class="hint">Apne hi channel ka project ho to yeh hissa chhor dein; sab kuch apne Gmail se karen. Client ko bhejne ke liye message:</div>
-      <div class="row" style="margin-top:6px;align-items:flex-end;gap:8px">
-        <label class="field" style="flex:0 1 260px">Aap ki Gmail (sirf is message ke liye)<input type="text" id="guide-email" placeholder="you@gmail.com"></label>
-        <button type="button" class="ghost sm" id="guide-copy">📋 Copy message</button>
-      </div>
-      <textarea id="guide-message" readonly rows="6" style="width:100%;margin-top:8px;background:#12162a;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font:inherit;font-size:13px"></textarea>
-
-      <h4>Hissa 2 — Aap ka kaam, client ke project mein (5 minute)</h4>
-      <div class="hint">Apne Gmail se kholen. Upar project dropdown mein <b>client ka project</b> chuna hona chahiye.</div>
-      <ol start="3">
-        <li><b>API on karen:</b> <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com{{q}}" target="_blank">YouTube Data API v3 ↗</a> → <b>Enable</b>.</li>
-        <li><b>Consent screen:</b> <a href="https://console.cloud.google.com/auth/overview{{q}}" target="_blank">Google Auth Platform ↗</a> → <b>Get started</b> → App name (maslan "Story Bot"), support email apna → Audience <b>External</b> → contact email apna → shartein maanen → <b>Create</b>.</li>
-        <li><b>"In production" par karen:</b> <a href="https://console.cloud.google.com/auth/audience{{q}}" target="_blank">Audience ↗</a> → <b>Publish app</b> → Confirm. <span style="color:var(--warn)">Zaroori:</span> "Testing" par rahe to Google har 7 din baad sign-in khatam kar deta hai aur uploads ruk jate hain.</li>
-        <li><b>JSON file:</b> <a href="https://console.cloud.google.com/auth/clients/create{{q}}" target="_blank">Create client ↗</a> → Application type <b>Desktop app</b> → <b>Create</b> → <b>Download JSON</b>.</li>
-      </ol>
-      <div class="hint">Kisi page par "permission denied" aaye to client se kahen ke aap ka role <b>Editor</b> ki jagah <b>Owner</b> kar de. Menu ke naam kabhi kabhi badal jate hain; qareeb wala naam chun lein.</div>
-
-      <h4>Hissa 3 — Is dashboard mein (2 minute)</h4>
-      <ol start="7">
-        <li>Download hui file neeche <a href="#own-project">Separate Google OAuth JSON</a> wale box mein chunen → <b>Save Separate Project</b>. Upar qadam 1 hara ho jayega.</li>
-        <li><b>Connect &amp; verify</b> dabayen aur <b>woh Gmail</b> chunen jis ka YouTube channel hai.
-          <ul>
-            <li>"Google hasn't verified this app" aaye to <b>Advanced → Go to … (unsafe)</b>. Yeh aap ki apni app hai, is liye yeh warning aati hai.</li>
-            <li>Account mein kai channels hon to <b>sahi channel</b> chunen, phir dono permissions <b>Allow</b>.</li>
-            <li>Table mein jo channel ka naam aaye, tasdeeq kar lein ke wahi hai.</li>
-          </ul>
-        </li>
-        <li><b>⬆ Send to GitHub</b> dabayen. Agle din ki subah ki run se is channel ki videos banne lagengi.</li>
-      </ol>
-      <div class="hint">Pehli video ke baad <a href="https://studio.youtube.com" target="_blank">YouTube Studio ↗</a> mein dekh lein ke video <b>public/scheduled</b> hai. Agar private ho to Google project ka audit maang raha hai.</div>
-    </details>
-    <script>
-    (function () {
-      var email = document.getElementById('guide-email'), box = document.getElementById('guide-message'), copy = document.getElementById('guide-copy');
-      if (!email || !box) return;
-      try { email.value = localStorage.getItem('guide-email') || ''; } catch (e) {}
-      function render() {
-        var who = email.value.trim() || '[my Gmail]';
-        box.value = "Hi! To connect your YouTube channel to the video bot, please do these 2 steps (about 2 minutes):\n\n" +
-          "1. Open https://console.cloud.google.com/projectcreate with your Gmail, name the project \"My YouTube Bot\" and press Create.\n" +
-          "2. Open https://console.cloud.google.com/iam-admin/iam (with that new project selected), press \"Grant access\", add " + who + " with the role \"Editor\" and press Save.\n\n" +
-          "Tell me when it is done. You will only need to sign in to YouTube once after that.";
-      }
-      email.addEventListener('input', function () { try { localStorage.setItem('guide-email', email.value.trim()); } catch (e) {} render(); });
-      copy.addEventListener('click', function () {
-        box.select();
-        var done = function () { copy.textContent = '✅ Copied'; setTimeout(function () { copy.textContent = '📋 Copy message'; }, 1500); };
-        if (navigator.clipboard) { navigator.clipboard.writeText(box.value).then(done, function () { document.execCommand('copy'); done(); }); }
-        else { document.execCommand('copy'); done(); }
-      });
-      render();
-    })();
-    </script>
+    <div class="setup-links">
+      <a class="btn-link green" href="/guide?channel={{ch.id}}">📘 Step-by-step guide with screenshots</a>
+      <a class="btn-link ghost" href="/guide?channel={{ch.id}}#client">📤 Guide to send the client</a>
+    </div>
     {% if factory %}
     <details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Channel plan{% if ch.topic %}: "{{ch.topic}}"{% endif %}</summary>
       <div class="hint" style="margin-top:6px"><b>Look:</b> {{ {'stock':'real video clips','cartoon':'animated cartoon pictures','still':'AI pictures'}.get(ch.visuals, ch.visuals) }} &middot; <b>Voice:</b> {{ch.voice}} &middot; <b>Tone:</b> {{ch.tone}}</div>

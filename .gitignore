@@ -47,6 +47,8 @@ data/youtube_accounts.json
 data/thumbnails/
 # Downloaded on first use (170 MB cut-out model for the layered animation)
 data/models/
+# Setup-guide screenshots: taken from real accounts, may show email addresses
+data/guide/
 data/comfyui_workflow.json
 assets/
 audio/
