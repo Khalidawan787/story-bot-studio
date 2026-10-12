@@ -1,0 +1,70 @@
+name: Status page
+
+# Rebuilds the public status page from the bot's saved state, without making
+# or uploading any video. The daily run already refreshes the page; this is for
+# seeing a change to the page right away, or refreshing it by hand.
+
+on:
+  workflow_dispatch:
+
+# Only one page build at a time; a newer request replaces an older one.
+concurrency:
+  group: status-page
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Restore the bot's state
+        run: |
+          set -e
+          if git ls-remote --exit-code --heads origin bot-state >/dev/null 2>&1; then
+            git fetch --depth=1 origin bot-state
+            git archive origin/bot-state | tar -x -C .
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python packages
+        run: |
+          python -m pip install --upgrade pip -q
+          pip install -q -r requirements.txt
+
+      # Channel list and logins, so the page knows which channels are connected.
+      - name: Restore private files
+        env:
+          BOT_SECRETS_B64: ${{ secrets.BOT_SECRETS_B64 }}
+        run: python scripts/ci_secrets.py unpack
+
+      - name: Build the status page
+        run: python scripts/build_status_page.py site
+
+      - name: Package the status page
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Publish to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

@@ -465,14 +465,24 @@ def run_long_video(
     """Create one new ~5-minute 16:9 video for a selected channel."""
     from .genre_topics import generate_from_prompt
 
+    from . import run_log
+
     if upload and not channel.token_path.exists():
         raise RuntimeError(f"{channel.name} is not connected to YouTube")
-    idea = (prompt or "").strip() or _automatic_long_idea(channel)
-    key = generate_from_prompt(channel, idea, scenes=scenes, long_form=True)
-    assets = run_pipeline(
-        load_lesson_for(channel, key), upload=upload, channel=channel,
-        content_type="long", queue=queue, is_daily=is_daily,
-    )
+    title = ""
+    try:
+        idea = (prompt or "").strip() or _automatic_long_idea(channel)
+        key = generate_from_prompt(channel, idea, scenes=scenes, long_form=True)
+        lesson = load_lesson_for(channel, key)
+        title = lesson.title
+        assets = run_pipeline(
+            lesson, upload=upload, channel=channel,
+            content_type="long", queue=queue, is_daily=is_daily,
+        )
+    except Exception as exc:
+        run_log.record(channel.id, "long", False, str(exc), title)
+        raise
+    run_log.record(channel.id, "long", True, assets.job_id, title)
     return key, assets
 
 
