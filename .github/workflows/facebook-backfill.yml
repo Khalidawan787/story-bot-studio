@@ -1,0 +1,66 @@
+name: Facebook backfill
+
+# Posts a channel's recent long videos (kept as run artifacts for 7 days) to its
+# Facebook Page: the first at once if a time is "now", the rest scheduled with
+# Facebook so they go live at the given Pakistan times. See
+# scripts/facebook_backfill.py. Never posts a title that is already on the Page.
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: "Channel id (its Facebook Page must be connected and sent to GitHub)"
+        default: "trending"
+      count:
+        description: "How many videos"
+        default: "5"
+      times:
+        description: "Comma-separated Pakistan times, e.g. now,2026-10-13 10:00,2026-10-13 13:00"
+        required: true
+
+permissions:
+  contents: read
+  actions: read   # read the kept video artifacts
+
+concurrency:
+  group: facebook-backfill
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Restore the bot's state
+        run: |
+          set -e
+          git fetch --depth=1 origin bot-state
+          git archive origin/bot-state | tar -x -C .
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python packages
+        run: |
+          python -m pip install --upgrade pip -q
+          pip install -q -r requirements.txt
+
+      - name: Restore private files
+        env:
+          BOT_SECRETS_B64: ${{ secrets.BOT_SECRETS_B64 }}
+        run: python scripts/ci_secrets.py unpack
+
+      - name: Post to Facebook
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          python scripts/facebook_backfill.py
+          --channel "${{ github.event.inputs.channel }}"
+          --count "${{ github.event.inputs.count }}"
+          --times "${{ github.event.inputs.times }}"

@@ -198,10 +198,13 @@ def _multipart(fields: dict[str, str], file_field: str, path: Path) -> tuple[byt
     return b"".join(chunks), f"multipart/form-data; boundary={boundary}"
 
 
-def _facebook_long(video: Path, title: str, page_id: str, token: str) -> tuple[str, str]:
-    body, content_type = _multipart(
-        {"access_token": token, "title": title, "description": title}, "source", video,
-    )
+def _facebook_long(video: Path, title: str, page_id: str, token: str,
+                   publish_at: int | None = None) -> tuple[str, str]:
+    fields = {"access_token": token, "title": title, "description": title}
+    if publish_at:
+        # Facebook publishes it by itself at this Unix time (10+ minutes ahead).
+        fields.update({"published": "false", "scheduled_publish_time": str(int(publish_at))})
+    body, content_type = _multipart(fields, "source", video)
     data = _send_binary(
         f"https://graph-video.facebook.com/{FB_API_VERSION}/{page_id}/videos",
         body, {"Content-Type": content_type}, "POST",
