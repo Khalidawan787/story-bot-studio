@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 import mimetypes
+import time
 import uuid
 from pathlib import Path
 from urllib.error import HTTPError
@@ -198,20 +199,66 @@ def _multipart(fields: dict[str, str], file_field: str, path: Path) -> tuple[byt
     return b"".join(chunks), f"multipart/form-data; boundary={boundary}"
 
 
+def _multipart_bytes(fields: dict[str, str], file_field: str = "", filename: str = "",
+                     data: bytes | None = None) -> tuple[bytes, str]:
+    """A multipart/form-data body; the file part is optional."""
+    boundary = "----StoryBot" + uuid.uuid4().hex
+    chunks: list[bytes] = []
+    for key, value in fields.items():
+        chunks.extend([
+            f"--{boundary}\r\n".encode(),
+            f'Content-Disposition: form-data; name="{key}"\r\n\r\n'.encode(),
+            str(value).encode("utf-8"), b"\r\n",
+        ])
+    if data is not None:
+        chunks.extend([
+            f"--{boundary}\r\n".encode(),
+            f'Content-Disposition: form-data; name="{file_field}"; filename="{filename}"\r\n'.encode(),
+            b"Content-Type: application/octet-stream\r\n\r\n", data, b"\r\n",
+        ])
+    chunks.append(f"--{boundary}--\r\n".encode())
+    return b"".join(chunks), f"multipart/form-data; boundary={boundary}"
+
+
 def _facebook_long(video: Path, title: str, page_id: str, token: str,
                    publish_at: int | None = None) -> tuple[str, str]:
-    fields = {"access_token": token, "title": title, "description": title}
+    """Upload a Page video in chunks (Facebook's resumable upload).
+
+    Sending a 100 MB+ file in one request gets the connection cut midway, so
+    the file goes up in the pieces Facebook asks for, and the title, text and
+    optional schedule are set when the upload is finished.
+    """
+    url = f"https://graph-video.facebook.com/{FB_API_VERSION}/{page_id}/videos"
+    payload = video.read_bytes()
+
+    def post(fields: dict[str, str], chunk: bytes | None = None) -> dict:
+        body, ctype = _multipart_bytes(fields, "video_file_chunk", "chunk.mp4", chunk)
+        for attempt in range(4):
+            try:
+                return _send_binary(url, body, {"Content-Type": ctype}, "POST")
+            except Exception:
+                if attempt == 3:
+                    raise
+                time.sleep(3 * (attempt + 1))
+        return {}
+
+    started = post({"access_token": token, "upload_phase": "start", "file_size": str(len(payload))})
+    session, video_id = str(started.get("upload_session_id") or ""), str(started.get("video_id") or "")
+    if not session or not video_id:
+        raise RuntimeError(f"Facebook did not open an upload session: {started}")
+    begin, end = int(started.get("start_offset", 0)), int(started.get("end_offset", 0))
+    while begin < end:
+        step = post({"access_token": token, "upload_phase": "transfer",
+                     "upload_session_id": session, "start_offset": str(begin)}, payload[begin:end])
+        begin, end = int(step.get("start_offset", end)), int(step.get("end_offset", end))
+    finish = {"access_token": token, "upload_phase": "finish", "upload_session_id": session,
+              "title": title, "description": title}
     if publish_at:
         # Facebook publishes it by itself at this Unix time (10+ minutes ahead).
-        fields.update({"published": "false", "scheduled_publish_time": str(int(publish_at))})
-    body, content_type = _multipart(fields, "source", video)
-    data = _send_binary(
-        f"https://graph-video.facebook.com/{FB_API_VERSION}/{page_id}/videos",
-        body, {"Content-Type": content_type}, "POST",
-    )
-    video_id = str(data.get("id") or "")
-    if not video_id:
-        raise RuntimeError("Facebook did not return a video ID.")
+        finish.update({"published": "false", "scheduled_publish_time": str(int(publish_at))})
+    done = post(finish)
+    if done.get("success") is False:
+        raise RuntimeError("Facebook received the video but did not accept it.")
     return video_id, f"https://www.facebook.com/{video_id}"
 
 
