@@ -177,13 +177,17 @@ def collect() -> dict:
         upcoming = [
             r for r in _rows(
                 conn,
+                # Newest rows, then filtered and sorted here: hundreds of old
+                # scheduled rows already in the past would otherwise fill any
+                # "earliest first" limit and leave the list empty.
                 """SELECT title, channel, video_url, publish_at,
                           COALESCE(content_type,'short') AS content_type
                    FROM videos WHERE status = 'scheduled' AND publish_at IS NOT NULL
-                     AND hidden_at IS NULL ORDER BY publish_at ASC LIMIT 60""",
+                     AND hidden_at IS NULL ORDER BY id DESC LIMIT 200""",
             )
             if (_parse(r["publish_at"]) or now) > now
-        ][:10]
+        ]
+        upcoming = sorted(upcoming, key=lambda r: _parse(r["publish_at"]))[:10]
 
         # Uploads per day (Pakistan time) for the last seven days, per channel.
         week_start = (now + LOCAL_TZ_OFFSET).date() - timedelta(days=6)
