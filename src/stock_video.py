@@ -39,7 +39,8 @@ def stock_video_enabled(channel=None) -> bool:
     from .thumbnails import pexels_api_key
 
     channel_id = str(getattr(channel, "id", "") or "").lower()
-    return bool(channel_id) and channel_id in settings.stock_video_channels and bool(pexels_api_key())
+    wanted = channel_id in settings.stock_video_channels or getattr(channel, "visuals", "") == "stock"
+    return bool(channel_id) and wanted and bool(pexels_api_key())
 
 
 def _scene_queries(scene: Scene, channel=None) -> list[str]:

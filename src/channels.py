@@ -32,6 +32,15 @@ class Channel:
     # topics so the same video never appears twice across them. "main" is the
     # original single account described by the fields above.
     account: str = "main"
+    # Set on channels made from a topic on the dashboard (see channel_factory).
+    # Empty on the original channels, which keep their built-in genre settings.
+    tone: str = ""
+    keywords: tuple = ()
+    visuals: str = ""
+    ideas: tuple = ()
+    topic: str = ""
+    created_by: str = ""
+    created_at: str = ""
 
     @property
     def client_secret_path(self) -> Path:
@@ -79,7 +88,11 @@ def load_channels() -> list[Channel]:
     data = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
     # Unknown keys are ignored so an older or newer channels.json still loads.
     fields = {field.name for field in dataclasses.fields(Channel)}
-    return [Channel(**{k: v for k, v in c.items() if k in fields}) for c in data["channels"]]
+    # JSON lists become tuples so a Channel stays immutable and hashable.
+    return [
+        Channel(**{k: tuple(v) if isinstance(v, list) else v for k, v in c.items() if k in fields})
+        for c in data["channels"]
+    ]
 
 
 def get_channel(channel_id: str) -> Channel:

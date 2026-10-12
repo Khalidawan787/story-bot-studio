@@ -25,6 +25,10 @@ ROOT = Path(__file__).resolve().parent.parent
 # machine that never connected "love" simply ships no token for it.
 SECRET_FILES = [
     ".env",
+    # Not secret, but channels made on the dashboard exist only on this PC
+    # until it is sent. Unpacking overwrites the committed copy, so the
+    # dashboard's channel list is what the daily run uses.
+    "channels.json",
     "client_secret.json",
     "credentials/drive_token.json",
     "data/pexels_api_key.txt",

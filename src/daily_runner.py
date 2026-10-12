@@ -433,6 +433,15 @@ def _automatic_long_idea(channel: Channel) -> str:
         if not key.startswith("long_")
     ]
     if not candidates:
+        # A channel made from a topic starts with a handful of planned ideas:
+        # one a day, then fresh topics of its own.
+        ideas = list(getattr(channel, "ideas", ()) or ())
+        try:
+            day = (datetime.now() - datetime.fromisoformat(channel.created_at)).days
+        except (TypeError, ValueError):
+            day = len(ideas)
+        if 0 <= day < len(ideas):
+            return f"Create a complete, original {channel.genre} video about: {ideas[day]}. Date seed: {today_label}."
         return f"Create a fresh original {channel.genre} video for {today_label}."
     history = _topic_history(channel.id)
     candidates.sort(key=lambda item: (

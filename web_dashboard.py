@@ -23,6 +23,7 @@ from flask import Flask, request, redirect, url_for, send_file, render_template_
 
 from src.config import settings
 from src.channels import load_channels, get_channel
+from src import channel_factory
 from src.daily_runner import (
     run_daily_batch, run_long_batch, run_long_video, run_offline_buffer,
     videos_generated_today_count, short_videos_generated_today_count, long_videos_generated_today_count,
@@ -329,6 +330,7 @@ def home():
         ],
         channel_uploads_today=uploads_today_count(ch.id), channel_upload_limit=upload_limit_for_channel(ch.id),
         api=api_center(ch), calendar=upcoming_schedule(ch.id),
+        setup=channel_factory.setup_status(ch), factory=ch.created_by == "factory",
         social=social_accounts.public_status(ch.id), social_uploads=social_uploads_for_channel(ch.id),
         stats={"topics": len(topics), "videos": len(vids), "uploaded": uploaded,
                "today": videos_generated_today_count(ch.id)},
@@ -997,6 +999,83 @@ def youtube_project():
     return redirect(url_for("home", channel=ch.id))
 
 
+# ---------- new channel from a topic ----------
+
+def _page_style() -> str:
+    """The main dashboard's stylesheet, so the extra pages look the same."""
+    import re
+
+    match = re.search(r"<style>.*?</style>", PAGE, re.S)
+    return match.group(0) if match else ""
+
+
+@app.get("/channel-new")
+def channel_new():
+    return render_template_string(
+        NEW_CHANNEL_PAGE, style=_page_style(), spec=None, channels=load_channels(),
+        voices=channel_factory.VOICES, categories=channel_factory.CATEGORIES,
+        visuals=channel_factory.VISUALS,
+    )
+
+
+@app.post("/channel-new/design")
+def channel_new_design():
+    topic = request.form.get("topic", "")
+    try:
+        spec = channel_factory.design_channel(topic)
+    except Exception as exc:
+        flash(f"Could not plan the channel: {exc}", "error")
+        return redirect(url_for("channel_new"))
+    return render_template_string(
+        NEW_CHANNEL_PAGE, style=_page_style(), spec=spec, channels=load_channels(),
+        voices=channel_factory.VOICES, categories=channel_factory.CATEGORIES,
+        visuals=channel_factory.VISUALS,
+    )
+
+
+@app.post("/channel-new/create")
+def channel_new_create():
+    form = request.form
+    spec = {
+        "topic": form.get("topic", ""), "name": form.get("name", ""),
+        "genre": form.get("genre", ""), "tone": form.get("tone", ""),
+        "image_style": form.get("image_style", ""), "seo_suffix": form.get("seo_suffix", ""),
+        "voice": form.get("voice", ""), "category_id": form.get("category_id", ""),
+        "made_for_kids": form.get("made_for_kids") == "on", "visuals": form.get("visuals", ""),
+        "keywords": form.get("keywords", ""), "first_topics": form.get("first_topics", ""),
+    }
+    try:
+        channel_id = channel_factory.create_channel(spec)
+    except Exception as exc:
+        flash(f"Could not create the channel: {exc}", "error")
+        return redirect(url_for("channel_new"))
+    flash("Channel created. Finish the three setup steps below and it runs every day by itself.", "ok")
+    return redirect(url_for("home", channel=channel_id))
+
+
+@app.post("/channel-delete")
+def channel_delete():
+    ch = current_channel()
+    try:
+        channel_factory.delete_channel(ch.id)
+    except Exception as exc:
+        flash(str(exc), "error")
+        return redirect(url_for("home", channel=ch.id))
+    flash(f"Deleted {ch.name}. Its login and topic files were kept as .bak copies. "
+          "Press 'Send to GitHub' on any channel so the daily run drops it too.", "ok")
+    return redirect(url_for("home"))
+
+
+@app.post("/github-sync")
+def github_sync():
+    ch = current_channel()
+    try:
+        flash(channel_factory.sync_to_github(), "ok")
+    except Exception as exc:
+        flash(f"GitHub update failed: {exc}", "error")
+    return redirect(url_for("home", channel=ch.id))
+
+
 @app.route("/drive-connect", methods=["POST"])
 def drive_connect():
     ch = current_channel()
@@ -1093,6 +1172,62 @@ def media():
     return send_file(_safe_media(request.args.get("path", "")))
 
 
+NEW_CHANNEL_PAGE = r"""
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New channel · Story Bot STUDIO</title>
+{{ style|safe }}
+<style>
+  .newch{max-width:860px}
+  .newch label.field textarea{background:#12162a;border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:10px;font:inherit;min-height:70px;resize:vertical}
+  .newch .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:14px}
+  .newch select{max-width:none;min-width:0}
+</style></head><body>
+<header><div class="logo">🎬</div><div><h1>New channel</h1>
+  <div class="sub">Describe a topic. AI plans the channel; you check it and create it.</div></div></header>
+<div class="wrap newch">
+  <div class="tabs">{% for c in channels %}<a class="tab" href="/?channel={{c.id}}">{{c.name}}</a>{% endfor %}<a class="tab active" href="/channel-new">➕ New channel</a></div>
+  {% with msgs = get_flashed_messages(with_categories=true) %}{% for cat,msg in msgs %}<div class="flash {{cat}}">{{msg}}</div>{% endfor %}{% endwith %}
+
+  <div class="card" style="margin-bottom:18px">
+    <form method="post" action="/channel-new/design" class="row" style="align-items:flex-end;gap:12px" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Planning… (about 20 seconds)'">
+      <label class="field">What is the channel about?
+        <input type="text" name="topic" required minlength="3" maxlength="200" placeholder="e.g. cooking for beginners, space facts, cat stories" value="{{spec.topic if spec else ''}}">
+      </label>
+      <button class="green" type="submit">✨ {{'Plan again' if spec else 'Plan this channel'}}</button>
+    </form>
+  </div>
+
+  {% if spec %}
+  <form method="post" action="/channel-new/create" class="card">
+    <strong>Check the plan</strong>
+    <div class="hint">Change anything you like. Nothing is created until you press the button at the bottom.</div>
+    <input type="hidden" name="topic" value="{{spec.topic}}">
+    <div class="grid2">
+      <label class="field">Channel name<input type="text" name="name" value="{{spec.name}}" required maxlength="40"></label>
+      <label class="field">Niche (one or two words)<input type="text" name="genre" value="{{spec.genre}}" required maxlength="30"></label>
+      <label class="field">Voice<select name="voice">{% for v,label in voices.items() %}<option value="{{v}}" {{'selected' if v==spec.voice else ''}}>{{label}}</option>{% endfor %}</select></label>
+      <label class="field">Pictures<select name="visuals">{% for v,label in visuals.items() %}<option value="{{v}}" {{'selected' if v==spec.visuals else ''}}>{{label}}</option>{% endfor %}</select></label>
+      <label class="field">YouTube category<select name="category_id">{% for v,label in categories.items() %}<option value="{{v}}" {{'selected' if v==spec.category_id else ''}}>{{label}}</option>{% endfor %}</select></label>
+      <label class="field">Title ending<input type="text" name="seo_suffix" value="{{spec.seo_suffix}}" maxlength="40"></label>
+    </div>
+    <div class="grid2">
+      <label class="field">How the scripts should sound<textarea name="tone" maxlength="300">{{spec.tone}}</textarea></label>
+      <label class="field">Picture style<textarea name="image_style" maxlength="200">{{spec.image_style}}</textarea></label>
+      <label class="field">Search keywords (comma separated)<textarea name="keywords">{{spec.keywords|join(', ')}}</textarea></label>
+      <label class="field">First video ideas (one per line, one a day)<textarea name="first_topics" rows="5">{{spec.first_topics|join('\n')}}</textarea></label>
+    </div>
+    <label class="chk" style="margin-top:14px;display:block"><input type="checkbox" name="made_for_kids" {{'checked' if spec.made_for_kids else ''}}> Made for kids <span class="hint">(YouTube rule: tick only if the audience is young children)</span></label>
+    <div class="row" style="margin-top:16px;gap:12px;align-items:center">
+      <button class="green" type="submit">Create channel</button>
+      <span class="hint">Next: give it its own Google Cloud project, connect YouTube, and send it to GitHub.</span>
+    </div>
+  </form>
+  {% endif %}
+</div></body></html>
+"""
+
+
 PAGE = r"""
 <!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1160,6 +1295,9 @@ PAGE = r"""
   .action-head h2{font-size:17px;margin:0;color:#edf0ff}.scope{font-size:11px;color:#b9c1e6;background:#252d4b;
     border:1px solid #354064;border-radius:999px;padding:4px 9px;white-space:nowrap}
   .field{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:12px;font-weight:600;flex:1}
+  .setup-steps{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+  .setup-steps li{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
+  .setup-steps li.done{border-color:rgba(61,220,151,.4)}
   input[type=text],input[type=password]{background:#12162a;border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:10px;outline:none;font:inherit}
   .action-note{margin-top:12px;padding:10px 12px;border-radius:10px;background:#14192d;color:var(--muted);font-size:12px;line-height:1.45}
   .analytics-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:14px 0}
@@ -1191,6 +1329,7 @@ PAGE = r"""
 
   <div class="tabs">
     {% for c in channels %}<a class="tab {{'active' if c.id==ch.id else ''}}" href="/?channel={{c.id}}">{{c.name}}</a>{% endfor %}
+    <a class="tab" href="/channel-new" style="border-style:dashed">➕ New channel</a>
   </div>
 
   {% with msgs = get_flashed_messages(with_categories=true) %}
@@ -1227,6 +1366,33 @@ PAGE = r"""
   {% if upload_pause %}
   <div class="flash error"><strong>YouTube uploads are temporarily paused.</strong> Video creation still continues and finished videos appear below; YouTube upload/retry will wait until <strong>{{upload_pause[1]|localdt}}</strong>. Reason: {{upload_pause[0]}}</div>
   {% endif %}
+
+  <div class="card setup-card" style="margin-bottom:18px">
+    <strong>Setup for {{ch.name}}</strong>
+    <div class="hint">Three steps. When all three are green, GitHub makes and uploads this channel's videos every day, even with this PC off.</div>
+    <ol class="setup-steps">
+      <li class="{{'done' if setup.project else ''}}">
+        <b>{{'✅' if setup.project else '1️⃣'}} Own Google Cloud project</b>
+        <span class="hint">{% if setup.project %}This channel has its own upload quota.{% elif setup.project_file %}Shares a project (and its ~6 uploads a day) with: {{api.youtube_project.shared_with|join(', ')}}. Upload the channel owner's OAuth JSON in the box below.{% else %}No OAuth JSON yet. Upload the channel owner's file in the box below.{% endif %}</span>
+      </li>
+      <li class="{{'done' if setup.youtube else ''}}">
+        <b>{{'✅' if setup.youtube else '2️⃣'}} YouTube connected</b>
+        <span class="hint">{% if setup.youtube %}Signed in. Uploads go to the channel named in the table below.{% else %}Press "Connect &amp; verify" below and sign in with the Google account that owns the YouTube channel.{% endif %}</span>
+      </li>
+      <li class="{{'done' if setup.github else ''}}">
+        <b>{{'✅' if setup.github else '3️⃣'}} Sent to GitHub</b>
+        <span class="hint">{% if setup.github %}GitHub has every channel and login from this PC.{% else %}Something changed on this PC (a channel, login or key) that the daily run does not have yet.{% endif %}</span>
+        {% if not setup.github %}<form method="post" action="/github-sync" style="margin-top:6px"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green sm" type="submit">⬆ Send to GitHub</button></form>{% endif %}
+      </li>
+    </ol>
+    {% if factory %}
+    <details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Channel plan{% if ch.topic %}: "{{ch.topic}}"{% endif %}</summary>
+      <div class="hint" style="margin-top:6px"><b>Look:</b> {{ {'stock':'real video clips','cartoon':'animated cartoon pictures','still':'AI pictures'}.get(ch.visuals, ch.visuals) }} &middot; <b>Voice:</b> {{ch.voice}} &middot; <b>Tone:</b> {{ch.tone}}</div>
+      {% if ch.ideas %}<div class="hint"><b>First video ideas (one a day):</b> {{ch.ideas|join(' · ')}}</div>{% endif %}
+      <form method="post" action="/channel-delete" onsubmit="return confirm('Delete {{ch.name}} from this bot? Its YouTube channel and videos are not touched.')" style="margin-top:8px"><input type="hidden" name="channel" value="{{ch.id}}"><button class="red sm" type="submit">Delete this channel</button></form>
+    </details>
+    {% endif %}
+  </div>
 
   <div class="card" style="margin-bottom:18px">
     <div>
@@ -1277,7 +1443,7 @@ PAGE = r"""
   </div>
 
   <div class="card" style="margin-bottom:18px">
-    <form method="post" action="/youtube-project" enctype="multipart/form-data" class="row">
+    <form method="post" action="/youtube-project" enctype="multipart/form-data" class="row" id="own-project">
       <input type="hidden" name="channel" value="{{ch.id}}">
       <label class="field">Separate Google OAuth JSON for {{ch.name}}
         <input type="file" name="client_secret_file" accept=".json,application/json" required>

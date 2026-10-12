@@ -202,7 +202,7 @@ def _script_json(prompt: str) -> dict:
 
 
 def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) -> dict:
-    tone = GENRE_TONE.get(channel.genre, "engaging and well-paced")
+    tone = getattr(channel, "tone", "") or GENRE_TONE.get(channel.genre, "engaging and well-paced")
     avoid = "; ".join(avoid_titles[-40:]) if avoid_titles else "none yet"
     schema = (
         f"Return ONLY JSON: {{\"title\": str, \"intro\": str, \"outro\": str, "
@@ -417,7 +417,7 @@ def generate_from_prompt(
     long_form: bool = False,
 ) -> str:
     """Write and save a script from a user prompt for any configured channel."""
-    tone = GENRE_TONE.get(channel.genre, "engaging and well-paced")
+    tone = getattr(channel, "tone", "") or GENRE_TONE.get(channel.genre, "engaging and well-paced")
     if long_form:
         format_instructions = (
             f"Write a YouTube long-form script targeting about 5 minutes of narration. "

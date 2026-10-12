@@ -297,8 +297,11 @@ _STOCK_SAFE_KIDS_CATEGORIES = {
 
 
 def _stock_fallback_allowed(scene: Scene, channel=None) -> bool:
-    """Genre channels may use relevant stock; Kids must remain cartoon-only."""
-    return channel is not None and not getattr(channel, "builtin", False)
+    """Genre channels may use relevant stock; cartoon channels must not."""
+    return (
+        channel is not None and not getattr(channel, "builtin", False)
+        and getattr(channel, "visuals", "") != "cartoon"
+    )
 
 _NUMBER_WORDS = {
     "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,

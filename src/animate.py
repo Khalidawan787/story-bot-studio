@@ -32,7 +32,7 @@ _FRONT_SCALE = 1.07
 def animation_enabled(channel=None) -> bool:
     """True when this channel's scenes should be animated in layers."""
     channel_id = str(getattr(channel, "id", "") or "kids").lower()
-    return channel_id in settings.animated_channels
+    return channel_id in settings.animated_channels or getattr(channel, "visuals", "") == "cartoon"
 
 
 def _net():
