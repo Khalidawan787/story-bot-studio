@@ -219,3 +219,32 @@ def all_connected_accounts() -> list[Account]:
         for channel in load_channels()
         for account in connected_accounts(channel.id)
     ]
+
+
+# ------------------------------------------------- which Google login is used
+# The Gmail each account signed in with, so the dashboard can say "this channel
+# uploads through x@gmail.com". Kept apart from the registry because the main
+# account has no registry entry. Private: never shown on the public page.
+_EMAILS_FILE = settings.root / "data" / "account_emails.json"
+
+
+def _read_emails() -> dict:
+    try:
+        return json.loads(_EMAILS_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def account_email(channel_id: str, account_id: str = MAIN_ACCOUNT) -> str:
+    return str(_read_emails().get(f"{channel_id}:{account_id}") or "")
+
+
+def set_account_email(channel_id: str, account_id: str, email: str) -> None:
+    emails = _read_emails()
+    key = f"{channel_id}:{account_id}"
+    if email:
+        emails[key] = email.strip()
+    else:
+        emails.pop(key, None)
+    _EMAILS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    _EMAILS_FILE.write_text(json.dumps(emails, indent=2, sort_keys=True), encoding="utf-8")

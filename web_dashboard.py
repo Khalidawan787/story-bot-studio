@@ -323,6 +323,7 @@ def home():
         accounts=[
             {
                 "id": a.id, "name": a.label, "connected": a.connected,
+                "email": youtube_accounts.account_email(ch.id, a.id),
                 "used_today": uploads_today_count(ch.id, a.id),
                 "limit": upload_limit_for_channel(ch.id, a.id),
             }
@@ -814,6 +815,20 @@ def analytics_refresh():
 # when that silently failed nothing at all appeared to happen. Now the click
 # navigates straight to Google and Google sends you back here.
 _PENDING_OAUTH: dict[str, dict] = {}
+_EMAIL_SCOPES = ["openid", "https://www.googleapis.com/auth/userinfo.email"]
+
+
+def _signin_email(credentials) -> str:
+    """The Gmail of a fresh sign-in, from the ID token Google sent back."""
+    import base64
+
+    token = getattr(credentials, "id_token", None) or ""
+    try:
+        payload = token.split(".")[1]
+        payload += "=" * (-len(payload) % 4)
+        return str(json.loads(base64.urlsafe_b64decode(payload)).get("email") or "")
+    except Exception:
+        return ""
 
 
 def _oauth_flow(target, redirect_uri: str):
@@ -821,8 +836,14 @@ def _oauth_flow(target, redirect_uri: str):
 
     from src.youtube_upload import SCOPES
 
+    # The email scopes are asked for here only, so the dashboard can show which
+    # Gmail a channel is signed in with. Uploads keep refreshing with SCOPES,
+    # a subset of what is granted, which Google allows; older logins without
+    # the email scopes keep working. Google may list the granted scopes in
+    # another order or form; that is not an error.
+    os.environ.setdefault("OAUTHLIB_RELAX_TOKEN_SCOPE", "1")
     flow = InstalledAppFlow.from_client_secrets_file(
-        str(target.client_secret_path), SCOPES,
+        str(target.client_secret_path), [*SCOPES, *_EMAIL_SCOPES],
     )
     flow.redirect_uri = redirect_uri
     return flow
@@ -861,9 +882,12 @@ def _finish_oauth():
             authorization_response=request.url.replace("http://", "https://", 1),
         )
         target.token_path.write_text(flow.credentials.to_json(), encoding="utf-8")
+        email = _signin_email(flow.credentials)
+        youtube_accounts.set_account_email(channel_id, account_id, email)
     except Exception as exc:
         flash(f"Google sign-in failed: {exc}", "error")
         return redirect(url_for("home", channel=channel_id))
+    via = f" (Google account: {email})" if email else ""
 
     # Say which YouTube channel this actually linked to, so a wrong pick is
     # obvious immediately instead of after videos land in the wrong place.
@@ -875,9 +899,9 @@ def _finish_oauth():
         name = items[0]["snippet"]["title"] if items else "(no channel on this account)"
         # Show the real YouTube channel name in the row, so nobody has to type one.
         youtube_accounts.set_account_name(channel_id, account_id, name)
-        flash(f"Connected '{account_id}' to YouTube channel: {name}", "ok")
+        flash(f"Connected '{account_id}' to YouTube channel: {name}{via}", "ok")
     except Exception as exc:
-        flash(f"Connected, but could not read the channel name: {exc}", "ok")
+        flash(f"Connected{via}, but could not read the channel name: {exc}", "ok")
     return redirect(url_for("home", channel=channel_id))
 
 
@@ -1492,6 +1516,7 @@ PAGE = r"""
   .setup-steps{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:10px}
   .setup-steps li{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
   .setup-steps li.done{border-color:rgba(61,220,151,.4)}
+  .email{font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#cfe0ff}
   .setup-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
   .quick-bar{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}
   .quick-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center}
@@ -1579,7 +1604,7 @@ PAGE = r"""
       </li>
       <li class="{{'done' if setup.youtube else ''}}">
         <b>{{'✅' if setup.youtube else '2️⃣'}} YouTube connected</b>
-        <span class="hint">{% if setup.youtube %}Signed in. Uploads go to the channel named in the table below.{% else %}Press "Connect &amp; verify" below and sign in with the Google account that owns the YouTube channel.{% endif %}</span>
+        <span class="hint">{% if setup.youtube %}Signed in{% if accounts and accounts[0].email %} with <b class="email">{{accounts[0].email}}</b>{% endif %}. Uploads go to the channel named in the table below.{% else %}Press "Connect &amp; verify" below and sign in with the Google account that owns the YouTube channel.{% endif %}</span>
       </li>
       <li class="{{'done' if setup.github else ''}}">
         <b>{{'✅' if setup.github else '3️⃣'}} Sent to GitHub</b>
@@ -1633,12 +1658,14 @@ PAGE = r"""
     <table style="width:100%;margin-top:12px;border-collapse:collapse">
       <tr style="text-align:left;color:var(--muted);font-size:13px">
         <th style="padding:6px 8px">Account</th><th style="padding:6px 8px">YouTube channel</th>
+        <th style="padding:6px 8px">Google email</th>
         <th style="padding:6px 8px">Today</th><th style="padding:6px 8px">Status</th><th></th>
       </tr>
       {% for a in accounts %}
       <tr style="border-top:1px solid var(--line)">
         <td style="padding:8px"><span class="chip">{{a.id}}</span></td>
         <td style="padding:8px">{{a.name}}</td>
+        <td style="padding:8px">{% if a.email %}<span class="email">{{a.email}}</span>{% elif a.connected %}<span class="hint">not saved — press Reconnect once to show it</span>{% else %}<span class="hint">—</span>{% endif %}</td>
         <td style="padding:8px">{{a.used_today}} / {{a.limit}}</td>
         <td style="padding:8px">{% if a.connected %}<span style="color:var(--ok)">● Connected</span>{% else %}<span style="color:var(--warn)">● Not connected</span>{% endif %}</td>
         <td style="padding:8px"><div class="row" style="justify-content:flex-end">
