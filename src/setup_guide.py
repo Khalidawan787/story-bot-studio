@@ -271,18 +271,29 @@ def quick_steps_for(project_id: str = "") -> list[dict]:
     return rows
 
 
+# (label, console path, what to do there) for the setup card, in order.
+# Paths after the first take "?project=<id>" so they open on the right project.
+QUICK_STEPS = [
+    ("New project", "/projectcreate",
+     "Name it, press Create, then copy its Project ID into the box above."),
+    ("YouTube API", "/apis/library/youtube.googleapis.com", "Press Enable."),
+    ("Sign-in screen", "/auth/overview",
+     "Get started → app name, support email → External → contact email → agree → Create."),
+    ("Branding links", "/auth/branding",
+     "Paste the home page, privacy and terms links and the authorized domain below → Save."),
+    ("Publish (Audience)", "/auth/audience",
+     "Publish app → Confirm → it must say “In production”."),
+    ("Create client", "/auth/clients/create",
+     "Application type Desktop app → Create → Download JSON."),
+    ("All clients (JSON)", "/auth/clients",
+     "Only if the download window was closed: open the client → download icon."),
+]
+
+
 def quick_links(project_id: str = "") -> list[tuple[str, str]]:
     """(label, url) in order, for the one-line link bar on the setup card."""
     q = f"?project={project_id}" if project_id else ""
-    return [
-        ("New project", f"{CONSOLE}/projectcreate"),
-        ("YouTube API", f"{CONSOLE}/apis/library/youtube.googleapis.com{q}"),
-        ("Sign-in screen", f"{CONSOLE}/auth/overview{q}"),
-        ("Branding links", f"{CONSOLE}/auth/branding{q}"),
-        ("Publish (Audience)", f"{CONSOLE}/auth/audience{q}"),
-        ("Create client", f"{CONSOLE}/auth/clients/create{q}"),
-        ("All clients (JSON)", f"{CONSOLE}/auth/clients{q}"),
-    ]
+    return [(label, CONSOLE + path + ("" if i == 0 else q)) for i, (label, path, _do) in enumerate(QUICK_STEPS)]
 
 
 def client_guide_html(email: str) -> str:

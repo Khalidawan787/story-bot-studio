@@ -337,6 +337,7 @@ def home():
             (i, slots.label(i), len(members)) for i, members in slots.load().items()
         ],
         quick_links=setup_guide.quick_links(channel_factory.setup_status(ch).get("project_id", "")),
+        quick_steps=setup_guide.QUICK_STEPS,
         branding=setup_guide.BRANDING, languages=LANGUAGES,
         social=social_accounts.public_status(ch.id), social_uploads=social_uploads_for_channel(ch.id),
         stats={"topics": len(topics), "videos": len(vids), "uploaded": uploaded,
@@ -1598,6 +1599,10 @@ PAGE = r"""
   .quick-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center}
   .quick-links a{padding:7px 11px;border-radius:9px;background:rgba(108,140,255,.14);border:1px solid rgba(108,140,255,.35);font-size:13px;color:var(--text)}
   .quick-links a b{color:var(--accent);margin-right:4px}
+  .quick-steps{margin:10px 0;padding-left:0;list-style:none;display:grid;gap:6px}
+  .quick-steps li{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
+  .quick-steps a{padding:5px 10px;border-radius:9px;background:rgba(108,140,255,.14);border:1px solid rgba(108,140,255,.35);font-size:13px;color:var(--text);white-space:nowrap}
+  .quick-steps a b{color:var(--accent);margin-right:4px}
   .btn-link{display:inline-block;padding:9px 14px;border-radius:10px;font-weight:600;font-size:14px;border:1px solid var(--line)}
   .btn-link.green{background:rgba(61,220,151,.15);border-color:rgba(61,220,151,.45);color:var(--ok)}
   .btn-link.ghost{color:var(--text)}
@@ -1705,12 +1710,17 @@ PAGE = r"""
       </li>
     </ol>
     <div class="quick-bar">
-      <span class="hint"><b>Quick links</b> (open in the Incognito window where the client's Gmail is signed in):</span>
-      <div class="quick-links">
-        {% for label, url in quick_links %}<a href="{{url}}" target="_blank" rel="noopener" data-url="{{url}}"><b>{{loop.index}}</b> {{label}} ↗</a>{% endfor %}
-        <a href="#own-project"><b>{{quick_links|length + 1}}</b> Upload JSON ↓</a>
-        <button type="button" class="ghost sm" id="copy-links">📋 Copy all links</button>
+      <span class="hint"><b>Quick links</b> (open them in the Incognito window where the channel owner's Gmail is signed in):</span>
+      <div class="row" style="margin-top:8px;gap:8px;align-items:center">
+        <label class="field" style="flex:0 1 330px">Project ID of this channel's Cloud project
+          <input type="text" id="project-id" placeholder="e.g. protean-atom-511418-d3" value="{{setup.project_id}}" autocomplete="off" spellcheck="false"></label>
+        <span class="hint" id="project-hint">{% if setup.project_id %}Read from the uploaded JSON.{% else %}Paste it after step 1 — every link below then opens straight on that project, no project picking.{% endif %}</span>
       </div>
+      <ol class="quick-steps">
+        {% for label, url in quick_links %}<li><a href="{{url}}" target="_blank" rel="noopener" data-url="{{url}}" data-base="{{url.split('?')[0]}}" data-first="{{'1' if loop.first else ''}}"><b>{{loop.index}}</b> {{label}} ↗</a> <span class="hint">{{quick_steps[loop.index0][2]}}</span></li>{% endfor %}
+        <li><a href="#own-project"><b>{{quick_links|length + 1}}</b> Upload JSON ↓</a> <span class="hint">Choose the downloaded file → Save Separate Project → Connect &amp; verify → ⬆ Send to GitHub.</span></li>
+      </ol>
+      <button type="button" class="ghost sm" id="copy-links">📋 Copy all links</button>
       <div class="hint" style="margin-top:10px"><b>For “Branding links”</b> (click to copy): {% for name, value in branding %}{{name}} <code class="cp" title="Click to copy">{{value}}</code>{{ ' · ' if not loop.last else '' }}{% endfor %}</div>
     </div>
     <div class="setup-links">
@@ -1719,9 +1729,25 @@ PAGE = r"""
     </div>
     <script>
     (function () {
+      // Project ID box: rewrites links 2+ to open on that project, remembered per channel.
+      var box = document.getElementById('project-id'), key = 'project-id:{{ch.id}}';
+      if (box) {
+        try { if (!box.value) box.value = localStorage.getItem(key) || ''; } catch (e) {}
+        var apply = function () {
+          var id = box.value.trim().replace(/[^a-z0-9-]/gi, '');
+          document.querySelectorAll('.quick-steps a[data-base]').forEach(function (a) {
+            var url = a.dataset.first || !id ? a.dataset.base : a.dataset.base + '?project=' + id;
+            a.href = url; a.dataset.url = url;
+          });
+          try { localStorage.setItem(key, id); } catch (e) {}
+        };
+        box.addEventListener('input', apply); apply();
+      }
+    })();
+    (function () {
       var b = document.getElementById('copy-links'); if (!b) return;
       b.addEventListener('click', function () {
-        var text = Array.prototype.map.call(document.querySelectorAll('.quick-links a[data-url]'), function (a, i) {
+        var text = Array.prototype.map.call(document.querySelectorAll('.quick-steps a[data-url]'), function (a, i) {
           return (i + 1) + '. ' + a.textContent.replace(/^\s*\d+\s*/, '').replace(' ↗', '') + ': ' + a.dataset.url;
         }).join('\n');
         var done = function () { b.textContent = '✅ Copied'; setTimeout(function () { b.textContent = '📋 Copy all links'; }, 1500); };
