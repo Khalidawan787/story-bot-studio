@@ -70,3 +70,5 @@ data/*_lessons.json
 # ============================================================
 Thumbs.db
 .DS_Store
+# Last "Send to GitHub" fingerprint (per PC)
+data/github_sync.json
