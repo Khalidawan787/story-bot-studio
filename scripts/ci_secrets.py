@@ -31,6 +31,8 @@ SECRET_FILES = [
     "channels.json",
     "client_secret.json",
     "credentials/drive_token.json",
+    # Facebook Page / TikTok settings, so the daily run can cross-post too.
+    "credentials/social_accounts.json",
     "data/pexels_api_key.txt",
     "data/pollinations_api_key.txt",
     "data/cloudflare_account_id.txt",

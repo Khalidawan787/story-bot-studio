@@ -1997,13 +1997,25 @@ PAGE = r"""
       <form method="post" action="/social-settings" style="margin-top:14px">
         <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="facebook">
         <div class="platform-grid">
-          <label class="field">Facebook Page ID<input type="text" name="page_id" value="{{social.facebook.page_id}}" placeholder="e.g. 123456789012345"></label>
-          <label class="field">Page Access Token<input type="password" name="page_access_token" placeholder="{{'Saved - leave blank to keep it' if social.facebook.configured else 'Paste Page Access Token'}}"></label>
+          <label class="field">Facebook Page ID<input type="text" name="page_id" value="{{social.facebook.page_id}}" placeholder="numbers only, e.g. 123456789012345" autocomplete="off" inputmode="numeric" pattern="[0-9]+" title="The Page ID is a number"></label>
+          <label class="field">Page Access Token<input type="password" name="page_access_token" autocomplete="new-password" placeholder="{{'Saved - leave blank to keep it' if social.facebook.configured else 'Paste Page Access Token'}}"></label>
         </div>
         <div class="row" style="margin-top:12px"><label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.facebook.auto_upload else ''}}> Automatically publish new videos</label><button class="green sm" type="submit">Save Facebook Settings</button></div>
       </form>
       <form method="post" action="/social-verify" style="margin-top:10px"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="facebook"><button class="ghost sm" type="submit">Connect &amp; Verify Facebook Page</button></form>
-      <details class="guide-box"><summary>Facebook setup guide + official URLs</summary><ol><li>Open <a href="{{social.guides.facebook_app}}" target="_blank">Meta for Developers Apps</a> and create a Business app.</li><li>Add Facebook Login/Pages access and request <strong>pages_manage_posts</strong> plus Page access permissions.</li><li>Get the Page ID and Page Access Token for the Page you manage.</li><li>Paste both above, Save, then click Connect &amp; Verify.</li><li>Official Reel upload reference: <a href="{{social.guides.facebook}}" target="_blank">Meta Reels Publishing API</a>.</li></ol></details>
+      <details class="guide-box"><summary>Facebook setup guide + official URLs (one time per Page, ~15 minutes)</summary>
+        <div class="hint" style="margin:8px 0">Sign in to Facebook with an account that is <b>admin of the Page</b>. Menu names on Meta's site change from time to time; pick the closest one.</div>
+        <ol>
+          <li><b>Make an app:</b> <a href="https://developers.facebook.com/apps/" target="_blank">Meta for Developers → My Apps ↗</a> → <b>Create app</b>. Use case: <b>“Manage everything on your Page”</b> (or “Other” → type <b>Business</b>). Name: e.g. “Story Bot”.</li>
+          <li><b>App settings → Basic:</b> Privacy Policy URL <code class="cp">{{branding[1][1]}}</code>, Terms of Service URL <code class="cp">{{branding[2][1]}}</code>, User data deletion: the same privacy URL, an app icon and a category → <b>Save</b>. Then switch the app from <b>Development</b> to <b>Live</b> at the top. <span class="hint">Posts made by an app in Development mode are only visible to the app's own admins.</span></li>
+          <li><b>Get a user token:</b> <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Graph API Explorer ↗</a> → pick your app → <b>Add permissions</b>: <code>pages_show_list</code>, <code>pages_read_engagement</code>, <code>pages_manage_posts</code>, <code>publish_video</code> → <b>Generate Access Token</b> → allow, and tick the Page.</li>
+          <li><b>Make it last:</b> copy that token into the <a href="https://developers.facebook.com/tools/debug/accesstoken/" target="_blank">Access Token Debugger ↗</a> → <b>Debug</b> → <b>Extend Access Token</b> at the bottom → copy the new long token.</li>
+          <li><b>Get the Page token:</b> back in the Graph API Explorer, paste the long token in “Access Token”, type <code>me/accounts</code> and press <b>Submit</b>. Find your Page: copy its <b>id</b> (Page ID) and its <b>access_token</b> (Page Access Token). A Page token taken from a long-lived user token does not expire.</li>
+          <li><b>Here:</b> paste both above, tick <b>Automatically publish new videos</b>, press <b>Save Facebook Settings</b>, then <b>Connect &amp; Verify Facebook Page</b>: it should show the Page's name.</li>
+          <li><b>For the daily GitHub run:</b> press <b>⬆ Send to GitHub</b> on the setup card above. From the next run, each new video is also posted to the Page (Shorts as Reels, long videos as Page videos).</li>
+        </ol>
+        <div class="hint">If Facebook later says the token is invalid (password changed, Page role removed), repeat steps 3–6. Reference: <a href="{{social.guides.facebook}}" target="_blank">Reels publishing API ↗</a></div>
+      </details>
     </div>
 
     <div class="platform-panel" id="platform-tiktok">
