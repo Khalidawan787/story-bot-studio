@@ -1298,6 +1298,9 @@ PAGE = r"""
   .setup-steps{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:10px}
   .setup-steps li{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
   .setup-steps li.done{border-color:rgba(61,220,151,.4)}
+  .setup-guide{margin-top:12px}
+  .setup-guide h4{margin:14px 0 6px;font-size:14px}
+  .setup-guide ol,.setup-guide ul{margin:6px 0;padding-left:22px;line-height:1.65;font-size:14px}
   input[type=text],input[type=password]{background:#12162a;border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:10px;outline:none;font:inherit}
   .action-note{margin-top:12px;padding:10px 12px;border-radius:10px;background:#14192d;color:var(--muted);font-size:12px;line-height:1.45}
   .analytics-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:14px 0}
@@ -1385,6 +1388,69 @@ PAGE = r"""
         {% if not setup.github %}<form method="post" action="/github-sync" style="margin-top:6px"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green sm" type="submit">⬆ Send to GitHub</button></form>{% endif %}
       </li>
     </ol>
+    {% set q = '?project=' ~ setup.project_id if setup.project_id else '' %}
+    <details class="guide-box setup-guide" {{'open' if not (setup.project and setup.youtube) else ''}}>
+      <summary>📘 Google Cloud setup guide (har naye channel ke liye ek dafa, ~10 minute)</summary>
+      {% if setup.project_id %}<div class="hint" style="margin-top:6px">Is channel ka project: <b>{{setup.project_id}}</b>. Neeche ke links seedhe isi project par khulenge.</div>{% endif %}
+
+      <h4>Hissa 1 — Client ka kaam (2 minute)</h4>
+      <ol>
+        <li>Client apne Gmail se <a href="https://console.cloud.google.com/projectcreate" target="_blank">New Project ↗</a> khole, koi bhi naam de (maslan "My YouTube Bot") aur <b>Create</b> dabaye.</li>
+        <li>Phir <a href="https://console.cloud.google.com/iam-admin/iam" target="_blank">IAM ↗</a> → <b>Grant access</b> → "New principals" mein <b>aap ki Gmail</b> → Role <b>Editor</b> → <b>Save</b>.</li>
+      </ol>
+      <div class="hint">Apne hi channel ka project ho to yeh hissa chhor dein; sab kuch apne Gmail se karen. Client ko bhejne ke liye message:</div>
+      <div class="row" style="margin-top:6px;align-items:flex-end;gap:8px">
+        <label class="field" style="flex:0 1 260px">Aap ki Gmail (sirf is message ke liye)<input type="text" id="guide-email" placeholder="you@gmail.com"></label>
+        <button type="button" class="ghost sm" id="guide-copy">📋 Copy message</button>
+      </div>
+      <textarea id="guide-message" readonly rows="6" style="width:100%;margin-top:8px;background:#12162a;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font:inherit;font-size:13px"></textarea>
+
+      <h4>Hissa 2 — Aap ka kaam, client ke project mein (5 minute)</h4>
+      <div class="hint">Apne Gmail se kholen. Upar project dropdown mein <b>client ka project</b> chuna hona chahiye.</div>
+      <ol start="3">
+        <li><b>API on karen:</b> <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com{{q}}" target="_blank">YouTube Data API v3 ↗</a> → <b>Enable</b>.</li>
+        <li><b>Consent screen:</b> <a href="https://console.cloud.google.com/auth/overview{{q}}" target="_blank">Google Auth Platform ↗</a> → <b>Get started</b> → App name (maslan "Story Bot"), support email apna → Audience <b>External</b> → contact email apna → shartein maanen → <b>Create</b>.</li>
+        <li><b>"In production" par karen:</b> <a href="https://console.cloud.google.com/auth/audience{{q}}" target="_blank">Audience ↗</a> → <b>Publish app</b> → Confirm. <span style="color:var(--warn)">Zaroori:</span> "Testing" par rahe to Google har 7 din baad sign-in khatam kar deta hai aur uploads ruk jate hain.</li>
+        <li><b>JSON file:</b> <a href="https://console.cloud.google.com/auth/clients/create{{q}}" target="_blank">Create client ↗</a> → Application type <b>Desktop app</b> → <b>Create</b> → <b>Download JSON</b>.</li>
+      </ol>
+      <div class="hint">Kisi page par "permission denied" aaye to client se kahen ke aap ka role <b>Editor</b> ki jagah <b>Owner</b> kar de. Menu ke naam kabhi kabhi badal jate hain; qareeb wala naam chun lein.</div>
+
+      <h4>Hissa 3 — Is dashboard mein (2 minute)</h4>
+      <ol start="7">
+        <li>Download hui file neeche <a href="#own-project">Separate Google OAuth JSON</a> wale box mein chunen → <b>Save Separate Project</b>. Upar qadam 1 hara ho jayega.</li>
+        <li><b>Connect &amp; verify</b> dabayen aur <b>woh Gmail</b> chunen jis ka YouTube channel hai.
+          <ul>
+            <li>"Google hasn't verified this app" aaye to <b>Advanced → Go to … (unsafe)</b>. Yeh aap ki apni app hai, is liye yeh warning aati hai.</li>
+            <li>Account mein kai channels hon to <b>sahi channel</b> chunen, phir dono permissions <b>Allow</b>.</li>
+            <li>Table mein jo channel ka naam aaye, tasdeeq kar lein ke wahi hai.</li>
+          </ul>
+        </li>
+        <li><b>⬆ Send to GitHub</b> dabayen. Agle din ki subah ki run se is channel ki videos banne lagengi.</li>
+      </ol>
+      <div class="hint">Pehli video ke baad <a href="https://studio.youtube.com" target="_blank">YouTube Studio ↗</a> mein dekh lein ke video <b>public/scheduled</b> hai. Agar private ho to Google project ka audit maang raha hai.</div>
+    </details>
+    <script>
+    (function () {
+      var email = document.getElementById('guide-email'), box = document.getElementById('guide-message'), copy = document.getElementById('guide-copy');
+      if (!email || !box) return;
+      try { email.value = localStorage.getItem('guide-email') || ''; } catch (e) {}
+      function render() {
+        var who = email.value.trim() || '[my Gmail]';
+        box.value = "Hi! To connect your YouTube channel to the video bot, please do these 2 steps (about 2 minutes):\n\n" +
+          "1. Open https://console.cloud.google.com/projectcreate with your Gmail, name the project \"My YouTube Bot\" and press Create.\n" +
+          "2. Open https://console.cloud.google.com/iam-admin/iam (with that new project selected), press \"Grant access\", add " + who + " with the role \"Editor\" and press Save.\n\n" +
+          "Tell me when it is done. You will only need to sign in to YouTube once after that.";
+      }
+      email.addEventListener('input', function () { try { localStorage.setItem('guide-email', email.value.trim()); } catch (e) {} render(); });
+      copy.addEventListener('click', function () {
+        box.select();
+        var done = function () { copy.textContent = '✅ Copied'; setTimeout(function () { copy.textContent = '📋 Copy message'; }, 1500); };
+        if (navigator.clipboard) { navigator.clipboard.writeText(box.value).then(done, function () { document.execCommand('copy'); done(); }); }
+        else { document.execCommand('copy'); done(); }
+      });
+      render();
+    })();
+    </script>
     {% if factory %}
     <details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Channel plan{% if ch.topic %}: "{{ch.topic}}"{% endif %}</summary>
       <div class="hint" style="margin-top:6px"><b>Look:</b> {{ {'stock':'real video clips','cartoon':'animated cartoon pictures','still':'AI pictures'}.get(ch.visuals, ch.visuals) }} &middot; <b>Voice:</b> {{ch.voice}} &middot; <b>Tone:</b> {{ch.tone}}</div>

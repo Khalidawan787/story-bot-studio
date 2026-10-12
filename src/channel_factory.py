@@ -215,8 +215,16 @@ def setup_status(channel) -> dict:
         other.id != channel.id and other.client_secret_path == channel.client_secret_path
         for other in load_channels()
     )
+    # The Cloud project id inside the OAuth JSON, so the guide's console links
+    # open straight on this channel's project.
+    try:
+        payload = json.loads(channel.client_secret_path.read_text(encoding="utf-8-sig"))
+        project_id = str((payload.get("installed") or payload.get("web") or {}).get("project_id") or "")
+    except Exception:
+        project_id = ""
     return {
         "project": channel.client_secret_path.is_file() and not shared,
+        "project_id": project_id if not shared else "",
         "project_file": channel.client_secret_path.is_file(),
         "youtube": channel.token_path.is_file(),
         "github": github_synced(),
