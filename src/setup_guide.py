@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import base64
 import html
+import os
 from pathlib import Path
 
 from .config import settings
@@ -19,6 +20,22 @@ _MAX_BYTES = 6 * 1024 * 1024
 _FORMATS = {b"\x89PNG": ("png", "image/png"), b"\xff\xd8\xff": ("jpg", "image/jpeg")}
 
 CONSOLE = "https://console.cloud.google.com"
+
+# The public GitHub Pages site carries the home, privacy and terms pages that
+# Google needs on the Branding page before an app can be published
+# (scripts/legal_pages.py). One set of links serves every channel's project.
+SITE = os.getenv("STATUS_PAGE_URL", "https://khalidawan787.github.io/story-bot-studio/").rstrip("/") + "/"
+SITE_DOMAIN = SITE.split("//", 1)[-1].split("/", 1)[0]
+BRANDING = [
+    ("Application home page", SITE),
+    ("Application privacy policy link", SITE + "privacy.html"),
+    ("Application terms of service link", SITE + "terms.html"),
+    ("Authorized domain", SITE_DOMAIN),
+]
+
+
+def _copy(value: str) -> str:
+    return f'<code class="cp" title="Click to copy">{html.escape(value)}</code>'
 
 # who: client = the YouTube channel owner, you = the operator, dashboard = this app.
 # {q} becomes "?project=<id>" once the channel's project is known.
@@ -80,12 +97,25 @@ STEPS = [
         "tip": "",
     },
     {
+        "id": "y3b", "who": "you", "title": "Fill the Branding links",
+        "urdu": "Branding page par links daalen",
+        "link": f"{CONSOLE}/auth/branding{{q}}", "link_label": "Open: Branding",
+        "do": "Under <b>App domain</b> paste (click a value to copy it):<br>"
+              + "<br>".join(f"{name}: {_copy(value)}" for name, value in BRANDING[:3])
+              + f"<br>Under <b>Authorized domains</b> press <b>+ Add domain</b>: {_copy(BRANDING[3][1])}"
+              + "<br>Check <b>Developer contact information</b> has your email, then <b>Save</b>.",
+        "do_urdu": "App domain mein teen links (home, privacy, terms), Authorized domain mein domain, phir <b>Save</b>. "
+                   "Yeh links har channel ke project mein same hain.",
+        "tip": "Without these Google keeps “Publish app” grey (“complete your configuration on the Branding page”). "
+               "Logo stays empty: a logo would make Google ask for a full verification.",
+    },
+    {
         "id": "y4", "who": "you", "title": "Publish it (In production)",
         "urdu": "Publish karen (In production)",
         "link": f"{CONSOLE}/auth/audience{{q}}", "link_label": "Open: Audience",
         "do": "Under “Publishing status” press <b>Publish app</b> → <b>Confirm</b>. It must say <b>In production</b>.",
         "do_urdu": "“Publishing status” ke neeche <b>Publish app</b> → <b>Confirm</b>. <b>In production</b> likha aana chahiye.",
-        "tip": "Important: left on “Testing”, Google ends the sign-in every 7 days and uploads stop, and other Gmails get “Access blocked”. If “Publish app” is grey, open <b>Branding</b> in the left menu, fill every required field (app name, user support email, developer contact email), press <b>Save</b>, and come back.",
+        "tip": "Important: left on “Testing”, Google ends the sign-in every 7 days, uploads stop, and Connect shows “Access blocked: … has not completed the Google verification process”. If “Publish app” is grey, the Branding step above is not saved yet; refresh this page after saving.",
     },
     {
         "id": "y5", "who": "you", "title": "Create a Desktop client",
@@ -125,7 +155,9 @@ STEPS = [
         "link": "", "link_label": "",
         "do": "Press <b>Advanced</b>, then <b>Go to Story Bot (unsafe)</b>.",
         "do_urdu": "<b>Advanced</b> → <b>Go to Story Bot (unsafe)</b>.",
-        "tip": "Normal for your own app that Google has not reviewed. It is your project, not someone else's.",
+        "tip": "Normal for your own app that Google has not reviewed. It is your project, not someone else's. "
+               "If instead it says <b>“Access blocked … Error 403: access_denied”</b>, the app is still on Testing: "
+               "go back to the Publish step, then press Connect again.",
     },
     {
         "id": "d4", "who": "dashboard", "title": "Pick the channel and allow",
@@ -161,7 +193,7 @@ QUICK = [
     {"id": "c1", "title": "Make a new project", "urdu": "Naya project banayen",
      "do": "Project name: <b>YouTube Bot</b> → <b>Create</b>. Wait for the bell icon to say it is ready.",
      "do_urdu": "Project name <b>YouTube Bot</b> → <b>Create</b>. Bell icon ka intezar karen.", "tip": ""},
-    {"id": "y2"}, {"id": "y3"}, {"id": "y4"}, {"id": "y5"}, {"id": "y6"},
+    {"id": "y2"}, {"id": "y3"}, {"id": "y3b"}, {"id": "y4"}, {"id": "y5"}, {"id": "y6"},
     {"id": "d1"},
     {"id": "d2", "do": "Press <b>Connect &amp; verify</b>. Google opens: pick the <b>client's Gmail</b> (or “Use another account” and sign in as the client).",
      "do_urdu": "<b>Connect &amp; verify</b> → Google mein <b>client ka Gmail</b> chunen (ya “Use another account”).",
@@ -246,6 +278,7 @@ def quick_links(project_id: str = "") -> list[tuple[str, str]]:
         ("New project", f"{CONSOLE}/projectcreate"),
         ("YouTube API", f"{CONSOLE}/apis/library/youtube.googleapis.com{q}"),
         ("Sign-in screen", f"{CONSOLE}/auth/overview{q}"),
+        ("Branding links", f"{CONSOLE}/auth/branding{q}"),
         ("Publish (Audience)", f"{CONSOLE}/auth/audience{q}"),
         ("Create client", f"{CONSOLE}/auth/clients/create{q}"),
         ("All clients (JSON)", f"{CONSOLE}/auth/clients{q}"),

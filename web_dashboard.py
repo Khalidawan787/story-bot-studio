@@ -336,6 +336,7 @@ def home():
             (i, slots.label(i), len(members)) for i, members in slots.load().items()
         ],
         quick_links=setup_guide.quick_links(channel_factory.setup_status(ch).get("project_id", "")),
+        branding=setup_guide.BRANDING,
         social=social_accounts.public_status(ch.id), social_uploads=social_uploads_for_channel(ch.id),
         stats={"topics": len(topics), "videos": len(vids), "uploaded": uploaded,
                "today": videos_generated_today_count(ch.id)},
@@ -1423,6 +1424,13 @@ GUIDE_PAGE = r"""
   render();
   }
 
+  document.querySelectorAll('code.cp').forEach(function (c) {
+    c.addEventListener('click', function () {
+      var v = c.textContent, back = function () { c.textContent = v; };
+      if (navigator.clipboard) navigator.clipboard.writeText(v).then(function () { c.textContent = '✅ copied'; setTimeout(back, 1200); });
+    });
+  });
+
   // Screenshots: paste into the focused box, or click a focused box to pick a file.
   var picker = document.getElementById('shot-file'), target = null;
   function upload(step, file) {
@@ -1534,6 +1542,8 @@ PAGE = r"""
   .slot-row{margin-top:10px;gap:10px;align-items:center;font-size:14px}
   .slot-row select{min-width:0;max-width:280px;flex:0 1 auto}
   .email{font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#cfe0ff}
+  code.cp{cursor:pointer;background:#12162a;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px;color:#cfe0ff;word-break:break-all}
+  code.cp:hover{border-color:var(--accent)}
   .setup-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
   .quick-bar{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}
   .quick-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center}
@@ -1644,6 +1654,7 @@ PAGE = r"""
         <a href="#own-project"><b>{{quick_links|length + 1}}</b> Upload JSON ↓</a>
         <button type="button" class="ghost sm" id="copy-links">📋 Copy all links</button>
       </div>
+      <div class="hint" style="margin-top:10px"><b>For “Branding links”</b> (click to copy): {% for name, value in branding %}{{name}} <code class="cp" title="Click to copy">{{value}}</code>{{ ' · ' if not loop.last else '' }}{% endfor %}</div>
     </div>
     <div class="setup-links">
       <a class="btn-link green" href="/guide?channel={{ch.id}}">📘 Quick guide with screenshots</a>
@@ -1660,6 +1671,12 @@ PAGE = r"""
         if (navigator.clipboard) navigator.clipboard.writeText(text).then(done); else done();
       });
     })();
+    document.querySelectorAll('code.cp').forEach(function (c) {
+      c.addEventListener('click', function () {
+        var v = c.textContent, back = function () { c.textContent = v; };
+        if (navigator.clipboard) navigator.clipboard.writeText(v).then(function () { c.textContent = '✅ copied'; setTimeout(back, 1200); });
+      });
+    });
     </script>
     {% if factory %}
     <details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Channel plan{% if ch.topic %}: "{{ch.topic}}"{% endif %}</summary>
