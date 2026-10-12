@@ -21,7 +21,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, request, redirect, url_for, send_file, render_template_string, flash, jsonify, abort
 
-from src.config import settings
+from src.config import dashboard_automation_on, set_dashboard_automation, settings
 from src.channels import load_channels, get_channel
 from src import channel_factory, setup_guide, slots
 from src.language import LANGUAGES
@@ -262,7 +262,7 @@ def _schedule_auto_upload_queue() -> None:
             and job.get("status") in {"queued", "running"}
             for job in JOBS.values()
         )
-        if not active and upload_queue.due_video_id() is not None:
+        if dashboard_automation_on() and not active and upload_queue.due_video_id() is not None:
             start_job("Auto YouTube upload queue", upload_queue.process_next_upload)
     except Exception as exc:
         print(f"[upload-queue] check skipped: {exc}")
@@ -338,7 +338,7 @@ def home():
         ],
         quick_links=setup_guide.quick_links(channel_factory.setup_status(ch).get("project_id", "")),
         quick_steps=setup_guide.QUICK_STEPS,
-        branding=setup_guide.BRANDING, languages=LANGUAGES,
+        branding=setup_guide.BRANDING, languages=LANGUAGES, automation_on=dashboard_automation_on(),
         social=social_accounts.public_status(ch.id), social_uploads=social_uploads_for_channel(ch.id),
         stats={"topics": len(topics), "videos": len(vids), "uploaded": uploaded,
                "today": videos_generated_today_count(ch.id)},
@@ -1207,6 +1207,16 @@ def channel_language_change():
     return redirect(url_for("home", channel=ch.id))
 
 
+@app.post("/automation")
+def automation_toggle():
+    ch = current_channel()
+    on = request.form.get("on") == "1"
+    set_dashboard_automation(on)
+    flash("This PC now makes and uploads missing daily videos by itself." if on else
+          "This PC's automation is off: only GitHub makes the daily videos; buttons still work.", "ok")
+    return redirect(url_for("home", channel=ch.id))
+
+
 @app.post("/github-sync")
 def github_sync():
     ch = current_channel()
@@ -2037,6 +2047,15 @@ PAGE = r"""
   </section>
   <section class="dash-section" id="section-system">
   <div class="section-head"><h2>System &amp; Storage</h2><div class="muted">Images, API limits, backup and background jobs</div></div>
+  <div class="card" style="margin-bottom:18px">
+    <form method="post" action="/automation" class="row" style="justify-content:space-between;align-items:center;gap:12px">
+      <input type="hidden" name="channel" value="{{ch.id}}">
+      <div><strong>This PC's automation: {% if automation_on %}<span style="color:var(--ok)">ON</span>{% else %}<span style="color:var(--warn)">OFF</span>{% endif %}</strong>
+        <div class="hint">ON: while this dashboard is open it makes any of today's missing videos and uploads them. OFF: only the daily GitHub run does that; every button here still works. Keep it OFF while GitHub runs the channels, or both upload and share the same quota.</div></div>
+      <input type="hidden" name="on" value="{{'0' if automation_on else '1'}}">
+      <button class="{{'ghost' if automation_on else 'green'}} sm" type="submit">{{'Switch OFF' if automation_on else 'Switch ON'}}</button>
+    </form>
+  </div>
 
   <h2>Publishing Platforms</h2>
   <div class="card">
@@ -2372,6 +2391,8 @@ def _online() -> bool:
 def _daily_automation_check():
     """Create missing valid daily videos; uploads may wait for YouTube quota."""
     try:
+        if not dashboard_automation_on():
+            return  # switched off on the dashboard; the finally block re-arms the timer
         from src.daily_runner import run_daily_catchup, run_daily_long_all
         from src.channels import get_channel, load_channels
         from src.pending_uploads import has_daily_pending, retry_daily_uploads
@@ -2447,16 +2468,17 @@ if __name__ == "__main__":
     print(f"Story Bot STUDIO: http://127.0.0.1:{PORT}  (close this window to stop)")
     _schedule_history_cleanup()
     threading.Timer(1.5, lambda: webbrowser.open(f"http://127.0.0.1:{PORT}")).start()
-    if settings.dashboard_automation:
-        queue_timer = threading.Timer(8.0, _schedule_auto_upload_queue)
-        queue_timer.daemon = True
-        queue_timer.start()
-        # Check shortly after launch and then hourly. The checker only creates
-        # missing daily targets, so restarts never duplicate completed videos.
-        daily_timer = threading.Timer(5.0, _daily_automation_check)
-        daily_timer.daemon = True
-        daily_timer.start()
-    else:
-        print("Automation is off (DASHBOARD_AUTOMATION=false): the daily GitHub run makes and "
-              "uploads the videos; this dashboard only does what you click.")
+    # The timers always run; each tick does nothing while the dashboard's
+    # automation switch is off, so the switch works without a restart.
+    queue_timer = threading.Timer(8.0, _schedule_auto_upload_queue)
+    queue_timer.daemon = True
+    queue_timer.start()
+    # Check shortly after launch and then hourly. The checker only creates
+    # missing daily targets, so restarts never duplicate completed videos.
+    daily_timer = threading.Timer(5.0, _daily_automation_check)
+    daily_timer.daemon = True
+    daily_timer.start()
+    if not dashboard_automation_on():
+        print("This PC's automation is OFF: the daily GitHub run makes and uploads the videos; "
+              "the dashboard only does what you click. Switch it in System.")
     app.run(host="127.0.0.1", port=PORT, debug=False)

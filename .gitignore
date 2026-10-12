@@ -72,3 +72,5 @@ Thumbs.db
 .DS_Store
 # Last "Send to GitHub" fingerprint (per PC)
 data/github_sync.json
+# This PC's dashboard automation switch
+data/dashboard_automation.txt

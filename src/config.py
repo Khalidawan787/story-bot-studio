@@ -190,3 +190,17 @@ class Settings:
 
 
 settings = Settings()
+
+
+def dashboard_automation_on() -> bool:
+    """The dashboard's own automation switch; the button (data file) wins over .env."""
+    try:
+        return (settings.root / "data" / "dashboard_automation.txt").read_text().strip() == "on"
+    except OSError:
+        return settings.dashboard_automation
+
+
+def set_dashboard_automation(on: bool) -> None:
+    path = settings.root / "data" / "dashboard_automation.txt"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("on" if on else "off")

@@ -51,6 +51,9 @@ def main() -> None:
             files[path.relative_to(ROOT).as_posix()] = path
     for pattern in EXTRA_GLOBS:
         for path in ROOT.glob(pattern):
+            # This PC's automation switch stays here; the new PC starts OFF.
+            if path.name in {"dashboard_automation.txt", "github_sync.json"}:
+                continue
             if path.is_file() and not SKIP_PARTS & set(path.relative_to(ROOT).parts):
                 files[path.relative_to(ROOT).as_posix()] = path
 
@@ -81,19 +84,20 @@ This zip holds your YouTube logins, Google projects, Facebook Page token and
 API keys. Do not send it to anyone and do not upload it anywhere.
 
 On the new PC
-1. Install Python 3.11 or newer from https://www.python.org/downloads/
-   and tick "Add Python to PATH" on the first screen.
-2. Unzip this file to a simple folder, e.g. C:\\StoryBot
-3. Double-click START_DASHBOARD.bat
-   The first start installs everything (a few minutes) and FFmpeg via winget,
-   then opens http://127.0.0.1:8000 in the browser.
-   If FFmpeg is missing, open PowerShell in the folder and run:
-   powershell.exe -ExecutionPolicy Bypass -File .\\scripts\\setup_new_pc.ps1
+1. Unzip this file to a simple folder, e.g. C:\\StoryBot
+2. Double-click START_DASHBOARD.bat. That is all.
+   The first start installs Python (if missing), the packages and FFmpeg by
+   itself (10-20 minutes, needs internet), puts a "Story Bot Dashboard"
+   shortcut on the Desktop and opens http://127.0.0.1:8000.
+   Next time just use the Desktop shortcut.
+   If Windows asks "Do you want to allow this app..." for Python or FFmpeg,
+   press Yes.
 
 Automation
 The daily videos are made and uploaded by GitHub, so this copy starts with
-DASHBOARD_AUTOMATION=false in .env: the dashboard does only what you click.
-Set it to true only if GitHub stops doing the daily run, or both will upload.
+its automation OFF: the dashboard does only what you click. Switch it ON in
+System > "This PC's automation" only if GitHub stops doing the daily run,
+or both will upload.
 
 Changes
 A channel, login or key changed on one PC reaches GitHub only after

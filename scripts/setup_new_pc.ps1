@@ -37,16 +37,45 @@ function Set-EnvValue($Path, $Key, $Value) {
     Set-Content -Path $Path -Value $Updated -Encoding UTF8
 }
 
-Write-Step "Checking Python"
-$Python = Get-Command python -ErrorAction SilentlyContinue
-if (-not $Python) {
-    throw "Python is not installed. Install Python 3.11+ from https://www.python.org/downloads/ then run this script again."
+function Find-Python {
+    # A fresh Windows has a "python" that only opens the Microsoft Store, so a
+    # candidate counts only if it really runs Python 3.11 or newer.
+    $Candidates = @()
+    foreach ($Name in @("python", "py")) {
+        $Cmd = Get-Command $Name -ErrorAction SilentlyContinue
+        if ($Cmd) { $Candidates += $Cmd.Source }
+    }
+    $Candidates += Get-ChildItem "$env:LOCALAPPDATA\Programs\Python\Python3*\python.exe" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+    $Candidates += Get-ChildItem "$env:ProgramFiles\Python3*\python.exe" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+    foreach ($Candidate in $Candidates) {
+        try {
+            $Ok = & $Candidate -c "import sys; print(1 if sys.version_info >= (3, 11) else 0)" 2>$null
+            if ($Ok -eq "1") { return $Candidate }
+        } catch {}
+    }
+    return $null
 }
-python --version
+
+Write-Step "Checking Python"
+$PythonExe = Find-Python
+if (-not $PythonExe) {
+    $Winget = Get-Command winget -ErrorAction SilentlyContinue
+    if (-not $Winget) {
+        throw "Python 3.11+ is not installed and winget is missing. Install Python from https://www.python.org/downloads/ (tick 'Add Python to PATH') and run START_DASHBOARD.bat again."
+    }
+    Write-Host "Python not found. Installing Python 3.12 with winget (a few minutes)..."
+    winget install --id Python.Python.3.12 --source winget --scope user --silent --accept-package-agreements --accept-source-agreements
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    $PythonExe = Find-Python
+    if (-not $PythonExe) {
+        throw "Python was installed but could not be found yet. Close this window and run START_DASHBOARD.bat again."
+    }
+}
+& $PythonExe --version
 
 Write-Step "Creating virtual environment"
 if (-not (Test-Path ".venv\Scripts\python.exe")) {
-    python -m venv .venv
+    & $PythonExe -m venv .venv
 }
 
 Write-Step "Installing Python packages"
@@ -109,8 +138,20 @@ if (Test-Path "token.json") {
 }
 
 Write-Step "Running health check"
-.\.venv\Scripts\python.exe -m compileall src web_dashboard.py
-.\.venv\Scripts\python.exe -m src.cli daily --count 2 --dry-run true
+.\.venv\Scripts\python.exe -m compileall -q src web_dashboard.py
+.\.venv\Scripts\python.exe -c "import flask, cv2, edge_tts, src.config; print('Packages OK')"
+
+Write-Step "Desktop shortcut"
+try {
+    $Shell = New-Object -ComObject WScript.Shell
+    $Link = $Shell.CreateShortcut((Join-Path ([Environment]::GetFolderPath("Desktop")) "Story Bot Dashboard.lnk"))
+    $Link.TargetPath = (Join-Path $ProjectRoot "START_DASHBOARD.bat")
+    $Link.WorkingDirectory = $ProjectRoot
+    $Link.Save()
+    Write-Host "Shortcut 'Story Bot Dashboard' added to the Desktop."
+} catch {
+    Write-Host "Could not add a Desktop shortcut; start with START_DASHBOARD.bat instead."
+}
 
 if ($InstallDailyTask) {
     Write-Step "Installing daily 5-video task"

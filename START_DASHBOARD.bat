@@ -66,9 +66,11 @@ goto :eof
 
 :setup_failed
 echo.
-echo Setup did not finish. Make sure Python 3.11+ is installed:
-echo   https://www.python.org/downloads/
-echo Then run this file again.
+echo Setup did not finish. The reason is shown above.
+echo Usually: check the internet connection and run this file again.
+echo If Python could not be installed automatically, install it from
+echo   https://www.python.org/downloads/  (tick "Add Python to PATH")
+echo and run this file again.
 echo.
 echo Press any key to close.
 pause >nul

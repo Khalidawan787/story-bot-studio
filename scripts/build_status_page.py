@@ -360,6 +360,7 @@ def _failures(rows: list) -> str:
 
 
 def render(data: dict) -> str:
+    from pwa_files import HEAD_TAGS as pwa_head, INSTALL_BAR as install_bar
     now = datetime.now(timezone.utc)
     updated = (now + LOCAL_TZ_OFFSET).strftime("%d %b %Y, %I:%M %p")
     next_local = (slots.next_run(now) + LOCAL_TZ_OFFSET).strftime("%d %b, %I:%M %p")
@@ -385,6 +386,7 @@ def render(data: dict) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Story Bot Studio — status</title>
+{pwa_head}
 <style>
   :root {{ --bg:#0d1020; --card:#151a30; --line:#252c48; --text:#e8ecff;
            --muted:#8e97be; --ok:#4ade80; --warn:#ffd27a; --bad:#ff8a8a; }}
@@ -436,6 +438,7 @@ def render(data: dict) -> str:
   footer {{ max-width:900px; margin:22px auto 8px; color:var(--muted); font-size:13px }}
   a {{ color:#8fc7ff }}
 </style></head><body>
+{install_bar}
 <header class="wrap">
   <h1>Story Bot Studio</h1>
   <div class="muted">Updated {updated} PKT · next run {next_local}</div>
@@ -531,6 +534,10 @@ def main() -> None:
     import legal_pages
 
     legal_pages.write(out_dir)
+    # Manifest, icons and service worker: installable as a phone app.
+    import pwa_files
+
+    pwa_files.write(out_dir)
     # Stops GitHub Pages running the file through Jekyll, which would mangle it.
     (out_dir / ".nojekyll").write_text("", encoding="utf-8")
     print(f"Wrote {out_dir / 'index.html'} ({len(page) // 1024} KB)")
