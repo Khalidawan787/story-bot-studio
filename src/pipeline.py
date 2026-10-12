@@ -315,9 +315,22 @@ def run_pipeline(
 
     # Cross-platform publishing is independent from YouTube. A social failure
     # is recorded per platform and never marks a valid rendered video failed.
+    facebook_video = facebook_title = None
+    if channel is not None and status not in {"quality_failed", "duplicate_blocked"}:
+        try:
+            from .dual_language import build_copy, facebook_language
+
+            target = facebook_language(channel)
+            if target:
+                facebook_video, facebook_title = build_copy(lesson, channel, run_dir, content_type, target)
+                print(f"[social] {target} copy for Facebook: {facebook_title}")
+        except Exception as exc:
+            print(f"[social] second-language copy failed ({exc}); Facebook gets the original")
     try:
         from .social_publish import auto_publish_video
-        social_messages = auto_publish_video(video_db_id, channel_id)
+        social_messages = auto_publish_video(
+            video_db_id, channel_id, facebook_video=facebook_video, facebook_title=facebook_title,
+        )
         for message in social_messages:
             print(f"[social] {message}")
     except Exception as exc:
@@ -335,6 +348,10 @@ def run_pipeline(
     # Always delete the big disposable intermediates to keep the app small.
     if settings.enable_run_cleanup:
         _cleanup_run(run_dir)
+        if facebook_video:
+            import shutil
+
+            shutil.rmtree(Path(facebook_video).parent, ignore_errors=True)
 
     if status == "quality_failed":
         raise RuntimeError(

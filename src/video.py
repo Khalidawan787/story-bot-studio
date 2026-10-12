@@ -322,7 +322,18 @@ def _scene_clip(scene: Scene, duration: float, output_path: Path, run_dir: Path,
         return None
 
 
-def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None = None, channel=None, marks: list | None = None, content_type: str = "short", edge_fades: bool = True) -> Path:
+def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None = None, channel=None, marks: list | None = None, content_type: str = "short", edge_fades: bool = True, reuse_from: Path | None = None) -> Path:
+    if reuse_from:
+        # Same footage as the original: copy its clip in, where _scene_clip
+        # looks for an already downloaded one.
+        earlier = reuse_from / f"clip_{output_path.stem}.mp4"
+        if earlier.exists():
+            import shutil
+
+            shutil.copy2(earlier, run_dir / earlier.name)
+            meta = earlier.with_suffix(".pexels.json")
+            if meta.exists():
+                shutil.copy2(meta, run_dir / meta.name)
     clip_path = _scene_clip(scene, duration, output_path, run_dir, channel, content_type)
     if clip_path:
         try:
@@ -336,10 +347,16 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
             output_path.unlink(missing_ok=True)
             clip_path.unlink(missing_ok=True)
             clip_path.with_suffix(".pexels.json").unlink(missing_ok=True)
-    image_path = resolve_scene_image(
-        scene, run_dir, channel, require_real_image=True,
-        landscape=content_type == "long",
-    )
+    image_path = None
+    if reuse_from:
+        from .dual_language import reused_image
+
+        image_path = reused_image(scene, reuse_from)
+    if not image_path:
+        image_path = resolve_scene_image(
+            scene, run_dir, channel, require_real_image=True,
+            landscape=content_type == "long",
+        )
     if not image_path or not image_path.exists():
         raise RuntimeError(f"Scene image missing for {scene.label}")
     layers = _scene_layers(image_path, output_path, run_dir, channel, content_type)
@@ -530,7 +547,10 @@ def _crossfade_join(
     return output_path
 
 
-def render_video(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: Path, scene_audio_paths: list[Path] | None = None, channel=None, scene_marks: list | None = None, content_type: str = "short") -> Path:
+def render_video(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: Path, scene_audio_paths: list[Path] | None = None, channel=None, scene_marks: list | None = None, content_type: str = "short", reuse_from: Path | None = None) -> Path:
+    """Render the lesson. With `reuse_from` (an earlier run folder), each scene
+    takes that run's picture and stock clip instead of making new ones; used
+    for the second-language copy of a video (dual_language.py)."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     scene_count = max(1, len(lesson.scenes))
 
@@ -562,7 +582,7 @@ def render_video(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: P
         embedded_audio = None if transition else scene_audio
         scene_files.append(_render_scene(
             scene, scene_duration, scene_file, run_dir, embedded_audio, channel, marks,
-            content_type, edge_fades=not transition,
+            content_type, edge_fades=not transition, reuse_from=reuse_from,
         ))
 
     if transition and len(scene_files) > 1:

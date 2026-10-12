@@ -42,7 +42,7 @@ def save_account(channel_id: str, platform: str, values: dict[str, object]) -> d
     if platform not in {"facebook", "tiktok"}:
         raise ValueError("Unsupported social platform")
     allowed = {
-        "facebook": {"page_id", "page_access_token", "auto_upload"},
+        "facebook": {"page_id", "page_access_token", "auto_upload", "language"},
         "tiktok": {"client_key", "client_secret", "access_token", "refresh_token", "mode", "privacy", "auto_upload"},
     }[platform]
     with _LOCK:
@@ -87,6 +87,7 @@ def public_status(channel_id: str) -> dict:
             "page_id": fb.get("page_id", ""),
             "auto_upload": bool(fb.get("auto_upload")),
             "verified_name": fb.get("verified_name", ""),
+            "language": fb.get("language", "same") or "same",
         },
         "tiktok": {
             "configured": bool(tt.get("access_token")),

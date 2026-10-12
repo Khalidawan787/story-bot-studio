@@ -735,6 +735,7 @@ def social_settings_route():
             "page_id": request.form.get("page_id", ""),
             "page_access_token": request.form.get("page_access_token", ""),
             "auto_upload": request.form.get("auto_upload") == "on",
+            "language": request.form.get("fb_language", "same"),
         }
     elif platform == "tiktok":
         values = {
@@ -2058,7 +2059,8 @@ PAGE = r"""
           <label class="field">Facebook Page ID<input type="text" name="page_id" value="{{social.facebook.page_id}}" placeholder="numbers only, e.g. 123456789012345" autocomplete="off" inputmode="numeric" pattern="[0-9]+" title="The Page ID is a number"></label>
           <label class="field">Page Access Token<input type="password" name="page_access_token" autocomplete="new-password" placeholder="{{'Saved - leave blank to keep it' if social.facebook.configured else 'Paste Page Access Token'}}"></label>
         </div>
-        <div class="row" style="margin-top:12px"><label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.facebook.auto_upload else ''}}> Automatically publish new videos</label><button class="green sm" type="submit">Save Facebook Settings</button></div>
+        <div class="row" style="margin-top:12px"><label class="field" style="flex:0 1 300px">Facebook video language<select name="fb_language"><option value="same" {{'selected' if social.facebook.language == 'same' else ''}}>Same as YouTube</option><option value="ur" {{'selected' if social.facebook.language == 'ur' else ''}}>Urdu (Roman Urdu, Urdu voice)</option><option value="en" {{'selected' if social.facebook.language == 'en' else ''}}>English</option></select><span class="hint">Different from YouTube: the bot also renders a copy in this language, over the same pictures, and posts that one.</span></label>
+          <label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.facebook.auto_upload else ''}}> Automatically publish new videos</label><button class="green sm" type="submit">Save Facebook Settings</button></div>
       </form>
       <form method="post" action="/social-verify" style="margin-top:10px"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="facebook"><button class="ghost sm" type="submit">Connect &amp; Verify Facebook Page</button></form>
       <form method="post" action="/facebook-user-token" class="row" style="margin-top:12px;align-items:flex-end;gap:10px;padding:12px;border:1px dashed var(--line);border-radius:10px">
@@ -2444,13 +2446,17 @@ if __name__ == "__main__":
         raise SystemExit(1)
     print(f"Story Bot STUDIO: http://127.0.0.1:{PORT}  (close this window to stop)")
     _schedule_history_cleanup()
-    queue_timer = threading.Timer(8.0, _schedule_auto_upload_queue)
-    queue_timer.daemon = True
-    queue_timer.start()
     threading.Timer(1.5, lambda: webbrowser.open(f"http://127.0.0.1:{PORT}")).start()
-    # Check shortly after launch and then hourly. The checker only creates
-    # missing daily targets, so restarts never duplicate completed videos.
-    daily_timer = threading.Timer(5.0, _daily_automation_check)
-    daily_timer.daemon = True
-    daily_timer.start()
+    if settings.dashboard_automation:
+        queue_timer = threading.Timer(8.0, _schedule_auto_upload_queue)
+        queue_timer.daemon = True
+        queue_timer.start()
+        # Check shortly after launch and then hourly. The checker only creates
+        # missing daily targets, so restarts never duplicate completed videos.
+        daily_timer = threading.Timer(5.0, _daily_automation_check)
+        daily_timer.daemon = True
+        daily_timer.start()
+    else:
+        print("Automation is off (DASHBOARD_AUTOMATION=false): the daily GitHub run makes and "
+              "uploads the videos; this dashboard only does what you click.")
     app.run(host="127.0.0.1", port=PORT, debug=False)

@@ -371,10 +371,15 @@ def upload_tiktok(channel_id: str, video: Path, title: str,
 
 
 def publish_video(video_id: int, platform: str, channel_id: str | None = None,
-                  direct_consent: bool = False, force_tiktok_mode: str | None = None) -> str:
+                  direct_consent: bool = False, force_tiktok_mode: str | None = None,
+                  video_override: Path | None = None, title_override: str | None = None) -> str:
     row = video_for_social_upload(video_id, channel_id)
     if not row:
         raise RuntimeError("Video record not found.")
+    if video_override or title_override:
+        # The Facebook copy in another language (dual_language.py).
+        row = {**dict(row), "video_path": str(video_override or row["video_path"]),
+               "title": title_override or row["title"]}
     path = Path(row["video_path"])
     if not path.exists():
         raise RuntimeError("Local video file is missing; restore it from Drive first.")
@@ -399,13 +404,17 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
         raise
 
 
-def auto_publish_video(video_id: int, channel_id: str) -> list[str]:
+def auto_publish_video(video_id: int, channel_id: str,
+                       facebook_video: Path | None = None, facebook_title: str | None = None) -> list[str]:
     messages: list[str] = []
     fb = account(channel_id, "facebook")
     tt = account(channel_id, "tiktok")
     if fb.get("auto_upload") and fb.get("page_id") and fb.get("page_access_token"):
         try:
-            messages.append(publish_video(video_id, "facebook", channel_id))
+            messages.append(publish_video(
+                video_id, "facebook", channel_id,
+                video_override=facebook_video, title_override=facebook_title,
+            ))
         except Exception as exc:
             messages.append(f"Facebook failed: {exc}")
     if tt.get("auto_upload") and tt.get("access_token"):

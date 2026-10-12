@@ -67,6 +67,10 @@ class Settings:
         for part in os.getenv("ANIMATED_CHANNELS", "kids").split(",")
         if part.strip()
     )
+    # The dashboard's own automation: on start-up it makes any of today's
+    # missing videos and runs the upload queue. Turn it off on a PC when the
+    # daily GitHub run does that work, or both upload and use the same quota.
+    dashboard_automation: bool = os.getenv("DASHBOARD_AUTOMATION", "true").lower() == "true"
     audio_bitrate: str = os.getenv("AUDIO_BITRATE", "192k")
     edge_voice: str = os.getenv("EDGE_TTS_VOICE", "en-US-AriaNeural")
     edge_rate: str = os.getenv("EDGE_TTS_RATE", "+0%")
