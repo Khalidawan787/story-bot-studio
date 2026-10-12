@@ -331,6 +331,7 @@ def home():
         channel_uploads_today=uploads_today_count(ch.id), channel_upload_limit=upload_limit_for_channel(ch.id),
         api=api_center(ch), calendar=upcoming_schedule(ch.id),
         setup=channel_factory.setup_status(ch), factory=ch.created_by == "factory",
+        quick_links=setup_guide.quick_links(channel_factory.setup_status(ch).get("project_id", "")),
         social=social_accounts.public_status(ch.id), social_uploads=social_uploads_for_channel(ch.id),
         stats={"topics": len(topics), "videos": len(vids), "uploaded": uploaded,
                "today": videos_generated_today_count(ch.id)},
@@ -1070,10 +1071,12 @@ def channel_delete():
 def guide():
     ch = current_channel()
     status = channel_factory.setup_status(ch)
+    project_id = status.get("project_id", "")
+    full = request.args.get("mode") == "full"
     return render_template_string(
-        GUIDE_PAGE, style=_page_style(), ch=ch, channels=load_channels(),
-        steps=setup_guide.steps_for(status.get("project_id", "")), who=setup_guide.WHO,
-        project_id=status.get("project_id", ""),
+        GUIDE_PAGE, style=_page_style(), ch=ch, channels=load_channels(), full=full,
+        steps=setup_guide.steps_for(project_id) if full else setup_guide.quick_steps_for(project_id),
+        who=setup_guide.WHO, project_id=project_id,
     )
 
 
@@ -1306,13 +1309,16 @@ GUIDE_PAGE = r"""
 <header><div class="logo">📘</div><div><h1>Google Cloud setup guide</h1>
   <div class="sub">For: {{ch.name}}{% if project_id %} · project <b>{{project_id}}</b> (links open on it){% endif %}</div></div></header>
 <div class="wrap gd">
-  <div class="tabs"><a class="tab" href="/?channel={{ch.id}}">← Back to {{ch.name}}</a></div>
+  <div class="tabs"><a class="tab" href="/?channel={{ch.id}}">← Back to {{ch.name}}</a>
+    <a class="tab {{'' if full else 'active'}}" href="/guide?channel={{ch.id}}">⚡ Quick: I do everything</a>
+    <a class="tab {{'active' if full else ''}}" href="/guide?channel={{ch.id}}&mode=full">Full: client does part 1</a></div>
 
   <div class="card">
     <strong>Screenshots: add them once, use them for every client</strong>
     <div class="hint">While you do one real setup, take a screenshot at each step (<b>Win + Shift + S</b>), click that step's dashed box below and press <b>Ctrl + V</b>. Or click the box to pick an image file. Screenshots are saved on this PC only, in <code>data/guide/</code>. Before sending them to a client, make sure they do not show anything private.</div>
   </div>
 
+  {% if full %}
   <div class="client-box" id="client">
     <strong>📤 Send the client their part</strong>
     <div class="hint">The client only does Part 1 (4 steps). Type your Gmail once; it goes into the guide and the message.</div>
@@ -1324,6 +1330,7 @@ GUIDE_PAGE = r"""
     <textarea id="guide-message" readonly rows="7"></textarea>
     <div class="hint">Send the downloaded file with the message. It opens in any browser, on a phone too.</div>
   </div>
+  {% endif %}
 
   {% set ns = namespace(part='', n=0) %}
   {% for step in steps %}
@@ -1353,6 +1360,7 @@ GUIDE_PAGE = r"""
 (function () {
   var email = document.getElementById('guide-email'), box = document.getElementById('guide-message'),
       copy = document.getElementById('guide-copy'), dl = document.getElementById('client-download');
+  if (email) {
   try { email.value = localStorage.getItem('guide-email') || ''; } catch (e) {}
   function render() {
     var who = email.value.trim() || '[my Gmail]';
@@ -1374,6 +1382,7 @@ GUIDE_PAGE = r"""
     else { document.execCommand('copy'); done(); }
   });
   render();
+  }
 
   // Screenshots: paste into the focused box, or click a focused box to pick a file.
   var picker = document.getElementById('shot-file'), target = null;
@@ -1484,6 +1493,10 @@ PAGE = r"""
   .setup-steps li{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
   .setup-steps li.done{border-color:rgba(61,220,151,.4)}
   .setup-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .quick-bar{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}
+  .quick-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center}
+  .quick-links a{padding:7px 11px;border-radius:9px;background:rgba(108,140,255,.14);border:1px solid rgba(108,140,255,.35);font-size:13px;color:var(--text)}
+  .quick-links a b{color:var(--accent);margin-right:4px}
   .btn-link{display:inline-block;padding:9px 14px;border-radius:10px;font-weight:600;font-size:14px;border:1px solid var(--line)}
   .btn-link.green{background:rgba(61,220,151,.15);border-color:rgba(61,220,151,.45);color:var(--ok)}
   .btn-link.ghost{color:var(--text)}
@@ -1574,10 +1587,30 @@ PAGE = r"""
         {% if not setup.github %}<form method="post" action="/github-sync" style="margin-top:6px"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green sm" type="submit">⬆ Send to GitHub</button></form>{% endif %}
       </li>
     </ol>
-    <div class="setup-links">
-      <a class="btn-link green" href="/guide?channel={{ch.id}}">📘 Step-by-step guide with screenshots</a>
-      <a class="btn-link ghost" href="/guide?channel={{ch.id}}#client">📤 Guide to send the client</a>
+    <div class="quick-bar">
+      <span class="hint"><b>Quick links</b> (open in the Incognito window where the client's Gmail is signed in):</span>
+      <div class="quick-links">
+        {% for label, url in quick_links %}<a href="{{url}}" target="_blank" rel="noopener" data-url="{{url}}"><b>{{loop.index}}</b> {{label}} ↗</a>{% endfor %}
+        <a href="#own-project"><b>{{quick_links|length + 1}}</b> Upload JSON ↓</a>
+        <button type="button" class="ghost sm" id="copy-links">📋 Copy all links</button>
+      </div>
     </div>
+    <div class="setup-links">
+      <a class="btn-link green" href="/guide?channel={{ch.id}}">📘 Quick guide with screenshots</a>
+      <a class="btn-link ghost" href="/guide?channel={{ch.id}}&mode=full">Full guide (client does part 1)</a>
+    </div>
+    <script>
+    (function () {
+      var b = document.getElementById('copy-links'); if (!b) return;
+      b.addEventListener('click', function () {
+        var text = Array.prototype.map.call(document.querySelectorAll('.quick-links a[data-url]'), function (a, i) {
+          return (i + 1) + '. ' + a.textContent.replace(/^\s*\d+\s*/, '').replace(' ↗', '') + ': ' + a.dataset.url;
+        }).join('\n');
+        var done = function () { b.textContent = '✅ Copied'; setTimeout(function () { b.textContent = '📋 Copy all links'; }, 1500); };
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(done); else done();
+      });
+    })();
+    </script>
     {% if factory %}
     <details style="margin-top:10px"><summary class="hint" style="cursor:pointer">Channel plan{% if ch.topic %}: "{{ch.topic}}"{% endif %}</summary>
       <div class="hint" style="margin-top:6px"><b>Look:</b> {{ {'stock':'real video clips','cartoon':'animated cartoon pictures','still':'AI pictures'}.get(ch.visuals, ch.visuals) }} &middot; <b>Voice:</b> {{ch.voice}} &middot; <b>Tone:</b> {{ch.tone}}</div>

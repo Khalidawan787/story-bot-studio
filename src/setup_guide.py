@@ -145,12 +145,37 @@ STEPS = [
     },
 ]
 
+# Quick mode: the operator signs in to the client's Google account and does it
+# all. Same screens as the full guide (so the same screenshots), worded for one
+# person, without the IAM hand-over.
+QUICK = [
+    {
+        "id": "q0", "who": "quick",
+        "title": "Open a private window and sign in as the client",
+        "urdu": "Private window mein client ke Gmail se sign in",
+        "link": "https://accounts.google.com/", "link_label": "Open: Google sign-in",
+        "do": "In Chrome press <b>Ctrl + Shift + N</b> (Incognito), open the link and sign in with the <b>client's Gmail</b>. Open every link below in this same window.",
+        "do_urdu": "Chrome mein <b>Ctrl + Shift + N</b> dabayen, link kholen, <b>client ke Gmail</b> se sign in karen. Neeche ke saare links isi window mein kholen.",
+        "tip": "Google may ask the client for a code on their phone. Have them ready on WhatsApp.",
+    },
+    {"id": "c1", "title": "Make a new project", "urdu": "Naya project banayen",
+     "do": "Project name: <b>YouTube Bot</b> → <b>Create</b>. Wait for the bell icon to say it is ready.",
+     "do_urdu": "Project name <b>YouTube Bot</b> → <b>Create</b>. Bell icon ka intezar karen.", "tip": ""},
+    {"id": "y2"}, {"id": "y3"}, {"id": "y4"}, {"id": "y5"}, {"id": "y6"},
+    {"id": "d1"},
+    {"id": "d2", "do": "Press <b>Connect &amp; verify</b>. Google opens: pick the <b>client's Gmail</b> (or “Use another account” and sign in as the client).",
+     "do_urdu": "<b>Connect &amp; verify</b> → Google mein <b>client ka Gmail</b> chunen (ya “Use another account”).",
+     "tip": "This window is your normal browser, not the Incognito one, so the client's account may need adding here once."},
+    {"id": "d3"}, {"id": "d4"}, {"id": "d5"},
+]
+
 WHO = {
     "client": ("Part 1 — The client does this (2 minutes)", "Hissa 1 — Client ka kaam"),
     "you": ("Part 2 — You do this in the client's project (5 minutes)", "Hissa 2 — Aap ka kaam, client ke project mein"),
     "dashboard": ("Part 3 — In this dashboard (2 minutes)", "Hissa 3 — Dashboard mein"),
+    "quick": ("In the client's Google account (about 6 minutes)", "Client ke Google account mein, sab kuch aap khud"),
 }
-_IDS = {step["id"] for step in STEPS}
+_IDS = {step["id"] for step in STEPS} | {"q0"}
 
 
 def shot_path(step_id: str) -> Path | None:
@@ -195,6 +220,36 @@ def steps_for(project_id: str = "", email: str = "") -> list[dict]:
         row["has_shot"] = shot_path(step["id"]) is not None
         rows.append(row)
     return rows
+
+
+def quick_steps_for(project_id: str = "") -> list[dict]:
+    """The quick (operator-only) steps: full-guide steps re-worded where needed."""
+    by_id = {row["id"]: row for row in steps_for(project_id)}
+    q = f"?project={project_id}" if project_id else ""
+    rows = []
+    for override in QUICK:
+        base = dict(by_id.get(override["id"], {}))
+        base.update({k: v for k, v in override.items()})
+        base["link"] = str(base.get("link", "")).replace("{q}", q)
+        base.setdefault("tip", "")
+        if base.get("who") != "dashboard":
+            base["who"] = "quick"
+        base["has_shot"] = shot_path(base["id"]) is not None
+        rows.append(base)
+    return rows
+
+
+def quick_links(project_id: str = "") -> list[tuple[str, str]]:
+    """(label, url) in order, for the one-line link bar on the setup card."""
+    q = f"?project={project_id}" if project_id else ""
+    return [
+        ("New project", f"{CONSOLE}/projectcreate"),
+        ("YouTube API", f"{CONSOLE}/apis/library/youtube.googleapis.com{q}"),
+        ("Sign-in screen", f"{CONSOLE}/auth/overview{q}"),
+        ("Publish (Audience)", f"{CONSOLE}/auth/audience{q}"),
+        ("Create client", f"{CONSOLE}/auth/clients/create{q}"),
+        ("All clients (JSON)", f"{CONSOLE}/auth/clients{q}"),
+    ]
 
 
 def client_guide_html(email: str) -> str:
