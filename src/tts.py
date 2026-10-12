@@ -4,8 +4,22 @@ import asyncio
 from pathlib import Path
 
 import edge_tts
+import edge_tts.communicate
 
 from .config import settings
+
+# Since 12 Oct 2026 Microsoft refuses speech on the old speech.platform.bing.com
+# host with a 403 everywhere, which stopped every channel's videos. Edge itself
+# now speaks through api.msedgeservices.com, which accepts the same token
+# (rany2/edge-tts#490, #491). Only the old address is replaced, so a later
+# edge-tts release that ships its own fix is left alone.
+if "speech.platform.bing.com" in edge_tts.communicate.WSS_URL:
+    from edge_tts.constants import TRUSTED_CLIENT_TOKEN
+
+    edge_tts.communicate.WSS_URL = (
+        "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1"
+        f"?Ocp-Apim-Subscription-Key={TRUSTED_CLIENT_TOKEN}"
+    )
 
 
 async def _speak(text: str, output_path: Path, voice: str) -> None:
