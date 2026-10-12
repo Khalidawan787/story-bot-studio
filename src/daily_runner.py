@@ -520,12 +520,22 @@ def run_long_batch(
         release_generation_lock(lock_name)
 
 
-def run_daily_long_all(upload: bool = True, scenes: int = 20) -> list[tuple[str, str]]:
-    """Create one ~5-minute 16:9 video for every connected YouTube channel."""
+def run_daily_long_all(
+    upload: bool = True, scenes: int = 20, slot: int | None = None,
+) -> list[tuple[str, str]]:
+    """Create one ~5-minute 16:9 video for every connected YouTube channel.
+
+    With `slot`, only the channels of that daily build slot (slots.py); None
+    builds every channel. A channel that already has today's video is skipped
+    either way, so running a slot twice never makes a second one.
+    """
     from .channels import load_channels
+    from .slots import channel_slot
 
     results: list[tuple[str, str]] = []
     for channel in load_channels():
+        if slot is not None and channel_slot(channel) != slot:
+            continue
         if not channel.token_path.exists():
             results.append((channel.id, "SKIPPED not connected"))
             continue

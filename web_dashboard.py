@@ -23,7 +23,7 @@ from flask import Flask, request, redirect, url_for, send_file, render_template_
 
 from src.config import settings
 from src.channels import load_channels, get_channel
-from src import channel_factory, setup_guide
+from src import channel_factory, setup_guide, slots
 from src.daily_runner import (
     run_daily_batch, run_long_batch, run_long_video, run_offline_buffer,
     videos_generated_today_count, short_videos_generated_today_count, long_videos_generated_today_count,
@@ -332,6 +332,9 @@ def home():
         channel_uploads_today=uploads_today_count(ch.id), channel_upload_limit=upload_limit_for_channel(ch.id),
         api=api_center(ch), calendar=upcoming_schedule(ch.id),
         setup=channel_factory.setup_status(ch), factory=ch.created_by == "factory",
+        slot_now=slots.channel_slot(ch), slot_options=[
+            (i, slots.label(i), len(members)) for i, members in slots.load().items()
+        ],
         quick_links=setup_guide.quick_links(channel_factory.setup_status(ch).get("project_id", "")),
         social=social_accounts.public_status(ch.id), social_uploads=social_uploads_for_channel(ch.id),
         stats={"topics": len(topics), "videos": len(vids), "uploaded": uploaded,
@@ -1144,6 +1147,18 @@ def guide_client():
     )
 
 
+@app.post("/channel-slot")
+def channel_slot_change():
+    ch = current_channel()
+    try:
+        channel_factory.set_slot(ch.id, int(request.form.get("slot", "0")))
+        flash(f"{ch.name} now builds at {slots.label(int(request.form.get('slot', '0')))}. "
+              "Press 'Send to GitHub' so the daily runs use the new time.", "ok")
+    except Exception as exc:
+        flash(f"Could not change the build time: {exc}", "error")
+    return redirect(url_for("home", channel=ch.id))
+
+
 @app.post("/github-sync")
 def github_sync():
     ch = current_channel()
@@ -1516,6 +1531,8 @@ PAGE = r"""
   .setup-steps{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:10px}
   .setup-steps li{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
   .setup-steps li.done{border-color:rgba(61,220,151,.4)}
+  .slot-row{margin-top:10px;gap:10px;align-items:center;font-size:14px}
+  .slot-row select{min-width:0;max-width:280px;flex:0 1 auto}
   .email{font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#cfe0ff}
   .setup-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
   .quick-bar{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}
@@ -1597,6 +1614,14 @@ PAGE = r"""
   <div class="card setup-card" style="margin-bottom:18px">
     <strong>Setup for {{ch.name}}</strong>
     <div class="hint">Three steps. When all three are green, GitHub makes and uploads this channel's videos every day, even with this PC off.</div>
+    <form method="post" action="/channel-slot" class="row slot-row">
+      <input type="hidden" name="channel" value="{{ch.id}}">
+      <span>🕒 Daily video is made at</span>
+      <select name="slot" onchange="this.form.submit()">
+        {% for i, when, count in slot_options %}<option value="{{i}}" {{'selected' if i == slot_now else ''}}>{{when}} · {{count}} channel{{'' if count == 1 else 's'}}</option>{% endfor %}
+      </select>
+      <span class="hint">Up to about 7 channels fit in one time slot.</span>
+    </form>
     <ol class="setup-steps">
       <li class="{{'done' if setup.project else ''}}">
         <b>{{'✅' if setup.project else '1️⃣'}} Own Google Cloud project</b>

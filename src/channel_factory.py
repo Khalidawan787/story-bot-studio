@@ -155,6 +155,9 @@ def _unique_id(name: str, taken: set[str]) -> str:
 def create_channel(spec: dict) -> str:
     """Add the channel to channels.json and return its id."""
     spec = normalize_spec(spec)
+    from .slots import least_busy
+
+    slot = least_busy()
     config = _load_config()
     rows = config.setdefault("channels", [])
     channel_id = _unique_id(spec["name"], {str(row.get("id")) for row in rows})
@@ -174,6 +177,8 @@ def create_channel(spec: dict) -> str:
         "client_secret": "client_secret.json",
         "token": f"token_{channel_id}.json",
         "topics_per_day": 1,
+        # The daily build slot with the fewest channels (slots.py).
+        "slot": slot,
         "tone": spec["tone"],
         "keywords": spec["keywords"],
         "visuals": spec["visuals"],
@@ -186,6 +191,22 @@ def create_channel(spec: dict) -> str:
     })
     _save_config(config)
     return channel_id
+
+
+def set_slot(channel_id: str, slot: int) -> None:
+    """Move a channel to another daily build slot."""
+    from .slots import SLOTS_UTC
+
+    slot = int(slot)
+    if not 0 <= slot < len(SLOTS_UTC):
+        raise ValueError("Unknown build slot.")
+    config = _load_config()
+    for row in config.get("channels", []):
+        if row.get("id") == channel_id:
+            row["slot"] = slot
+            _save_config(config)
+            return
+    raise KeyError(f"No channel '{channel_id}'")
 
 
 def delete_channel(channel_id: str) -> None:

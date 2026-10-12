@@ -41,6 +41,8 @@ class Channel:
     topic: str = ""
     created_by: str = ""
     created_at: str = ""
+    # Which daily build slot (see slots.py) makes this channel's video.
+    slot: int = 0
 
     @property
     def client_secret_path(self) -> Path:

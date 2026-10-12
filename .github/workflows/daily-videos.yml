@@ -8,9 +8,11 @@ name: Daily videos
 
 on:
   schedule:
-    # 02:30 UTC = 07:30 in Pakistan. GitHub's scheduler is often 5-20 minutes
-    # late under load; that is normal and harmless here.
-    - cron: "30 2 * * *"
+    # Four build slots a day (src/slots.py): 07:30, 13:30, 19:30 and 01:30 in
+    # Pakistan. Each run builds only the channels of its own slot, so adding
+    # channels adds runs instead of making one run longer. GitHub's scheduler
+    # is often 5-20 minutes late; the slot is worked out from the clock.
+    - cron: "30 2,8,14,20 * * *"
   workflow_dispatch:
     inputs:
       shorts_per_channel:
@@ -24,6 +26,9 @@ on:
         description: "Upload to YouTube (off = build only)"
         type: boolean
         default: true
+      slot:
+        description: "Channels to build: all, or one slot 0-3 (0 = 07:30, 1 = 13:30, 2 = 19:30, 3 = 01:30 PKT)"
+        default: "all"
 
 permissions:
   contents: write
@@ -105,7 +110,10 @@ jobs:
       # away with the upload budget.
       - name: Build and upload today's long videos
         if: ${{ github.event.inputs.long_videos != 'false' }}
-        run: python -m src.cli daily-long-all --upload ${{ github.event.inputs.upload || 'true' }}
+        run: >-
+          python -m src.cli daily-long-all
+          --upload ${{ github.event.inputs.upload || 'true' }}
+          --slot ${{ github.event.inputs.slot || 'auto' }}
 
       - name: Upload anything still waiting
         if: always()

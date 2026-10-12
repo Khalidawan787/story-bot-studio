@@ -29,7 +29,7 @@ from src.config import settings  # noqa: E402
 from src.db import youtube_quota_day_start  # noqa: E402
 from src.pending_uploads import upload_limit_for_channel, uploads_today_count  # noqa: E402
 from src.youtube_accounts import list_accounts  # noqa: E402
-from src import run_log  # noqa: E402
+from src import run_log, slots  # noqa: E402
 
 PENDING_STATUSES = ("rendered", "upload_failed", "daily_upload_pending", "thumbnail_pending")
 LOCAL_TZ_OFFSET = timedelta(hours=5)  # Pakistan, for human-readable times
@@ -137,6 +137,7 @@ def collect() -> dict:
                 "accounts": accounts,
                 "pending": int(pending[0]["n"]) if pending else 0,
                 "visuals": _visuals(channel),
+                "slot": slots.label(slots.channel_slot(channel)),
                 "last": mine[-1] if mine else None,
             })
 
@@ -247,7 +248,7 @@ def _card(channel: dict) -> str:
     <section class="card">
       <h2>{html.escape(channel['name'])}</h2>
       {''.join(rows)}
-      <div class="muted">Pictures: {html.escape(channel.get('visuals', ''))} · {note}</div>
+      <div class="muted">Made daily at {html.escape(channel.get('slot', ''))} · pictures: {html.escape(channel.get('visuals', ''))} · {note}</div>
       {last_html}
     </section>"""
 
@@ -357,10 +358,7 @@ def _failures(rows: list) -> str:
 def render(data: dict) -> str:
     now = datetime.now(timezone.utc)
     updated = (now + LOCAL_TZ_OFFSET).strftime("%d %b %Y, %I:%M %p")
-    next_run = now.replace(hour=2, minute=30, second=0, microsecond=0)
-    if next_run <= now:
-        next_run += timedelta(days=1)
-    next_local = (next_run + LOCAL_TZ_OFFSET).strftime("%d %b, %I:%M %p")
+    next_local = (slots.next_run(now) + LOCAL_TZ_OFFSET).strftime("%d %b, %I:%M %p")
 
     problems = ""
     if data["problems"]:

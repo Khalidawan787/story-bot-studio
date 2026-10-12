@@ -45,6 +45,8 @@ def main() -> None:
     daily_long = sub.add_parser("daily-long-all", help="Create one ~5-minute video for every connected channel.")
     daily_long.add_argument("--upload", default="true", help="true or false")
     daily_long.add_argument("--scenes", default="20", help="Scenes per long video; 20 targets about 5 minutes.")
+    daily_long.add_argument("--slot", default="all",
+                            help="Build slot: all, auto (the slot that started last), or 0-3.")
 
     gen = sub.add_parser("gen-topics", help="Generate new genre topics with free Gemini.")
     gen.add_argument("--channel", required=True, help="Channel id (crime/love/horror/motivation)")
@@ -227,8 +229,13 @@ def main() -> None:
                 print(f"[{channel.id}] {topic}: {status}")
         return
     elif args.command == "daily-long-all":
+        from .slots import current_slot, label
+
+        wanted = str(args.slot or "all").strip().lower()
+        slot = None if wanted == "all" else current_slot() if wanted == "auto" else int(wanted)
+        print(f"Build slot: {'all channels' if slot is None else f'{slot} ({label(slot)})'}")
         for channel_id, status in run_daily_long_all(
-            upload=_bool(args.upload), scenes=max(12, min(30, int(args.scenes))),
+            upload=_bool(args.upload), scenes=max(12, min(30, int(args.scenes))), slot=slot,
         ):
             print(f"[{channel_id}] {status}")
         return
