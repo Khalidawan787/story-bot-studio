@@ -1629,7 +1629,7 @@ PAGE = r"""
       </li>
       <li class="{{'done' if setup.youtube else ''}}">
         <b>{{'✅' if setup.youtube else '2️⃣'}} YouTube connected</b>
-        <span class="hint">{% if setup.youtube %}Signed in{% if accounts and accounts[0].email %} with <b class="email">{{accounts[0].email}}</b>{% endif %}. Uploads go to the channel named in the table below.{% else %}Press "Connect &amp; verify" below and sign in with the Google account that owns the YouTube channel.{% endif %}</span>
+        <span class="hint">{% if setup.youtube %}Signed in{% if accounts and accounts[0].email %} with <b class="email">{{accounts[0].email}}</b>. Uploads go to the channel named in the table below.{% else %}. <span style="color:var(--warn)">Which Gmail is not known yet: this login is older than the email feature. Press <b>🔗 Reconnect</b> in the table below once (same Gmail), then <b>Send to GitHub</b>.</span>{% endif %}{% else %}Press "Connect &amp; verify" below and sign in with the Google account that owns the YouTube channel.{% endif %}</span>
       </li>
       <li class="{{'done' if setup.github else ''}}">
         <b>{{'✅' if setup.github else '3️⃣'}} Sent to GitHub</b>
