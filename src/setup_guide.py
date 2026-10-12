@@ -85,7 +85,7 @@ STEPS = [
         "link": f"{CONSOLE}/auth/audience{{q}}", "link_label": "Open: Audience",
         "do": "Under “Publishing status” press <b>Publish app</b> → <b>Confirm</b>. It must say <b>In production</b>.",
         "do_urdu": "“Publishing status” ke neeche <b>Publish app</b> → <b>Confirm</b>. <b>In production</b> likha aana chahiye.",
-        "tip": "Important: left on “Testing”, Google ends the sign-in every 7 days and uploads stop.",
+        "tip": "Important: left on “Testing”, Google ends the sign-in every 7 days and uploads stop, and other Gmails get “Access blocked”. If “Publish app” is grey, open <b>Branding</b> in the left menu, fill every required field (app name, user support email, developer contact email), press <b>Save</b>, and come back.",
     },
     {
         "id": "y5", "who": "you", "title": "Create a Desktop client",

@@ -1384,7 +1384,7 @@ GUIDE_PAGE = r"""
         <p>{{step.do|safe}}</p>
         <p class="ur">{{step.do_urdu|safe}}</p>
         {% if step.link %}<a class="go" href="{{step.link}}" target="_blank" rel="noopener">{{step.link_label}} ↗</a>{% endif %}
-        {% if step.tip %}<p class="tip">💡 {{step.tip}}</p>{% endif %}
+        {% if step.tip %}<p class="tip">💡 {{step.tip|safe}}</p>{% endif %}
         <div class="shot {{'has' if step.has_shot else ''}}" tabindex="0" data-step="{{step.id}}">
           {% if step.has_shot %}<img src="/guide/shot/{{step.id}}" alt="Screenshot of step {{ns.n}}">
           {% else %}📷 No screenshot yet. Click here, then press <b>Ctrl + V</b> (or click again to choose a file).{% endif %}
