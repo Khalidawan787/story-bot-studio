@@ -223,7 +223,7 @@ def main() -> None:
             print(f"[{channel.id}] {topic}: {status}")
         return
     elif args.command == "daily-all":
-        from .daily_runner import short_videos_generated_today_count
+        from .daily_runner import _can_publish, short_videos_generated_today_count
         from .slots import channel_slot, current_slot, label
 
         override = str(getattr(args, "count", "") or "").strip()
@@ -233,7 +233,7 @@ def main() -> None:
         for channel in load_channels():
             if slot is not None and channel_slot(channel) != slot:
                 continue
-            if not channel.token_path.exists():
+            if not _can_publish(channel):
                 # Rendering for a channel nobody signed in to only wastes the run.
                 print(f"[{channel.id}] SKIPPED not connected")
                 continue

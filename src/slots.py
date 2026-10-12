@@ -59,9 +59,12 @@ def load() -> dict[int, list]:
     """Connected channels per slot."""
     from .channels import load_channels
 
+    from .social_accounts import facebook_auto_ready
+
     counts: dict[int, list] = {i: [] for i in range(len(SLOTS_UTC))}
     for channel in load_channels():
-        if channel.token_path.exists() or getattr(channel, "created_by", "") == "factory":
+        if (channel.token_path.exists() or getattr(channel, "created_by", "") == "factory"
+                or facebook_auto_ready(channel.id)):
             counts[channel_slot(channel)].append(channel)
     return counts
 

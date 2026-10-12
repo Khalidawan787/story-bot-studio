@@ -1574,7 +1574,7 @@ PAGE = r"""
   .vid .t{font-weight:600;margin:8px 0 4px;font-size:14px}
   .st{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px}
   .st.uploaded{background:#123122;color:var(--ok)}.st.rendered{background:#2a2f4d;color:#b9c1e6}
-  .st.scheduled{background:#1a2b4d;color:#8fb4ff}
+  .st.scheduled,.st.facebook_only{background:#1a2b4d;color:#8fb4ff}
   .st.thumbnail_pending{background:#3a2f12;color:var(--warn)}.st.upload_failed,.st.quality_failed,.st.duplicate_blocked{background:#331617;color:var(--err)}
   .st.daily_upload_pending{background:#2d2754;color:#c9b7ff}.st.awaiting_approval{background:#3a2f12;color:var(--warn)}
   .muted{color:var(--muted);font-size:13px}.err{color:var(--err);font-size:11px;margin-top:6px;max-height:48px;overflow:auto}
@@ -2393,7 +2393,7 @@ def _daily_automation_check():
     try:
         if not dashboard_automation_on():
             return  # switched off on the dashboard; the finally block re-arms the timer
-        from src.daily_runner import run_daily_catchup, run_daily_long_all
+        from src.daily_runner import _can_publish, run_daily_catchup, run_daily_long_all
         from src.channels import get_channel, load_channels
         from src.pending_uploads import has_daily_pending, retry_daily_uploads
 
@@ -2402,7 +2402,8 @@ def _daily_automation_check():
             and ("Auto daily" in job.get("label", "") or "generation" in job.get("label", "").lower())
             for job in JOBS.values()
         )
-        connected_channels = [channel for channel in load_channels() if channel.token_path.exists()]
+        # A channel with only a Facebook Page counts too: its videos go there.
+        connected_channels = [channel for channel in load_channels() if _can_publish(channel)]
         shorts_missing = any(
             short_videos_generated_today_count(channel.id) < 3
             for channel in connected_channels
@@ -2421,7 +2422,7 @@ def _daily_automation_check():
                     messages.extend(f"direct-upload:{item}" for item in retry_daily_uploads(limit=20))
                 elif has_daily_pending():
                     messages.append("Direct daily uploads are waiting for internet")
-                for channel in [item for item in load_channels() if item.token_path.exists()]:
+                for channel in [item for item in load_channels() if _can_publish(item)]:
                     if short_videos_generated_today_count(channel.id) < 3:
                         short_results = run_daily_catchup(
                             target_count=3, upload=online, start_hour=0,
@@ -2433,7 +2434,7 @@ def _daily_automation_check():
                         )
                 if any(
                     long_videos_generated_today_count(channel.id) < 1
-                    for channel in [item for item in load_channels() if item.token_path.exists()]
+                    for channel in [item for item in load_channels() if _can_publish(item)]
                 ):
                     long_results = run_daily_long_all(upload=online, scenes=20)
                     messages.extend(f"long:{channel_id}:{status}" for channel_id, status in long_results)

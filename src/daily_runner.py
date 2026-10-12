@@ -328,6 +328,23 @@ def publish_targets(channel: Channel) -> list[Channel]:
     return [channel]
 
 
+def _can_publish(channel: Channel, targets: list[Channel] | None = None) -> bool:
+    """True when a finished video has somewhere to go: a YouTube login, or a
+    Facebook Page that posts by itself."""
+    for target in targets or [channel]:
+        try:
+            if target.token_path.is_file():
+                return True
+        except Exception:
+            continue
+    try:
+        from .social_accounts import facebook_auto_ready
+
+        return facebook_auto_ready(channel.id)
+    except Exception:
+        return False
+
+
 def _run_short_batch(
     count: int, upload: bool, channel: Channel, acquire_lock: bool,
     queue: bool | None = None, is_daily: bool = False,
@@ -344,9 +361,9 @@ def _run_short_batch(
         # Building for a channel nobody signed in to only produces videos that
         # cannot be published. Skip it when an upload was asked for; a
         # build-only run still renders, which is what a first-time setup wants.
-        if upload and not any(getattr(t, "token_path", None) and t.token_path.is_file()
-                              for t in targets):
-            return [(channel.id, "SKIPPED not connected to YouTube")]
+        # A channel that posts to its Facebook Page still has somewhere to go.
+        if upload and not _can_publish(channel, targets):
+            return [(channel.id, "SKIPPED not connected to YouTube or Facebook")]
         for target in targets:
             # Topics are chosen inside the loop, after the previous account's
             # videos are already recorded, so no two accounts get the same one.
@@ -467,8 +484,8 @@ def run_long_video(
 
     from . import run_log
 
-    if upload and not channel.token_path.exists():
-        raise RuntimeError(f"{channel.name} is not connected to YouTube")
+    if upload and not _can_publish(channel):
+        raise RuntimeError(f"{channel.name} is not connected to YouTube or Facebook")
     title = ""
     try:
         idea = (prompt or "").strip() or _automatic_long_idea(channel)
@@ -536,7 +553,7 @@ def run_daily_long_all(
     for channel in load_channels():
         if slot is not None and channel_slot(channel) != slot:
             continue
-        if not channel.token_path.exists():
+        if not _can_publish(channel):
             results.append((channel.id, "SKIPPED not connected"))
             continue
         if long_videos_generated_today_count(channel.id) >= 1:

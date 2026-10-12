@@ -38,6 +38,16 @@ def account(channel_id: str, platform: str) -> dict:
     return dict(_load_all().get(channel_id, {}).get(platform, {}))
 
 
+def facebook_auto_ready(channel_id: str) -> bool:
+    """True when this channel posts to its Facebook Page by itself.
+
+    Such a channel is worth building for even with no YouTube login: the
+    video still has somewhere to go.
+    """
+    fb = account(channel_id, "facebook")
+    return bool(fb.get("auto_upload") and fb.get("page_id") and fb.get("page_access_token"))
+
+
 def save_account(channel_id: str, platform: str, values: dict[str, object]) -> dict:
     if platform not in {"facebook", "tiktok"}:
         raise ValueError("Unsupported social platform")

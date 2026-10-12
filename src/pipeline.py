@@ -229,9 +229,17 @@ def run_pipeline(
         # Rendered fine, but this YouTube account was never authorized. Keep the
         # video and say so, instead of opening a sign-in nobody may be there to
         # answer (which is what hangs an unattended run).
-        status = "daily_upload_pending" if is_daily else "rendered"
-        error = (f"{getattr(channel, 'name', channel_id)} is not connected to YouTube. "
-                 f"Connect it in the dashboard, then this video uploads by itself.")
+        from .social_accounts import facebook_auto_ready
+
+        if facebook_auto_ready(channel_id):
+            # A Facebook-only channel: the video is finished once it is on the
+            # Page, so it must not wait in the YouTube upload queue. Videos
+            # built after YouTube is connected go to both.
+            status = "facebook_only"
+        else:
+            status = "daily_upload_pending" if is_daily else "rendered"
+            error = (f"{getattr(channel, 'name', channel_id)} is not connected to YouTube. "
+                     f"Connect it in the dashboard, then this video uploads by itself.")
     elif upload and quality_report["passed"] and not approval_required:
         backoff = active_upload_backoff(channel_id)
         if backoff:

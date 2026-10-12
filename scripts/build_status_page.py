@@ -41,6 +41,7 @@ STATUS_WORDS = {
     "uploading": ("Uploading", "warn"),
     "daily_upload_pending": ("Built · waiting for upload quota", "warn"),
     "rendered": ("Built · not uploaded", "warn"),
+    "facebook_only": ("Facebook only · no YouTube channel yet", "ok"),
     "thumbnail_pending": ("Uploaded · thumbnail pending", "warn"),
     "upload_failed": ("Upload failed", "bad"),
     "quality_failed": ("Failed the quality check", "bad"),
