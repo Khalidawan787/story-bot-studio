@@ -41,6 +41,8 @@ def main() -> None:
     daily_all.add_argument("--upload", default="true", help="true or false")
     daily_all.add_argument("--count", default="",
                            help="Videos per channel; blank = each channel's own topics_per_day.")
+    daily_all.add_argument("--slot", default="all",
+                           help="Build slot: all, auto (the slot that started last), or 0-3.")
 
     daily_long = sub.add_parser("daily-long-all", help="Create one ~5-minute video for every connected channel.")
     daily_long.add_argument("--upload", default="true", help="true or false")
@@ -221,11 +223,28 @@ def main() -> None:
             print(f"[{channel.id}] {topic}: {status}")
         return
     elif args.command == "daily-all":
+        from .daily_runner import short_videos_generated_today_count
+        from .slots import channel_slot, current_slot, label
+
         override = str(getattr(args, "count", "") or "").strip()
+        wanted = str(args.slot or "all").strip().lower()
+        slot = None if wanted == "all" else current_slot() if wanted == "auto" else int(wanted)
+        print(f"Build slot: {'all channels' if slot is None else f'{slot} ({label(slot)})'}")
         for channel in load_channels():
+            if slot is not None and channel_slot(channel) != slot:
+                continue
+            if not channel.token_path.exists():
+                # Rendering for a channel nobody signed in to only wastes the run.
+                print(f"[{channel.id}] SKIPPED not connected")
+                continue
             n = max(1, int(override)) if override.isdigit() else channel.topics_per_day
-            print(f"=== Channel: {channel.name} ({n}/day) ===")
-            for topic, status in run_daily_batch(count=n, upload=_bool(args.upload), channel=channel):
+            # Only what is still missing today, so a re-run never doubles up.
+            missing = n - short_videos_generated_today_count(channel.id)
+            if missing <= 0:
+                print(f"[{channel.id}] SKIPPED today's {n} Short(s) already exist")
+                continue
+            print(f"=== Channel: {channel.name} ({missing} of {n} Shorts) ===")
+            for topic, status in run_daily_batch(count=missing, upload=_bool(args.upload), channel=channel):
                 print(f"[{channel.id}] {topic}: {status}")
         return
     elif args.command == "daily-long-all":

@@ -40,6 +40,15 @@ env:
   # on a browser prompt for a channel that was never connected.
   NO_INTERACTIVE_AUTH: "1"
 
+  # A scheduled run has no inputs, so github.event.inputs.* is null, and
+  # comparing null with '0' in an `if:` turned into 0 != 0 and silently
+  # skipped the Shorts on every scheduled run. Resolve the defaults once here
+  # and compare strings.
+  SHORTS_PER_CHANNEL: ${{ github.event.inputs.shorts_per_channel || '2' }}
+  LONG_VIDEOS: ${{ github.event.inputs.long_videos || 'true' }}
+  UPLOAD: ${{ github.event.inputs.upload || 'true' }}
+  SLOT: ${{ github.event.inputs.slot || 'auto' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -98,22 +107,16 @@ jobs:
       - name: Show what each channel is allowed to upload today
         run: python -m src.cli quota-status
 
-      - name: Build and upload today's Shorts
-        if: ${{ github.event.inputs.shorts_per_channel != '0' }}
-        run: |
-          python -m src.cli daily-all \
-            --upload ${{ github.event.inputs.upload || 'true' }} \
-            --count "${{ github.event.inputs.shorts_per_channel || '2' }}"
-
-      # Runs on the schedule too. daily-long-all makes at most one per channel
-      # per day and skips a channel that already has today's, so it cannot run
-      # away with the upload budget.
+      # The long video first: it matters most, and it is then never squeezed
+      # out by the Shorts if a run gets long or the upload budget runs low.
+      # Each makes only what this slot's channels are still missing today.
       - name: Build and upload today's long videos
-        if: ${{ github.event.inputs.long_videos != 'false' }}
-        run: >-
-          python -m src.cli daily-long-all
-          --upload ${{ github.event.inputs.upload || 'true' }}
-          --slot ${{ github.event.inputs.slot || 'auto' }}
+        if: ${{ env.LONG_VIDEOS != 'false' }}
+        run: python -m src.cli daily-long-all --upload "$UPLOAD" --slot "$SLOT"
+
+      - name: Build and upload today's Shorts
+        if: ${{ env.SHORTS_PER_CHANNEL != '0' }}
+        run: python -m src.cli daily-all --upload "$UPLOAD" --count "$SHORTS_PER_CHANNEL" --slot "$SLOT"
 
       - name: Upload anything still waiting
         if: always()
