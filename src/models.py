@@ -10,6 +10,9 @@ class Scene:
     line: str
     image: str
     image_prompt: str = ""
+    # What the narrator says when it differs from the shown `line`: Urdu
+    # script for a Roman Urdu line (see language.py). Empty = say `line`.
+    speech: str = ""
 
 
 @dataclass(frozen=True)
@@ -25,6 +28,13 @@ class Lesson:
     def narration(self) -> str:
         parts = [self.intro, *[scene.line for scene in self.scenes], self.outro]
         return "\n".join(parts)
+
+    @property
+    def spoken_narration(self) -> str:
+        """The text for the voice: Urdu-script `speech` lines when present."""
+        if any(scene.speech for scene in self.scenes):
+            return "\n".join(scene.speech or scene.line for scene in self.scenes)
+        return self.narration
 
 
 @dataclass(frozen=True)

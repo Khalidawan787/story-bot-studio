@@ -122,6 +122,9 @@ def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, obj
                 "description": metadata["description"],
                 "tags": metadata["tags"],
                 "categoryId": category_id,
+                # Tells YouTube which language the title and the voice are in.
+                "defaultLanguage": str(metadata.get("language") or "en"),
+                "defaultAudioLanguage": str(metadata.get("language") or "en"),
             },
             "status": status_body,
         },

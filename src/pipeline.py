@@ -141,7 +141,9 @@ def run_pipeline(
     # kids/other flows). True = force the timed drip queue. False = upload
     # immediately now (skip the queue). Only matters when upload is True.
     # channel=None keeps the original kids behavior (voice/seo/upload unchanged).
-    voice = channel.voice if channel is not None else None
+    from .language import display_marks, voice_for
+
+    voice = voice_for(channel) if channel is not None else None
     channel_id = channel.id if channel is not None else "kids"
     # Which of the channel's connected YouTube accounts this video is for. The
     # caller passes an account-specific channel object, so the upload below
@@ -164,13 +166,16 @@ def run_pipeline(
         if out.exists() and completed_clip.exists() and completed_clip.stat().st_size > 100_000:
             path, marks = out, None
         elif settings.enable_karaoke_captions:
-            path, marks = generate_voice_with_marks(scene.line, out, voice=voice)
+            path, marks = generate_voice_with_marks(scene.speech or scene.line, out, voice=voice)
+            if scene.speech and scene.speech != scene.line:
+                # The voice read Urdu script; the caption shows Roman Urdu.
+                marks = display_marks(marks, scene.line)
         else:
-            path, marks = generate_voice(scene.line, out, voice=voice), None
+            path, marks = generate_voice(scene.speech or scene.line, out, voice=voice), None
         scene_audio_paths.append(path)
         scene_marks.append(marks)
     full_voice = run_dir / "voice.mp3"
-    audio_path = full_voice if full_voice.exists() and full_voice.stat().st_size > 10_000 else generate_voice(lesson.narration, full_voice, voice=voice)
+    audio_path = full_voice if full_voice.exists() and full_voice.stat().st_size > 10_000 else generate_voice(lesson.spoken_narration, full_voice, voice=voice)
     video_path = render_video(
         lesson, audio_path, run_dir / "video.mp4", run_dir,
         scene_audio_paths=scene_audio_paths, channel=channel,

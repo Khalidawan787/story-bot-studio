@@ -24,6 +24,7 @@ from flask import Flask, request, redirect, url_for, send_file, render_template_
 from src.config import settings
 from src.channels import load_channels, get_channel
 from src import channel_factory, setup_guide, slots
+from src.language import LANGUAGES
 from src.daily_runner import (
     run_daily_batch, run_long_batch, run_long_video, run_offline_buffer,
     videos_generated_today_count, short_videos_generated_today_count, long_videos_generated_today_count,
@@ -336,7 +337,7 @@ def home():
             (i, slots.label(i), len(members)) for i, members in slots.load().items()
         ],
         quick_links=setup_guide.quick_links(channel_factory.setup_status(ch).get("project_id", "")),
-        branding=setup_guide.BRANDING,
+        branding=setup_guide.BRANDING, languages=LANGUAGES,
         social=social_accounts.public_status(ch.id), social_uploads=social_uploads_for_channel(ch.id),
         stats={"topics": len(topics), "videos": len(vids), "uploaded": uploaded,
                "today": videos_generated_today_count(ch.id)},
@@ -1043,7 +1044,7 @@ def channel_new():
     return render_template_string(
         NEW_CHANNEL_PAGE, style=_page_style(), spec=None, channels=load_channels(),
         voices=channel_factory.VOICES, categories=channel_factory.CATEGORIES,
-        visuals=channel_factory.VISUALS,
+        visuals=channel_factory.VISUALS, languages=LANGUAGES,
     )
 
 
@@ -1058,7 +1059,7 @@ def channel_new_design():
     return render_template_string(
         NEW_CHANNEL_PAGE, style=_page_style(), spec=spec, channels=load_channels(),
         voices=channel_factory.VOICES, categories=channel_factory.CATEGORIES,
-        visuals=channel_factory.VISUALS,
+        visuals=channel_factory.VISUALS, languages=LANGUAGES,
     )
 
 
@@ -1072,6 +1073,7 @@ def channel_new_create():
         "voice": form.get("voice", ""), "category_id": form.get("category_id", ""),
         "made_for_kids": form.get("made_for_kids") == "on", "visuals": form.get("visuals", ""),
         "keywords": form.get("keywords", ""), "first_topics": form.get("first_topics", ""),
+        "language": form.get("language", "en"),
     }
     try:
         channel_id = channel_factory.create_channel(spec)
@@ -1157,6 +1159,20 @@ def channel_slot_change():
               "Press 'Send to GitHub' so the daily runs use the new time.", "ok")
     except Exception as exc:
         flash(f"Could not change the build time: {exc}", "error")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/channel-language")
+def channel_language_change():
+    ch = current_channel()
+    language = request.form.get("language", "en")
+    try:
+        channel_factory.set_language(ch.id, language)
+        words = "Urdu (Roman Urdu on screen, Urdu voice)" if language == "ur" else "English"
+        flash(f"{ch.name}: new videos will be in {words}. Videos already made stay as they are. "
+              "Press 'Send to GitHub' so the daily runs use it too.", "ok")
+    except Exception as exc:
+        flash(f"Could not change the language: {exc}", "error")
     return redirect(url_for("home", channel=ch.id))
 
 
@@ -1304,6 +1320,7 @@ NEW_CHANNEL_PAGE = r"""
       <label class="field">Pictures<select name="visuals">{% for v,label in visuals.items() %}<option value="{{v}}" {{'selected' if v==spec.visuals else ''}}>{{label}}</option>{% endfor %}</select></label>
       <label class="field">YouTube category<select name="category_id">{% for v,label in categories.items() %}<option value="{{v}}" {{'selected' if v==spec.category_id else ''}}>{{label}}</option>{% endfor %}</select></label>
       <label class="field">Title ending<input type="text" name="seo_suffix" value="{{spec.seo_suffix}}" maxlength="40"></label>
+      <label class="field">Video language<select name="language">{% for v,label in languages.items() %}<option value="{{v}}" {{'selected' if v==spec.language else ''}}>{{label}}</option>{% endfor %}</select></label>
     </div>
     <div class="grid2">
       <label class="field">How the scripts should sound<textarea name="tone" maxlength="300">{{spec.tone}}</textarea></label>
@@ -1631,6 +1648,14 @@ PAGE = r"""
         {% for i, when, count in slot_options %}<option value="{{i}}" {{'selected' if i == slot_now else ''}}>{{when}} · {{count}} channel{{'' if count == 1 else 's'}}</option>{% endfor %}
       </select>
       <span class="hint">Up to about 7 channels fit in one time slot.</span>
+    </form>
+    <form method="post" action="/channel-language" class="row slot-row">
+      <input type="hidden" name="channel" value="{{ch.id}}">
+      <span>🗣 Video language</span>
+      <select name="language" onchange="this.form.submit()">
+        {% for code, name in languages.items() %}<option value="{{code}}" {{'selected' if code == (ch.language or 'en') else ''}}>{{name}}</option>{% endfor %}
+      </select>
+      <span class="hint">Urdu: captions and title in Roman Urdu, spoken by a Pakistani Urdu voice.</span>
     </form>
     <ol class="setup-steps">
       <li class="{{'done' if setup.project else ''}}">

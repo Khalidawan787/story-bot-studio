@@ -137,6 +137,7 @@ def normalize_spec(raw: dict) -> dict:
         "category_id": category if category in CATEGORIES else "24",
         "made_for_kids": bool(made_for_kids),
         "visuals": visuals if visuals in VISUALS else "still",
+        "language": "ur" if str(raw.get("language") or "").lower() == "ur" else "en",
         "keywords": [k for k in (_clean_text(k, 60).lower() for k in keywords) if k][:15],
         "first_topics": [t for t in (_clean_text(t, 150) for t in first_topics) if t][:10],
     }
@@ -179,6 +180,7 @@ def create_channel(spec: dict) -> str:
         "topics_per_day": 1,
         # The daily build slot with the fewest channels (slots.py).
         "slot": slot,
+        "language": spec["language"],
         "tone": spec["tone"],
         "keywords": spec["keywords"],
         "visuals": spec["visuals"],
@@ -204,6 +206,21 @@ def set_slot(channel_id: str, slot: int) -> None:
     for row in config.get("channels", []):
         if row.get("id") == channel_id:
             row["slot"] = slot
+            _save_config(config)
+            return
+    raise KeyError(f"No channel '{channel_id}'")
+
+
+def set_language(channel_id: str, language: str) -> None:
+    """Switch a channel's videos between English and Urdu."""
+    from .language import LANGUAGES
+
+    if language not in LANGUAGES:
+        raise ValueError("Unknown language.")
+    config = _load_config()
+    for row in config.get("channels", []):
+        if row.get("id") == channel_id:
+            row["language"] = language
             _save_config(config)
             return
     raise KeyError(f"No channel '{channel_id}'")

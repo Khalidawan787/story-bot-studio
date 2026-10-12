@@ -143,7 +143,8 @@ class Settings:
     # Second free Gemini model tried when the primary model's daily free quota
     # is exhausted. On the free tier each model has its OWN daily limit, so a
     # different model on the same key keeps scripts flowing. Blank = skip.
-    gemini_fallback_model: str = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-2.0-flash")
+    # Comma-separated; tried in order. gemini-2.0-flash was retired (404).
+    gemini_fallback_model: str = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash,gemini-flash-lite-latest")
     # Free script fallbacks used before falling back to paid OpenAI.
     # Groq free tier is generous + fast (needs a free key). Pollinations text is
     # free and needs NO key, matching the free image path.

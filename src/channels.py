@@ -43,6 +43,8 @@ class Channel:
     created_at: str = ""
     # Which daily build slot (see slots.py) makes this channel's video.
     slot: int = 0
+    # Video language: "en" (default) or "ur" for Roman Urdu (language.py).
+    language: str = "en"
 
     @property
     def client_secret_path(self) -> Path:

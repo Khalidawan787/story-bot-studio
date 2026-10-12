@@ -13,6 +13,7 @@ import time
 import urllib.request
 import urllib.error
 
+from .language import is_urdu, script_rules
 from .config import settings
 from .channels import Channel
 
@@ -134,8 +135,16 @@ def _pollinations_text_json(prompt: str) -> dict:
                 raw = resp.read().decode("utf-8", "replace")
             try:
                 payload = json.loads(raw)
-                text = payload["choices"][0]["message"]["content"]
-            except (json.JSONDecodeError, KeyError, IndexError):
+            except json.JSONDecodeError:
+                payload = None
+            if isinstance(payload, dict) and "choices" in payload:
+                # A chat reply. A reasoning model can run out of room and send
+                # only its reasoning with no content; the wrapper itself must
+                # never be taken for a script.
+                text = ((payload.get("choices") or [{}])[0].get("message") or {}).get("content")
+                if not str(text or "").strip():
+                    raise RuntimeError("Pollinations sent an empty reply")
+            else:
                 text = raw  # some responses come back as the raw JSON body
             return _extract_json(text)
         except urllib.error.HTTPError as e:
@@ -177,8 +186,11 @@ def _script_json(prompt: str) -> dict:
             return _gemini(prompt)
         except Exception as exc:
             errors.append(f"Gemini({settings.gemini_model}): {exc}")
-        fallback_model = settings.gemini_fallback_model
-        if fallback_model and fallback_model != settings.gemini_model:
+        # Each free Gemini model has its own daily quota, so the next one in
+        # the list often still answers when the first is used up.
+        for fallback_model in [m.strip() for m in settings.gemini_fallback_model.split(",") if m.strip()]:
+            if fallback_model == settings.gemini_model:
+                continue
             try:
                 return _gemini(prompt, model=fallback_model)
             except Exception as exc:
@@ -206,10 +218,11 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) ->
     avoid = "; ".join(avoid_titles[-40:]) if avoid_titles else "none yet"
     schema = (
         f"Return ONLY JSON: {{\"title\": str, \"intro\": str, \"outro\": str, "
-        f"\"scenes\": [{{\"label\": str, \"line\": str, \"image_prompt\": str}}]}}.\n"
+        f"\"scenes\": [{{\"label\": str, \"line\": str, {_speech_field(channel)}\"image_prompt\": str}}]}}.\n"
         f"Use exactly {scenes} scenes. 'line' = one narrated sentence. "
         f"'label' = a 2-4 word on-screen caption. 'image_prompt' = a visual "
         f"description of that scene (scene only, no art-style words)."
+        + script_rules(channel)
     )
     if channel.builtin:
         # Preschool needs a different brief from the story channels: a real
@@ -247,6 +260,7 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) ->
         lesson_scenes.append({
             "label": sc.get("label", f"Part {i}"),
             "line": sc.get("line", ""),
+            "speech": _speech_of(channel, sc),
             "image": f"assets/generated/{key}_{i:02}.jpg",
             "image_prompt": f"{sc.get('image_prompt', title)}, {channel.image_style}",
         })
@@ -261,6 +275,21 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) ->
     }
 
 
+def _speech_field(channel: Channel) -> str:
+    """The extra JSON field Urdu scripts carry (see language.py)."""
+    return '\"speech\": str, ' if is_urdu(channel) else ""
+
+
+def _speech_of(channel: Channel, scene: dict) -> str:
+    """Urdu-script text for the voice; empty for English channels."""
+    if not is_urdu(channel):
+        return ""
+    speech = " ".join(str(scene.get("speech") or "").split())
+    # Without Urdu script the Urdu voice would spell out the Roman letters;
+    # reading the Roman line is still the better fallback than silence.
+    return speech or " ".join(str(scene.get("line") or "").split())
+
+
 def _build_lesson(channel: Channel, raw: dict, fallback_title: str) -> tuple[str, dict]:
     title = (raw.get("title") or fallback_title).strip()
     key = _slug(title)
@@ -269,6 +298,7 @@ def _build_lesson(channel: Channel, raw: dict, fallback_title: str) -> tuple[str
         lesson_scenes.append({
             "label": sc.get("label", f"Part {i}"),
             "line": sc.get("line", ""),
+            "speech": _speech_of(channel, sc),
             "image": f"assets/generated/{key}_{i:02}.jpg",
             "image_prompt": f"{sc.get('image_prompt', title)}, {channel.image_style}",
         })
@@ -341,6 +371,14 @@ def _complete_long_script(raw: dict, channel: Channel, user_prompt: str, scenes:
     """Complete short free-provider drafts locally instead of failing a video."""
     raw = dict(raw or {})
     rows = [dict(row) for row in raw.get("scenes", []) if str(row.get("line", "")).strip()]
+    if is_urdu(channel) and rows:
+        target = max(16, min(24, int(scenes or 20)))
+        generated_title = str(raw.get("title") or "").strip()
+        title = (_story_subject(user_prompt, channel.genre)
+                 if not generated_title or _looks_like_instruction_title(generated_title) else generated_title)
+        raw["title"] = title
+        raw["scenes"] = rows[:target]
+        return raw
     target = max(16, min(24, int(scenes or 20)))
     words_per_scene = (800 + target - 1) // target
     generated_title = str(raw.get("title") or "").strip()
@@ -372,6 +410,12 @@ def _complete_long_script(raw: dict, channel: Channel, user_prompt: str, scenes:
             "image_prompt": base.get("image_prompt") or f"A distinct scene illustrating {topic}, part {number}",
         })
     rows = rows[:target]
+    if is_urdu(channel):
+        # The filler below is English; an Urdu video keeps the AI's own lines,
+        # even if that makes it a little shorter.
+        raw["title"] = title
+        raw["scenes"] = rows
+        return raw
 
     genre_tail = {
         "kids": "Look closely at the details, think about what they teach us, and notice how this example connects to something we may see in everyday life.",
@@ -438,10 +482,17 @@ def generate_from_prompt(
         f"\"scenes\": [{{\"label\": str, \"line\": str, \"image_prompt\": str}}]}}.\n"
         f"'label' = a 2-4 word on-screen caption. 'image_prompt' = a visual description "
         f"of that scene (scene only, no art-style words)."
+        + script_rules(channel)
     )
+    if is_urdu(channel):
+        prompt = prompt.replace(
+            '\"line\": str, \"image_prompt\"', '\"line\": str, \"speech\": str, \"image_prompt\"',
+        )
     raw = None
     best_candidate = None
-    for attempt in range(1):
+    # Urdu drafts get a second try: the English filler that tops up short
+    # English drafts cannot be used in an Urdu video.
+    for attempt in range(2 if is_urdu(channel) else 1):
         attempt_prompt = prompt
         if attempt:
             attempt_prompt += (

@@ -63,6 +63,16 @@ _GENRE_KEYWORDS = {
 }
 
 
+def _with_urdu(channel, core: list[str]) -> list[str]:
+    """Urdu channels lead with what Pakistani viewers search for."""
+    from .language import is_urdu
+
+    if not is_urdu(channel):
+        return core
+    genre = _genre_of(channel)
+    return [f"{genre} in urdu", f"urdu {genre}", *core[:8], "urdu", "pakistan"]
+
+
 def _genre_of(channel) -> str:
     return str(getattr(channel, "genre", "kids") or "kids").lower()
 
@@ -231,6 +241,14 @@ def _kids_short_title(lesson: Lesson, labels: list[str]) -> str:
 
 
 def build_metadata(lesson: Lesson, channel=None, content_type: str = "short") -> dict[str, object]:
+    metadata = _build_metadata(lesson, channel, content_type)
+    from .language import channel_language
+
+    metadata["language"] = channel_language(channel) if channel is not None else "en"
+    return metadata
+
+
+def _build_metadata(lesson: Lesson, channel=None, content_type: str = "short") -> dict[str, object]:
     if content_type == "long":
         return _long_metadata(lesson, channel)
     # Non-kids genre channels get their own SEO; kids keeps the original output.
@@ -279,7 +297,7 @@ def _long_metadata(lesson: Lesson, channel=None) -> dict[str, object]:
     clean_title = _clean_publish_title(lesson.title)
     labels = [scene.label for scene in lesson.scenes]
     keywords = _keyword_phrases(lesson)
-    core = list(getattr(channel, "keywords", ()) or ()) or _GENRE_KEYWORDS.get(genre, [genre])
+    core = _with_urdu(channel, list(getattr(channel, "keywords", ()) or ()) or _GENRE_KEYWORDS.get(genre, [genre]))
     title = _seo_title(clean_title, f"| {suffix or genre.title() + ' Video'}", core[:2])
 
     chapter_step = max(10, int(300 / max(1, len(labels))))
@@ -356,7 +374,7 @@ def _genre_metadata(lesson: Lesson, channel) -> dict[str, object]:
         return _news_metadata(lesson, channel, "short")
     labels = [scene.label for scene in lesson.scenes]
     keywords = _keyword_phrases(lesson)
-    core = list(getattr(channel, "keywords", ()) or ()) or _GENRE_KEYWORDS.get(genre, [genre])
+    core = _with_urdu(channel, list(getattr(channel, "keywords", ()) or ()) or _GENRE_KEYWORDS.get(genre, [genre]))
     hook = _clean_publish_title(lesson.title)
     title = _seo_title(hook, channel.seo_suffix, core[:2])
 
