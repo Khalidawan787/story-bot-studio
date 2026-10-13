@@ -209,6 +209,30 @@ def collect() -> dict:
         ]
         upcoming = sorted(upcoming, key=lambda r: _parse(r["publish_at"]))[:10]
 
+        # What went to the Facebook Pages: videos (Reels and Page videos) and
+        # the daily picture posts, newest first, each with its link.
+        names = {channel.id: channel.name for channel in load_channels()}
+        facebook = [
+            {"title": r["title"], "channel": r["channel"], "kind": "Reel" if r["content_type"] == "short" else "Video",
+             "url": r["post_url"], "ok": r["status"] == "submitted", "error": r["error"], "at": r["updated_at"]}
+            for r in _rows(
+                conn,
+                """SELECT v.title, v.channel, COALESCE(v.content_type,'short') AS content_type,
+                          s.status, s.post_url, s.error, s.updated_at
+                   FROM social_uploads s JOIN videos v ON v.id = s.video_id
+                   WHERE s.platform = 'facebook' AND s.status IN ('submitted', 'failed')
+                   ORDER BY s.updated_at DESC LIMIT 20""",
+            )
+        ] + [
+            {"title": r["subject"], "channel": r["channel"], "kind": "Picture post",
+             "url": r["post_url"], "ok": True, "error": "", "at": r["created_at"]}
+            # The table appears with the first picture post; until then _rows gives [].
+            for r in _rows(conn, "SELECT subject, channel, post_url, created_at FROM page_posts ORDER BY id DESC LIMIT 20")
+        ]
+        facebook = sorted(facebook, key=lambda item: str(item["at"]), reverse=True)[:20]
+        for item in facebook:
+            item["channel_name"] = names.get(item["channel"], item["channel"])
+
         # Uploads per day (Pakistan time) for the last seven days, per channel.
         week_start = (now + LOCAL_TZ_OFFSET).date() - timedelta(days=6)
         week: dict = {week_start + timedelta(days=i): {} for i in range(7)}
@@ -232,6 +256,7 @@ def collect() -> dict:
             "failures": [a for a in reversed(attempts) if not a.get("ok")][:8],
             "last_day": last_day,
             "upcoming": upcoming,
+            "facebook": facebook,
             "week": week,
             "channels": channels,
             "recent": recent,
@@ -404,6 +429,30 @@ def _upcoming(rows: list) -> str:
     ) + "</ul>"
 
 
+def _facebook(items: list) -> str:
+    if not items:
+        return "<div class='empty'>Nothing has been posted to a Facebook Page yet.</div>"
+    rows = []
+    for item in items:
+        title = html.escape(str(item["title"] or "Untitled"))
+        url = str(item["url"] or "")
+        if item["ok"] and url:
+            # The address is shown as well as linked, so it can be copied.
+            shown = html.escape(url.replace("https://www.", "").replace("https://", ""))
+            title = f"<a href='{html.escape(url)}' target='_blank' rel='noopener'>{title}</a>"
+            link = f"<a class='url' href='{html.escape(url)}' target='_blank' rel='noopener'>{shown}</a>"
+            state = "<span class='pill ok'>Live on Facebook</span>"
+        else:
+            link = f"<div class='reason'>{html.escape(_clean(item['error']))}</div>" if item["error"] else ""
+            state = "<span class='pill bad'>Not posted to Facebook</span>"
+        rows.append(
+            f"<li class='row'><div class='row-main'><div class='row-title'>{title}</div>"
+            f"<div class='meta'>{_chips(item['channel_name'], item['kind'])}</div>{link}</div>"
+            f"<div class='row-side'>{state}<span class='muted'>{_local(item['at'])}</span></div></li>"
+        )
+    return f"<ul class='rows'>{''.join(rows)}</ul>"
+
+
 def _week(week: dict, channels: list) -> str:
     names = [(c["id"], c["name"]) for c in channels]
     peak = max([count for counts in week.values() for count in counts.values()] or [1])
@@ -537,6 +586,7 @@ _CSS = """
   .row-main { min-width:0 } .row-title { font-weight:600; font-size:14px; overflow-wrap:anywhere }
   .row-side { display:flex; align-items:center; gap:10px; flex-wrap:wrap }
   .when { color:var(--muted); font-size:13px; white-space:nowrap }
+  .url { display:block; margin-top:6px; font-size:12px; overflow-wrap:anywhere }
   .alert { border-left:4px solid var(--bad); margin-top:14px }
 
   .tbl { overflow-x:auto; margin:0 -16px; padding:0 16px }
@@ -637,6 +687,10 @@ def render(data: dict) -> str:
   </div>
 
   <div class="stack">
+    <section class="card">
+      <h2>On Facebook <small>videos and posts, newest first</small></h2>
+      {_facebook(data.get('facebook') or [])}
+    </section>
     <section class="card">
       <h2>Uploads <small>last 7 days</small></h2>
       {_week(data.get('week') or {{}}, data['channels'])}
