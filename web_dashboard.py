@@ -738,6 +738,8 @@ def social_settings_route():
             "language": request.form.get("fb_language", "same"),
             "daily_post": request.form.get("daily_post") == "on",
         }
+        if request.form.get("fb_place"):
+            social_accounts.set_facebook_place(request.form.get("fb_place"))
     elif platform == "tiktok":
         values = {
             "client_key": request.form.get("client_key", ""),
@@ -2080,7 +2082,7 @@ PAGE = r"""
           <label class="field">Page Access Token<input type="password" name="page_access_token" autocomplete="new-password" placeholder="{{'Saved - leave blank to keep it' if social.facebook.configured else 'Paste Page Access Token'}}"></label>
         </div>
         <div class="row" style="margin-top:12px"><label class="field" style="flex:0 1 300px">Facebook video language<select name="fb_language"><option value="same" {{'selected' if social.facebook.language == 'same' else ''}}>Same as YouTube</option><option value="ur" {{'selected' if social.facebook.language == 'ur' else ''}}>Urdu (Roman Urdu, Urdu voice)</option><option value="en" {{'selected' if social.facebook.language == 'en' else ''}}>English</option></select><span class="hint">Different from YouTube: the bot also renders a copy in this language, over the same pictures, and posts that one.</span></label>
-          <label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.facebook.auto_upload else ''}}> Automatically publish new videos</label><label class="chk"><input type="checkbox" name="daily_post" {{'checked' if social.facebook.daily_post else ''}}> Also post one picture a day</label><button class="green sm" type="submit">Save Facebook Settings</button></div>
+          <label class="field" style="flex:0 1 300px">Facebook posting runs from<select name="fb_place">{% for value, label in social.facebook_places.items() %}<option value="{{value}}" {{'selected' if social.facebook_place == value else ''}}>{{label}}</option>{% endfor %}</select><span class="hint">One place only, for every Page: posting from both made Facebook lock the account. After changing it, press Send to GitHub so the daily run knows.</span></label><label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.facebook.auto_upload else ''}}> Automatically publish new videos</label><label class="chk"><input type="checkbox" name="daily_post" {{'checked' if social.facebook.daily_post else ''}}> Also post one picture a day</label><button class="green sm" type="submit">Save Facebook Settings</button></div>
       </form>
       <form method="post" action="/social-verify" style="margin-top:10px"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="facebook"><button class="ghost sm" type="submit">Connect &amp; Verify Facebook Page</button></form>
       <form method="post" action="/facebook-user-token" class="row" style="margin-top:12px;align-items:flex-end;gap:10px;padding:12px;border:1px dashed var(--line);border-radius:10px">

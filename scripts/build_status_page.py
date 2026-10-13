@@ -128,7 +128,7 @@ def collect() -> dict:
                     "limit": upload_limit_for_channel(channel.id, account.id),
                 })
             youtube = any(a["connected"] for a in accounts)
-            facebook = facebook_auto_ready(channel.id)
+            facebook = facebook_auto_ready(channel.id, anywhere=True)
             if not youtube and not facebook:
                 continue  # a channel that publishes nowhere has nothing to report
             latest = _rows(

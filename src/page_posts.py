@@ -31,8 +31,11 @@ _FREE_LICENCE = re.compile(r"^(public domain|pd\b|cc0|cc[ -]by)", re.I)
 
 
 def daily_post_on(channel_id: str) -> bool:
+    from .social_accounts import facebook_posts_here
+
     cfg = account(channel_id, "facebook")
-    return bool(cfg.get("daily_post") and cfg.get("page_id") and cfg.get("page_access_token"))
+    return bool(cfg.get("daily_post") and cfg.get("page_id") and cfg.get("page_access_token")
+                and facebook_posts_here())
 
 
 def _table(conn: sqlite3.Connection) -> None:
@@ -529,6 +532,10 @@ def publish_daily_post(channel: Channel, dry_run: bool = False) -> str:
     build = (_verified_post if is_verified_channel(channel)
              else _trending_post if is_trending_channel(channel) else _written_post)
     caption, picture, subject = build(channel, work)
+    from .social_accounts import facebook_elsewhere_reason, facebook_posts_here
+
+    if not dry_run and not facebook_posts_here():
+        raise RuntimeError(facebook_elsewhere_reason())
     if dry_run:
         return f"NOT posted (dry run). Picture: {picture}\n{caption}"
     body, content_type = _multipart({"caption": caption, "access_token": token}, "source", picture)

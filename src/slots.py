@@ -94,7 +94,7 @@ def load() -> dict[int, list]:
     counts: dict[int, list] = {i: [] for i in range(len(SLOTS_UTC))}
     for channel in load_channels():
         if (channel.token_path.exists() or getattr(channel, "created_by", "") == "factory"
-                or facebook_auto_ready(channel.id)):
+                or facebook_auto_ready(channel.id, anywhere=True)):
             counts[channel_slot(channel)].append(channel)
     return counts
 

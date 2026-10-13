@@ -38,14 +38,60 @@ def account(channel_id: str, platform: str) -> dict:
     return dict(_load_all().get(channel_id, {}).get(platform, {}))
 
 
-def facebook_auto_ready(channel_id: str) -> bool:
-    """True when this channel posts to its Facebook Page by itself.
+# Not a channel id: the store's own settings live under this key.
+_SETTINGS_KEY = "_settings"
+FACEBOOK_PLACES = {"github": "GitHub (works with this PC off)", "pc": "This PC (the dashboard)"}
+
+
+def facebook_place() -> str:
+    """Where Facebook posting happens: "github" (the daily run) or "pc" (this dashboard).
+
+    Only one of the two posts. The same Page tokens were used from this PC in
+    Pakistan and from GitHub's servers abroad within hours of each other, and
+    Facebook answered with a security check on the account that froze both
+    apps. One place, always the same one, does not look like a stolen login.
+    """
+    place = str(_load_all().get(_SETTINGS_KEY, {}).get("facebook_place") or "github").lower()
+    return place if place in FACEBOOK_PLACES else "github"
+
+
+def set_facebook_place(place: str) -> str:
+    place = str(place or "").lower()
+    if place not in FACEBOOK_PLACES:
+        raise ValueError("Facebook posting runs from 'github' or 'pc'")
+    with _LOCK:
+        data = _load_all()
+        data.setdefault(_SETTINGS_KEY, {})["facebook_place"] = place
+        _save_all(data)
+    return place
+
+
+def facebook_posts_here() -> bool:
+    """True when this machine is the one that posts to Facebook."""
+    import os
+
+    on_github = os.getenv("GITHUB_ACTIONS", "").lower() == "true"
+    return (facebook_place() == "github") == on_github
+
+
+def facebook_elsewhere_reason() -> str:
+    """Why this machine does not post, in words for a person."""
+    if facebook_place() == "github":
+        return ("Facebook posting is set to run from GitHub only, so this PC does not post. "
+                "Change it under System > Facebook Page if this PC should post instead.")
+    return "Facebook posting is set to run from the PC's dashboard only, so the GitHub run does not post."
+
+
+def facebook_auto_ready(channel_id: str, anywhere: bool = False) -> bool:
+    """True when this channel posts to its Facebook Page by itself, from this machine.
 
     Such a channel is worth building for even with no YouTube login: the
-    video still has somewhere to go.
+    video still has somewhere to go. `anywhere` asks about the channel's own
+    setting, wherever the posting happens (the status page, slot planning).
     """
     fb = account(channel_id, "facebook")
-    return bool(fb.get("auto_upload") and fb.get("page_id") and fb.get("page_access_token"))
+    ready = bool(fb.get("auto_upload") and fb.get("page_id") and fb.get("page_access_token"))
+    return ready and (anywhere or facebook_posts_here())
 
 
 def save_account(channel_id: str, platform: str, values: dict[str, object]) -> dict:
@@ -92,6 +138,8 @@ def public_status(channel_id: str) -> dict:
     tt = account(channel_id, "tiktok")
     return {
         "guides": GUIDES,
+        "facebook_place": facebook_place(),
+        "facebook_places": FACEBOOK_PLACES,
         "facebook": {
             "configured": bool(fb.get("page_id") and fb.get("page_access_token")),
             "page_id": fb.get("page_id", ""),

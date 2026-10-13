@@ -435,6 +435,11 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
     if not path.exists():
         raise RuntimeError("Local video file is missing; restore it from Drive first.")
     platform = platform.lower()
+    if platform == "facebook":
+        from .social_accounts import facebook_elsewhere_reason, facebook_posts_here
+
+        if not facebook_posts_here():
+            raise RuntimeError(facebook_elsewhere_reason())
     set_social_upload(video_id, platform, "uploading")
     try:
         if platform == "facebook":
@@ -471,7 +476,11 @@ def auto_publish_video(video_id: int, channel_id: str,
     messages: list[str] = []
     fb = account(channel_id, "facebook")
     tt = account(channel_id, "tiktok")
-    if fb.get("auto_upload") and fb.get("page_id") and fb.get("page_access_token"):
+    from .social_accounts import facebook_elsewhere_reason, facebook_posts_here
+
+    if fb.get("auto_upload") and fb.get("page_id") and fb.get("page_access_token") and not facebook_posts_here():
+        messages.append(f"Facebook left to the other machine: {facebook_elsewhere_reason()}")
+    elif fb.get("auto_upload") and fb.get("page_id") and fb.get("page_access_token"):
         try:
             messages.append(publish_video(
                 video_id, "facebook", channel_id,

@@ -17,10 +17,12 @@ from .models import Lesson, Scene
 
 def facebook_language(channel) -> str | None:
     """The language the Facebook copy needs, or None when it is the same video."""
-    from .social_accounts import account
+    from .social_accounts import account, facebook_posts_here
 
     cfg = account(channel.id, "facebook")
     if not (cfg.get("auto_upload") and cfg.get("page_id") and cfg.get("page_access_token")):
+        return None
+    if not facebook_posts_here():
         return None
     wanted = str(cfg.get("language") or "same").lower()
     if wanted not in LANGUAGES or wanted == channel_language(channel):
