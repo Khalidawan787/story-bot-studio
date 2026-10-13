@@ -36,7 +36,8 @@ INCLUDE_FILES = [
 ]
 # lessons.json is the kids topic bank and has no underscore, so it needs its
 # own entry — without it the exe starts but every page returns 500.
-INCLUDE_DATA_GLOBS = ["lessons.json", "*_lessons.json"]
+# verified_subjects.json: the real people a fact-only channel writes about.
+INCLUDE_DATA_GLOBS = ["lessons.json", "*_lessons.json", "verified_subjects.json"]
 
 # Never shipped, whatever else matches above.
 SECRET_NAMES = {
