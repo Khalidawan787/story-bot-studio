@@ -99,7 +99,7 @@ def _free_article_photo(title: str, out: Path) -> tuple[Path, str] | None:
     if not name:
         return None
     info = _api({"action": "query", "titles": f"File:{name}", "prop": "imageinfo",
-                 "iiprop": "url|extmetadata", "iiurlwidth": "1600"}).get("query", {}).get("pages") or []
+                 "iiprop": "url|extmetadata", "iiurlwidth": "2000"}).get("query", {}).get("pages") or []
     page = info[0] if info else {}
     image = (page.get("imageinfo") or [{}])[0]
     meta = image.get("extmetadata") or {}
@@ -159,6 +159,131 @@ def _in_page_language(channel: Channel, lesson: Lesson, strict: bool) -> tuple[s
     return title, lines
 
 
+CARD_W, CARD_H = 1080, 1350          # 4:5, the tallest picture Facebook shows whole in the feed
+_CARD_MARGIN = 72
+
+
+def _card_text_width(text: str, size: int) -> float:
+    """Drawn width of mixed-case text. thumbnails.text_width_px measures capitals,
+    which made ordinary words look a fifth wider than they are and cut them short."""
+    from .thumbnails import text_width_px
+
+    return text_width_px(text, size) * 0.86
+
+
+def _wrap_card_text(text: str, max_lines: int) -> tuple[list[str], int]:
+    """The headline as lines, in the largest size that fits the card whole."""
+    words = " ".join(str(text).split()).split(" ")
+    width = CARD_W - 2 * _CARD_MARGIN
+    lines: list[str] = []
+    for size in (96, 84, 74, 64, 56, 48, 42):
+        lines, current = [], ""
+        for word in words:
+            trial = f"{current} {word}".strip()
+            if current and _card_text_width(trial, size) > width:
+                lines.append(current)
+                current = word
+            else:
+                current = trial
+        lines.append(current)
+        if len(lines) <= max_lines and all(_card_text_width(line, size) <= width for line in lines):
+            return lines, size
+    # Still too long at the smallest size: keep what fits and say it goes on.
+    return [*lines[:max_lines - 1], lines[max_lines - 1].rstrip(" ,;:") + "…"], 42
+
+
+def subject_blurb(title: str) -> str:
+    """Wikipedia's own one-line description of a subject ("Polish humanitarian (1910–2008)")."""
+    try:
+        from .verified_facts import _api
+
+        pages = _api({"action": "query", "prop": "description", "redirects": "1", "titles": title})
+        text = str((pages.get("query", {}).get("pages") or [{}])[0].get("description") or "")
+        return text[:1].upper() + text[1:]
+    except Exception:
+        return ""
+
+
+def post_card(photo: Path, headline: str, subtitle: str, channel: Channel, out: Path,
+              max_lines: int = 3) -> Path:
+    """The picture for a Page post: the photo edge to edge, the words on a soft dark fade.
+
+    The first version squeezed a tall portrait into a 1280x720 frame between
+    blurred side bars, which threw away most of the photo's detail and looked
+    cheap. This keeps the photo at full width in a tall 4:5 card. A photo too
+    small to fill the card is shown framed at its own size instead of being
+    blown up into a blur.
+    """
+    import subprocess
+
+    import cv2
+
+    from .thumbnails import _BADGE_COLORS, _escape, _ffmpeg, _font_path, _write_text
+
+    image = cv2.imread(str(photo))
+    if image is None:
+        raise RuntimeError("the photo could not be read")
+    height, width = image.shape[:2]
+    accent, accent_text = _BADGE_COLORS.get(str(channel.genre).lower(), ("0xf2b441", "0x14110a"))
+    font = _font_path()
+    font_arg = f":fontfile='{_escape(font)}'" if font else ""
+
+    if min(width / CARD_W, height / CARD_H) >= 0.6:
+        # Fill the card; a portrait keeps its upper part, where the face is.
+        picture = (
+            f"[0:v]scale={CARD_W}:{CARD_H}:force_original_aspect_ratio=increase:flags=lanczos,"
+            f"crop={CARD_W}:{CARD_H}:(iw-{CARD_W})/2:(ih-{CARD_H})*0.18[pic]"
+        )
+    else:
+        scale = min(1.5, (CARD_W - 160) / width, 760 / height)
+        w, h = int(width * scale) // 2 * 2, int(height * scale) // 2 * 2
+        picture = (
+            f"[0:v]split[a][b];"
+            f"[a]scale={CARD_W}:{CARD_H}:force_original_aspect_ratio=increase,crop={CARD_W}:{CARD_H},"
+            f"boxblur=34:6,eq=brightness=-0.22:saturation=0.8[back];"
+            f"[b]scale={w}:{h}:flags=lanczos,pad={w + 12}:{h + 12}:6:6:color=white[front];"
+            f"[back][front]overlay=(W-w)/2:120[pic]"
+        )
+
+    lines, size = _wrap_card_text(headline, max_lines)
+    line_height = int(size * 1.14)
+    subtitle = " ".join(str(subtitle or "").split())
+    while subtitle and _card_text_width(subtitle, 34) > CARD_W - 2 * _CARD_MARGIN:
+        subtitle = subtitle.rsplit(" ", 1)[0].rstrip(" ,;:(") + "…" if " " in subtitle else ""
+    bottom = CARD_H - 84 - (54 if subtitle else 0)
+    top = bottom - len(lines) * line_height
+    # Dark towards the bottom for the words, a touch at the top for the badge.
+    fade = (
+        f"color=c=black:s={CARD_W}x{CARD_H}:d=1,format=rgba,"
+        f"geq=r=0:g=0:b=0:a='255*max(0.93*pow(clip((Y-{top - 330})/380\\,0\\,1)\\,1.2)\\,"
+        f"0.5*clip((170-Y)/170\\,0\\,1))'[fade]"
+    )
+    layers = [
+        f"drawtext=textfile='{_write_text(out.with_suffix('.badge.txt'), channel.name.upper())}'{font_arg}:"
+        f"fontsize=26:fontcolor={accent_text}:x={_CARD_MARGIN}:y=64:box=1:boxcolor={accent}@0.95:boxborderw=14",
+        f"drawbox=x={_CARD_MARGIN}:y={top - 40}:w=110:h=8:color={accent}@1:t=fill",
+    ]
+    for index, line in enumerate(lines):
+        layers.append(
+            f"drawtext=textfile='{_write_text(out.with_suffix(f'.line{index}.txt'), line)}'{font_arg}:"
+            f"fontsize={size}:fontcolor=white:x={_CARD_MARGIN}:y={top + index * line_height}:"
+            "shadowcolor=black@0.55:shadowx=0:shadowy=4"
+        )
+    if subtitle:
+        layers.append(
+            f"drawtext=textfile='{_write_text(out.with_suffix('.sub.txt'), subtitle)}'{font_arg}:"
+            f"fontsize=34:fontcolor=0xe3e9ff@0.95:x={_CARD_MARGIN}:y={bottom + 16}"
+        )
+    graph = f"{picture};{fade};[pic][fade]overlay=0:0,{','.join(layers)}"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(
+        [_ffmpeg(), "-y", "-i", str(photo), "-filter_complex", graph,
+         "-frames:v", "1", "-update", "1", "-q:v", "1", str(out)],
+        check=True, capture_output=True, text=True,
+    )
+    return out
+
+
 def real_photo(title: str, work: Path) -> tuple[Path, str] | None:
     """A Wikipedia subject's own free photo, fitted whole to the card, and its credit line."""
     found = _free_article_photo(title, work / "article_photo.jpg")
@@ -176,8 +301,6 @@ def _verified_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
     real person never goes out with a stand-in picture.
     """
     from . import verified_facts as vf
-    from .thumbnails import compose_thumbnail
-
     used = _posted_subjects(channel.id) | vf._used_subjects(channel, False)
     names = [name for name in vf._listed_subjects() if name.lower() not in used]
     article = photo = None
@@ -187,7 +310,7 @@ def _verified_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
             candidate = vf.fetch_article(name)
             if candidate.title.lower() in used:
                 continue
-            found = real_photo(candidate.title, work)
+            found = _free_article_photo(candidate.title, work / "article_photo.jpg")
         except Exception as exc:
             print(f"[page_posts] {channel.id}: skipping {name} ({exc})")
             continue
@@ -204,7 +327,7 @@ def _verified_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
         scenes=[Scene(**scene) for scene in raw["scenes"][:5]],
     )
     title, lines = _in_page_language(channel, lesson, strict=True)
-    picture = compose_thumbnail(lesson, photo, work / "page_post.jpg", channel, "long")
+    picture = post_card(photo, article.title, subject_blurb(article.title), channel, work / "page_post.jpg")
     caption = "\n\n".join(filter(None, [
         title, "\n".join(lines), f"Source: Wikipedia — {article.url}", credit,
         # The person's own name as the tag: a channel keyword such as
@@ -246,7 +369,6 @@ def _trending_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
     organisation the story is about. With no such photo there is no post.
     """
     from .genre_topics import load_genre_lessons
-    from .thumbnails import compose_thumbnail
 
     posted = _posted_subjects(channel.id)
     stories = [
@@ -260,7 +382,7 @@ def _trending_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
         )
         for subject in _news_subjects(lesson):
             try:
-                found = real_photo(subject, work)
+                found = _free_article_photo(subject, work / "article_photo.jpg")
             except Exception as exc:
                 print(f"[page_posts] {channel.id}: no photo for {subject} ({exc})")
                 continue
@@ -268,7 +390,9 @@ def _trending_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
                 continue
             photo, credit = found
             title, lines = _in_page_language(channel, lesson, strict=False)
-            picture = compose_thumbnail(lesson, photo, work / "page_post.jpg", channel, "long")
+            picture = post_card(
+                photo, str(raw["title"]), f"Pictured: {subject}", channel, work / "page_post.jpg", max_lines=4,
+            )
             caption = "\n\n".join(filter(None, [
                 title, "\n".join(lines), f"Pictured: {subject}. {credit}", _hashtags(channel) or "#News",
             ]))
