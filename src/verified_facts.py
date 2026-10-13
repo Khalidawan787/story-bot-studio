@@ -30,7 +30,8 @@ from .language import is_urdu, script_rules
 
 WIKI_API = "https://en.wikipedia.org/w/api.php"
 SUBJECTS_FILE = settings.root / "data" / "verified_subjects.json"
-USER_AGENT = "StoryBotStudio/1.0 (fact-checked scripts)"
+# Wikimedia asks for a client that says who it is, and throttles ones that do not.
+USER_AGENT = "StoryBotStudio/1.0 (https://github.com/Khalidawan787/story-bot-studio; fact-checked scripts)"
 
 # Sections that are lists of links or trivia, not the person's story.
 _CUT_SECTIONS = (
@@ -57,9 +58,24 @@ def is_verified_channel(channel) -> bool:
 
 def _api(params: dict) -> dict:
     query = urllib.parse.urlencode({**params, "format": "json", "formatversion": "2"})
-    request = urllib.request.Request(f"{WIKI_API}?{query}", headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return json.loads(response.read().decode("utf-8"))
+    return json.loads(fetch(f"{WIKI_API}?{query}").decode("utf-8"))
+
+
+def fetch(url: str, timeout: int = 60) -> bytes:
+    """GET from Wikipedia or Wikimedia, waiting and trying again when told to slow down."""
+    import time
+    import urllib.error
+
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    for wait in (4, 12, 30, None):
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                return response.read()
+        except urllib.error.HTTPError as exc:
+            if wait is None or exc.code not in (429, 500, 502, 503, 504):
+                raise
+            time.sleep(wait)
+    raise RuntimeError("unreachable")
 
 
 def _story_text(extract: str, limit: int) -> str:

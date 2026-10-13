@@ -124,6 +124,37 @@ def _needs_interactive_rewrite(lesson: Lesson, channel) -> bool:
     return not words or max(words) <= 8
 
 
+def _real_subject_thumbnail(lesson, channel, run_dir: Path, content_type: str) -> Path | None:
+    """The thumbnail of a true story about a real person: that person's own photo.
+
+    AI or stock artwork under a real name would show a stranger as that
+    person. Returns None (the ordinary thumbnail is made) for other channels,
+    when you dropped in a thumbnail of your own, or when the article has no
+    photo that is free to reuse.
+    """
+    try:
+        from .page_posts import real_photo
+        from .thumbnails import compose_thumbnail, manual_thumbnail_for
+        from .verified_facts import _bank_rows, is_verified_channel
+
+        if channel is None or not is_verified_channel(channel) or manual_thumbnail_for(lesson):
+            return None
+        subject = _bank_rows(channel).get(lesson.topic_key, {}).get("source_title")
+        if not subject:
+            return None
+        found = real_photo(subject, run_dir)
+        if not found:
+            # No photo of them that may be reused: the name on a plain card,
+            # rather than artwork of somebody else.
+            print(f"[thumbnail] no free photo of {subject}; plain title card")
+            return compose_thumbnail(lesson, None, run_dir / "thumbnail.jpg", channel, content_type)
+        print(f"[thumbnail] real photo of {subject}. {found[1]}")
+        return compose_thumbnail(lesson, found[0], run_dir / "thumbnail.jpg", channel, content_type)
+    except Exception as exc:
+        print(f"[thumbnail] real photo skipped: {exc}")
+        return None
+
+
 def _connected(channel) -> bool:
     """True when this channel/account already has a saved YouTube login."""
     try:
@@ -205,7 +236,7 @@ def run_pipeline(
         except Exception as exc:
             print(f"[thumbnail] no scene image available as fallback: {exc}")
             thumbnail_source = None
-    thumbnail_path = create_thumbnail(
+    thumbnail_path = _real_subject_thumbnail(lesson, channel, run_dir, content_type) or create_thumbnail(
         lesson, thumbnail_source, run_dir / "thumbnail.jpg", channel, content_type,
     )
     metadata = build_metadata(lesson, channel, content_type=content_type)

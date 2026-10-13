@@ -82,13 +82,16 @@ def _record(channel_id: str, subject: str, post_id: str, post_url: str) -> None:
 
 
 def _hashtags(channel: Channel) -> str:
-    words = [re.sub(r"[^A-Za-z0-9]", "", str(k).title()) for k in (getattr(channel, "keywords", ()) or ())]
+    from .seo import _GENRE_KEYWORDS
+
+    keywords = list(getattr(channel, "keywords", ()) or ()) or _GENRE_KEYWORDS.get(channel.genre, [])
+    words = [re.sub(r"[^A-Za-z0-9]", "", str(k).title()) for k in keywords]
     return " ".join(f"#{word}" for word in words[:3] if word)
 
 
 def _free_article_photo(title: str, out: Path) -> tuple[Path, str] | None:
     """The article's lead photo and its credit line, only if it may be reused."""
-    from .verified_facts import USER_AGENT, _api
+    from .verified_facts import _api, fetch
 
     pages = _api({"action": "query", "prop": "pageimages", "piprop": "name", "redirects": "1",
                   "titles": title}).get("query", {}).get("pages") or []
@@ -109,10 +112,9 @@ def _free_article_photo(title: str, out: Path) -> tuple[Path, str] | None:
     url = str(image.get("thumburl") or image.get("url") or "")
     if not url.lower().split("?")[0].endswith((".jpg", ".jpeg", ".png")):
         return None
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=60) as response:
-        out.write_bytes(response.read())
-    artist = re.sub(r"<[^>]+>", "", html.unescape(str((meta.get("Artist") or {}).get("value") or ""))).strip()
+    out.write_bytes(fetch(url))
+    artist = re.sub(r"<[^>]+>", "", html.unescape(str((meta.get("Artist") or {}).get("value") or "")))
+    artist = " ".join(artist.split())
     # Commons repeats the name in a hidden copy ("Unknown authorUnknown author").
     artist = re.sub(r"^(.+?)\1$", r"\1", artist)
     credit = f"Photo: {artist[:80] or 'Wikimedia Commons'} ({licence}), via Wikimedia Commons"
@@ -157,39 +159,51 @@ def _in_page_language(channel: Channel, lesson: Lesson, strict: bool) -> tuple[s
     return title, lines
 
 
+def real_photo(title: str, work: Path) -> tuple[Path, str] | None:
+    """A Wikipedia subject's own free photo, fitted whole to the card, and its credit line."""
+    found = _free_article_photo(title, work / "article_photo.jpg")
+    if not found:
+        return None
+    photo, credit = found
+    return _whole_photo(photo, work / "article_photo_fitted.jpg"), credit
+
+
 def _verified_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
-    """(caption, picture, subject) about a real person, from their Wikipedia article."""
+    """(caption, picture, subject) about a real person, from their Wikipedia article.
+
+    The picture is always that person's own photo. Someone whose article has
+    no photo free to reuse is passed over for the next person: a post about a
+    real person never goes out with a stand-in picture.
+    """
     from . import verified_facts as vf
     from .thumbnails import compose_thumbnail
 
     used = _posted_subjects(channel.id) | vf._used_subjects(channel, False)
     names = [name for name in vf._listed_subjects() if name.lower() not in used]
-    article = None
-    for name in names[:10]:
+    article = photo = None
+    credit = ""
+    for name in names[:12]:
         try:
             candidate = vf.fetch_article(name)
-        except Exception:
+            if candidate.title.lower() in used:
+                continue
+            found = real_photo(candidate.title, work)
+        except Exception as exc:
+            print(f"[page_posts] {channel.id}: skipping {name} ({exc})")
             continue
-        if candidate.title.lower() not in used:
-            article = candidate
-            break
+        if not found:
+            print(f"[page_posts] {channel.id}: skipping {name} (no photo of them that is free to reuse)")
+            continue
+        article, (photo, credit) = candidate, found
+        break
     if article is None:
-        raise RuntimeError("no unused real subject left for a picture post")
+        raise RuntimeError("no unused real subject with a real photo was found for a picture post")
     key, raw = vf.write_lesson(channel, article, scenes=5, long_form=False)
     lesson = Lesson(
         topic_key=key, title=article.title, category=raw["category"], intro="", outro="",
         scenes=[Scene(**scene) for scene in raw["scenes"][:5]],
     )
     title, lines = _in_page_language(channel, lesson, strict=True)
-    credit = ""
-    photo = None
-    try:
-        found = _free_article_photo(article.title, work / "article_photo.jpg")
-        if found:
-            photo, credit = found
-            photo = _whole_photo(photo, work / "article_photo_fitted.jpg")
-    except Exception as exc:
-        print(f"[page_posts] {channel.id}: no article photo ({exc})")
     picture = compose_thumbnail(lesson, photo, work / "page_post.jpg", channel, "long")
     caption = "\n\n".join(filter(None, [
         title, "\n".join(lines), f"Source: Wikipedia — {article.url}", credit,
@@ -198,6 +212,68 @@ def _verified_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
         "#" + re.sub(r"[^A-Za-z0-9]", "", article.title),
     ]))
     return caption, picture, article.title
+
+
+def _news_subjects(lesson: Lesson) -> list[str]:
+    """Wikipedia titles of who or what a news script is about, most central first.
+
+    The model only proposes names. A name is kept when its own words stand in
+    the script, so it cannot hand back someone the story never mentions.
+    """
+    from .genre_topics import _script_json
+
+    text = " ".join([lesson.title, *[scene.line for scene in lesson.scenes]])
+    raw = _script_json(
+        "Below is a short news script. Name the real person, organisation, place or event it is "
+        "mainly about, as English Wikipedia article titles: the most central first, at most 4. "
+        "Only subjects the script itself names.\n"
+        'Return ONLY JSON: {"subjects": [str]}\n\n' + text
+    )
+    lowered = text.lower()
+    kept = []
+    for name in raw.get("subjects") or []:
+        words = [word for word in re.findall(r"[a-z]+", str(name).lower()) if len(word) > 2]
+        if words and all(word in lowered for word in words[-2:]):
+            kept.append(str(name).strip())
+    return kept
+
+
+def _trending_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
+    """(caption, picture, subject) for a news channel: its newest story with a real picture.
+
+    The text is the channel's own newest news script, not a new piece of
+    writing. The picture is the free Wikipedia photo of the person, place or
+    organisation the story is about. With no such photo there is no post.
+    """
+    from .genre_topics import load_genre_lessons
+    from .thumbnails import compose_thumbnail
+
+    posted = _posted_subjects(channel.id)
+    stories = [
+        (key, raw) for key, raw in load_genre_lessons(channel).items()
+        if key.startswith("trend_") and str(raw.get("title") or "").lower() not in posted
+    ]
+    for key, raw in reversed(stories[-6:]):          # newest first
+        lesson = Lesson(
+            topic_key=key, title=str(raw["title"]), category="Trending", intro="", outro="",
+            scenes=[Scene(**scene) for scene in raw["scenes"][:4]],
+        )
+        for subject in _news_subjects(lesson):
+            try:
+                found = real_photo(subject, work)
+            except Exception as exc:
+                print(f"[page_posts] {channel.id}: no photo for {subject} ({exc})")
+                continue
+            if not found:
+                continue
+            photo, credit = found
+            title, lines = _in_page_language(channel, lesson, strict=False)
+            picture = compose_thumbnail(lesson, photo, work / "page_post.jpg", channel, "long")
+            caption = "\n\n".join(filter(None, [
+                title, "\n".join(lines), f"Pictured: {subject}. {credit}", _hashtags(channel) or "#News",
+            ]))
+            return caption, picture, str(raw["title"])
+    raise RuntimeError("no recent story has a real, free-to-use picture of its subject; nothing posted")
 
 
 def _written_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
@@ -244,7 +320,10 @@ def publish_daily_post(channel: Channel, dry_run: bool = False) -> str:
         raise RuntimeError("Facebook is not configured for this channel.")
     work = settings.root / "runs" / f"page_post_{channel.id}_{datetime.now():%Y%m%d_%H%M%S}"
     work.mkdir(parents=True, exist_ok=True)
-    build = _verified_post if is_verified_channel(channel) else _written_post
+    from .trending import is_trending_channel
+
+    build = (_verified_post if is_verified_channel(channel)
+             else _trending_post if is_trending_channel(channel) else _written_post)
     caption, picture, subject = build(channel, work)
     if dry_run:
         return f"NOT posted (dry run). Picture: {picture}\n{caption}"
