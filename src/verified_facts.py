@@ -441,6 +441,16 @@ def source_url(channel, topic_key: str) -> str:
         return ""
 
 
+def source_url_for(channel_id: str, topic_key: str) -> str:
+    """`source_url` by channel id, for callers that hold only a database row."""
+    try:
+        from .channels import get_channel
+
+        return source_url(get_channel(channel_id), topic_key)
+    except Exception:
+        return ""
+
+
 def only_verified(channel, lessons: dict) -> dict:
     """On a fact-only channel, hide scripts that were not written from a source."""
     if not is_verified_channel(channel):

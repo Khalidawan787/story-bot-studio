@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import mimetypes
 import time
 import uuid
@@ -163,7 +164,45 @@ def facebook_from_user_token(channel_id: str, user_token: str, page_id: str = ""
     return f"Saved and verified: {name}. The Page token does not expire."
 
 
-def _facebook_reel(video: Path, title: str, token: str) -> tuple[str, str]:
+def _tag(text: object) -> str:
+    """'#WorldValorChronicles' from 'World Valor Chronicles'; '' when nothing is left."""
+    words = re.findall(r"[^\W_]+", str(text), flags=re.UNICODE)
+    joined = "".join(word if word.isupper() else word.capitalize() for word in words)[:40]
+    return f"#{joined}" if joined else ""
+
+
+def facebook_tags(channel_id: str, topic: str, content_type: str, title: str) -> str:
+    """The hashtags every Facebook video post carries.
+
+    A fact-only channel is tagged with the person the video is about rather
+    than the channel's search keywords, which would label most of them wrongly
+    ("#AncientCivilizations" under a twentieth-century doctor).
+    """
+    tags: list[str] = []
+    try:
+        from .channels import get_channel
+        from .verified_facts import _bank_rows, is_verified_channel
+
+        channel = get_channel(channel_id)
+        if is_verified_channel(channel):
+            subject = _bank_rows(channel).get(topic, {}).get("source_title")
+            tags += [_tag(subject or ""), "#TrueStory", "#RealHeroes"]
+        else:
+            from .seo import _GENRE_KEYWORDS
+
+            words = list(getattr(channel, "keywords", ()) or ()) or _GENRE_KEYWORDS.get(channel.genre, [])
+            tags += [_tag(word) for word in words[:4]]
+        tags += [_tag(channel.genre), _tag(channel.name)]
+    except Exception:
+        pass
+    if re.search(r"[؀-ۿ]", title):  # Urdu script
+        tags += ["#اردو", "#Urdu", "#Pakistan"]
+    tags.append("#Reels" if content_type == "short" else "#Video")
+    unique = list(dict.fromkeys(tag for tag in tags if tag))
+    return " ".join(unique[:10])
+
+
+def _facebook_reel(video: Path, title: str, token: str, description: str = "") -> tuple[str, str]:
     start_query = urlencode({"access_token": token, "upload_phase": "start"})
     started = _request_json(
         f"https://graph.facebook.com/{FB_API_VERSION}/me/video_reels?{start_query}", method="POST"
@@ -181,7 +220,7 @@ def _facebook_reel(video: Path, title: str, token: str) -> tuple[str, str]:
         raise RuntimeError("Facebook Reel file transfer failed.")
     finish_query = urlencode({
         "access_token": token, "video_id": video_id, "upload_phase": "finish",
-        "video_state": "PUBLISHED", "description": title, "title": title,
+        "video_state": "PUBLISHED", "description": description or title, "title": title,
     })
     finished = _request_json(
         f"https://graph.facebook.com/{FB_API_VERSION}/me/video_reels?{finish_query}", method="POST"
@@ -232,7 +271,7 @@ def _multipart_bytes(fields: dict[str, str], file_field: str = "", filename: str
 
 
 def _facebook_long(video: Path, title: str, page_id: str, token: str,
-                   publish_at: int | None = None) -> tuple[str, str]:
+                   publish_at: int | None = None, description: str = "") -> tuple[str, str]:
     """Upload a Page video in chunks (Facebook's resumable upload).
 
     Sending a 100 MB+ file in one request gets the connection cut midway, so
@@ -263,7 +302,7 @@ def _facebook_long(video: Path, title: str, page_id: str, token: str,
                      "upload_session_id": session, "start_offset": str(begin)}, payload[begin:end])
         begin, end = int(step.get("start_offset", end)), int(step.get("end_offset", end))
     finish = {"access_token": token, "upload_phase": "finish", "upload_session_id": session,
-              "title": title, "description": title}
+              "title": title, "description": description or title}
     if publish_at:
         # Facebook publishes it by itself at this Unix time (10+ minutes ahead).
         finish.update({"published": "false", "scheduled_publish_time": str(int(publish_at))})
@@ -273,14 +312,15 @@ def _facebook_long(video: Path, title: str, page_id: str, token: str,
     return video_id, f"https://www.facebook.com/{video_id}"
 
 
-def upload_facebook(channel_id: str, video: Path, title: str, content_type: str) -> tuple[str, str]:
+def upload_facebook(channel_id: str, video: Path, title: str, content_type: str,
+                    description: str = "") -> tuple[str, str]:
     cfg = account(channel_id, "facebook")
     page_id, token = str(cfg.get("page_id", "")), str(cfg.get("page_access_token", ""))
     if not page_id or not token:
         raise RuntimeError("Facebook is not configured for this channel.")
     if content_type == "short":
-        return _facebook_reel(video, title, token)
-    return _facebook_long(video, title, page_id, token)
+        return _facebook_reel(video, title, token, description)
+    return _facebook_long(video, title, page_id, token, description=description)
 
 
 def _tiktok_token(channel_id: str) -> str:
@@ -398,7 +438,18 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
     set_social_upload(video_id, platform, "uploading")
     try:
         if platform == "facebook":
-            remote_id, post_url = upload_facebook(row["channel"], path, row["title"], row["content_type"])
+            # Title, the source of a fact-checked story, then the tags.
+            from .verified_facts import source_url_for
+
+            source = source_url_for(row["channel"], str(row["topic"] or ""))
+            description = "\n\n".join(filter(None, [
+                row["title"],
+                f"Source: Wikipedia — {source}" if source else "",
+                facebook_tags(row["channel"], str(row["topic"] or ""), row["content_type"], row["title"]),
+            ]))
+            remote_id, post_url = upload_facebook(
+                row["channel"], path, row["title"], row["content_type"], description,
+            )
             message = f"Facebook upload complete: {post_url}"
         elif platform == "tiktok":
             remote_id, post_url = upload_tiktok(

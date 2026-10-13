@@ -11,7 +11,7 @@ import dataclasses
 import shutil
 from pathlib import Path
 
-from .language import LANGUAGES, channel_language, display_marks, voice_for
+from .language import LANGUAGES, PURE_URDU, channel_language, display_marks, voice_for
 from .models import Lesson, Scene
 
 
@@ -47,9 +47,10 @@ def translate_lesson(lesson: Lesson, target: str, strict: bool = False) -> Lesso
             "Translate this YouTube video script into natural, everyday URDU for a Pakistani audience.\n"
             "For every scene return 'line' in ROMAN URDU (Urdu written in English letters, the way "
             "people type on WhatsApp) and 'speech' = the same sentence in Urdu script (اردو) for the voice.\n"
-            "Translate 'title' into Roman Urdu; you may keep one or two English search words in it.\n"
+            "Translate 'title' into Roman Urdu, and give 'title_speech' = the same title in Urdu script.\n"
+            + PURE_URDU
         )
-        shape = '{"title": str, "scenes": [{"line": str, "speech": str}]}'
+        shape = '{"title": str, "title_speech": str, "scenes": [{"line": str, "speech": str}]}'
     else:
         rules = "Translate this video script into natural, clear ENGLISH. Keep the meaning and tone.\n"
         shape = '{"title": str, "scenes": [{"line": str}]}'
@@ -81,6 +82,7 @@ def translate_lesson(lesson: Lesson, target: str, strict: bool = False) -> Lesso
     return Lesson(
         topic_key=lesson.topic_key, title=str(raw.get("title") or lesson.title).strip(),
         category=lesson.category, intro="", outro="", scenes=scenes,
+        title_speech=" ".join(str(raw.get("title_speech") or "").split()) if target == "ur" else "",
     )
 
 
@@ -118,7 +120,10 @@ def build_copy(lesson: Lesson, channel, run_dir: Path, content_type: str, target
         video, out_dir, seed_text=translated.topic_key, channel=channel, lesson=lesson,
     )
     validate_rendered_video(video, content_type=content_type)
-    title = str(build_metadata(translated, copy_channel, content_type=content_type)["title"])
+    # An Urdu post gets its title in Urdu script, without the English channel suffix.
+    title = translated.title_speech or str(
+        build_metadata(translated, copy_channel, content_type=content_type)["title"]
+    )
     return video, title
 
 

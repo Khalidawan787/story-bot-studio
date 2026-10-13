@@ -722,13 +722,13 @@ def video_for_social_upload(video_id: int, channel: str | None = None) -> sqlite
     try:
         if channel:
             return conn.execute(
-                """SELECT id, title, video_path, thumbnail_path, channel,
+                """SELECT id, title, topic, video_path, thumbnail_path, channel,
                           COALESCE(content_type,'short') AS content_type
                    FROM videos WHERE id = ? AND channel = ?""",
                 (video_id, channel),
             ).fetchone()
         return conn.execute(
-            """SELECT id, title, video_path, thumbnail_path, channel,
+            """SELECT id, title, topic, video_path, thumbnail_path, channel,
                       COALESCE(content_type,'short') AS content_type
                FROM videos WHERE id = ?""",
             (video_id,),

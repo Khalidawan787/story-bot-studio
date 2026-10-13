@@ -36,6 +36,19 @@ def voice_for(channel, default: str | None = None) -> str | None:
     return _URDU_FEMALE if voice and any(h in voice for h in _FEMALE_HINTS) else _URDU_MALE
 
 
+# Asked of every Urdu script and translation. Left alone, the writer mixes
+# English into every sentence ("volunteer network ko fund kiya jata hai").
+PURE_URDU = (
+    "Write PURE Urdu: use the Urdu word wherever an everyday one exists (madad, not help; "
+    "atiyaat, not donations; idara, not organisation; razakar, not volunteer; sarbarah, not head; "
+    "aizaz, not award). It is Pakistani Urdu, so no Hindi words either (waba, not mahamari; "
+    "atiya, not daan; sarparast for a guardian; janaza for a funeral). "
+    "Do not mix English words into the sentences. Keep only names of people, "
+    "places and organisations, and things Urdu itself calls by the English word (ambulance, "
+    "hospital, doctor, film).\n"
+)
+
+
 def script_rules(channel) -> str:
     """Extra instructions for the script writer; empty for English channels."""
     if not is_urdu(channel):
@@ -49,6 +62,7 @@ def script_rules(channel) -> str:
         "- 'title', 'intro' and 'outro' in Roman Urdu; the title may add one or two English search words.\n"
         "- Keep 'label' and 'image_prompt' in ENGLISH.\n"
         "- Word counts asked for above apply to 'line'.\n"
+        "- " + PURE_URDU
     )
 
 

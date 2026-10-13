@@ -150,7 +150,7 @@ def _in_page_language(channel: Channel, lesson: Lesson, strict: bool) -> tuple[s
         target = str(account(channel.id, "facebook").get("language") or "same").lower()
         if target in LANGUAGES and target != channel_language(channel):
             translated = translate_lesson(lesson, target, strict=strict)
-            title = translated.title
+            title = translated.title_speech or translated.title
             lines = [scene.speech or scene.line for scene in translated.scenes]
     except Exception as exc:
         print(f"[page_posts] {channel.id}: translation skipped ({exc})")

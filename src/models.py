@@ -23,6 +23,9 @@ class Lesson:
     intro: str
     outro: str
     scenes: list[Scene]
+    # The title in Urdu script when `title` is Roman Urdu; used where the
+    # title is posted as text (a Facebook post), not drawn into the video.
+    title_speech: str = ""
 
     @property
     def narration(self) -> str:
