@@ -44,6 +44,36 @@ def current_slot(now: datetime | None = None) -> int:
     return passed[-1] if passed else len(SLOTS_UTC) - 1
 
 
+def due_slots(now: datetime | None = None) -> set[int]:
+    """Every slot whose start time has passed today (UTC), for a scheduled run.
+
+    GitHub's scheduler does not only start runs late, it drops some: on
+    13 Oct 2026 the 02:30 run never happened and the next one started at 09:40,
+    which is slot 1, so the slot 0 channels got no video that day. A run
+    therefore also builds the earlier slots of the day. Channels that already
+    have today's video are skipped, so nothing is made twice.
+    """
+    now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    minutes = now.hour * 60 + now.minute
+    passed = {i for i, (h, m) in enumerate(SLOTS_UTC) if h * 60 + m <= minutes}
+    # Before the day's first slot, a run is yesterday's last slot arriving late.
+    return passed or {len(SLOTS_UTC) - 1}
+
+
+def wanted_slots(value: str | None) -> set[int] | None:
+    """--slot as given on the command line: 'all' -> None, 'auto' -> due_slots(), '2' -> {2}."""
+    wanted = str(value or "all").strip().lower()
+    if wanted == "all":
+        return None
+    return due_slots() if wanted == "auto" else {int(wanted)}
+
+
+def describe(slots: set[int] | None) -> str:
+    if slots is None:
+        return "all channels"
+    return ", ".join(f"{slot} ({label(slot)})" for slot in sorted(slots))
+
+
 def next_run(now: datetime | None = None) -> datetime:
     """When the next slot starts (UTC)."""
     now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)

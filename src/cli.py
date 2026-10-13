@@ -42,13 +42,13 @@ def main() -> None:
     daily_all.add_argument("--count", default="",
                            help="Videos per channel; blank = each channel's own topics_per_day.")
     daily_all.add_argument("--slot", default="all",
-                           help="Build slot: all, auto (the slot that started last), or 0-3.")
+                           help="Build slot: all, auto (every slot that has started today), or 0-3.")
 
     daily_long = sub.add_parser("daily-long-all", help="Create one ~5-minute video for every connected channel.")
     daily_long.add_argument("--upload", default="true", help="true or false")
     daily_long.add_argument("--scenes", default="20", help="Scenes per long video; 20 targets about 5 minutes.")
     daily_long.add_argument("--slot", default="all",
-                            help="Build slot: all, auto (the slot that started last), or 0-3.")
+                            help="Build slot: all, auto (every slot that has started today), or 0-3.")
 
     gen = sub.add_parser("gen-topics", help="Generate new genre topics with free Gemini.")
     gen.add_argument("--channel", required=True, help="Channel id (crime/love/horror/motivation)")
@@ -228,14 +228,13 @@ def main() -> None:
         return
     elif args.command == "daily-all":
         from .daily_runner import _can_publish, short_videos_generated_today_count
-        from .slots import channel_slot, current_slot, label
+        from .slots import channel_slot, describe, wanted_slots
 
         override = str(getattr(args, "count", "") or "").strip()
-        wanted = str(args.slot or "all").strip().lower()
-        slot = None if wanted == "all" else current_slot() if wanted == "auto" else int(wanted)
-        print(f"Build slot: {'all channels' if slot is None else f'{slot} ({label(slot)})'}")
+        slot = wanted_slots(args.slot)
+        print(f"Build slot: {describe(slot)}")
         for channel in load_channels():
-            if slot is not None and channel_slot(channel) != slot:
+            if slot is not None and channel_slot(channel) not in slot:
                 continue
             if not _can_publish(channel):
                 # Rendering for a channel nobody signed in to only wastes the run.
@@ -253,19 +252,17 @@ def main() -> None:
         return
     elif args.command == "page-posts":
         from .page_posts import run_daily_posts
-        from .slots import current_slot
+        from .slots import wanted_slots
 
-        wanted = str(args.slot or "all").strip().lower()
-        slot = None if wanted == "all" else current_slot() if wanted == "auto" else int(wanted)
+        slot = wanted_slots(args.slot)
         for channel_id, status in run_daily_posts(slot=slot, dry_run=_bool(args.dry_run)):
             print(f"[{channel_id}] {status}")
         return
     elif args.command == "daily-long-all":
-        from .slots import current_slot, label
+        from .slots import describe, wanted_slots
 
-        wanted = str(args.slot or "all").strip().lower()
-        slot = None if wanted == "all" else current_slot() if wanted == "auto" else int(wanted)
-        print(f"Build slot: {'all channels' if slot is None else f'{slot} ({label(slot)})'}")
+        slot = wanted_slots(args.slot)
+        print(f"Build slot: {describe(slot)}")
         for channel_id, status in run_daily_long_all(
             upload=_bool(args.upload), scenes=max(12, min(30, int(args.scenes))), slot=slot,
         ):

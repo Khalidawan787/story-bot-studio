@@ -261,13 +261,13 @@ def publish_daily_post(channel: Channel, dry_run: bool = False) -> str:
     return f"posted '{subject}' -> {url}"
 
 
-def run_daily_posts(slot: int | None = None, dry_run: bool = False) -> list[tuple[str, str]]:
+def run_daily_posts(slot: set[int] | None = None, dry_run: bool = False) -> list[tuple[str, str]]:
     """Today's picture post for every channel that has it switched on."""
     from .slots import channel_slot
 
     results: list[tuple[str, str]] = []
     for channel in load_channels():
-        if slot is not None and channel_slot(channel) != slot:
+        if slot is not None and channel_slot(channel) not in slot:
             continue
         if not daily_post_on(channel.id):
             continue
