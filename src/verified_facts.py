@@ -56,9 +56,10 @@ def is_verified_channel(channel) -> bool:
     return bool(getattr(channel, "verified_facts", False))
 
 
-def _api(params: dict) -> dict:
+def _api(params: dict, base: str = WIKI_API) -> dict:
+    """One call to a MediaWiki API: Wikipedia by default, or Commons / Wikidata via `base`."""
     query = urllib.parse.urlencode({**params, "format": "json", "formatversion": "2"})
-    return json.loads(fetch(f"{WIKI_API}?{query}").decode("utf-8"))
+    return json.loads(fetch(f"{base}?{query}").decode("utf-8"))
 
 
 def fetch(url: str, timeout: int = 60) -> bytes:
@@ -73,6 +74,11 @@ def fetch(url: str, timeout: int = 60) -> bytes:
                 return response.read()
         except urllib.error.HTTPError as exc:
             if wait is None or exc.code not in (429, 500, 502, 503, 504):
+                raise
+            time.sleep(wait)
+        except (urllib.error.URLError, ConnectionError, TimeoutError):
+            # A dropped connection; Commons does this now and then.
+            if wait is None:
                 raise
             time.sleep(wait)
     raise RuntimeError("unreachable")

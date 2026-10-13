@@ -89,36 +89,116 @@ def _hashtags(channel: Channel) -> str:
     return " ".join(f"#{word}" for word in words[:3] if word)
 
 
-def _free_article_photo(title: str, out: Path) -> tuple[Path, str] | None:
-    """The article's lead photo and its credit line, only if it may be reused."""
-    from .verified_facts import _api, fetch
+COMMONS_API = "https://commons.wikimedia.org/w/api.php"
+WIKIDATA_API = "https://www.wikidata.org/w/api.php"
+# A file with one of these in its name shows something named after the person
+# or made by them, not the person: "Ruth-Pfau-Schule.jpg" is a school.
+_NOT_THE_PERSON = (
+    "signature", "autograph", "grave", "tomb", "mausoleum", "memorial", "monument", "statue", "bust",
+    "plaque", "stamp", "coin", "medal", "map", "logo", "flag", "coat of arms", "school", "schule",
+    "college", "university", "hospital", "airport", "road", "street", "station", "stadium", "park",
+    "building", "house", "museum", "book", "cover", "poster", "letter", "document", "painting of",
+    "family tree", "diagram", "chart",
+)
+_PHOTO_INFO = {"prop": "imageinfo", "iiprop": "url|size|extmetadata", "iiurlwidth": "2000"}
 
-    pages = _api({"action": "query", "prop": "pageimages", "piprop": "name", "redirects": "1",
-                  "titles": title}).get("query", {}).get("pages") or []
-    name = (pages[0] if pages else {}).get("pageimage")
-    if not name:
-        return None
-    info = _api({"action": "query", "titles": f"File:{name}", "prop": "imageinfo",
-                 "iiprop": "url|extmetadata", "iiurlwidth": "2000"}).get("query", {}).get("pages") or []
-    page = info[0] if info else {}
+
+def _usable(page: dict, own_repository: bool = True) -> tuple[str, str, int] | None:
+    """(download url, credit line, shorter side in px) of a file that may be reused, else None."""
     image = (page.get("imageinfo") or [{}])[0]
     meta = image.get("extmetadata") or {}
     licence = str((meta.get("LicenseShortName") or {}).get("value") or "")
     # A file kept on Wikipedia itself (not Commons) is usually a non-free
     # picture used under "fair use", which does not cover a Page post.
-    if page.get("imagerepository") != "shared" or (meta.get("NonFree") or {}).get("value") \
-            or not _FREE_LICENCE.match(licence):
+    if not own_repository or (meta.get("NonFree") or {}).get("value") or not _FREE_LICENCE.match(licence):
         return None
     url = str(image.get("thumburl") or image.get("url") or "")
     if not url.lower().split("?")[0].endswith((".jpg", ".jpeg", ".png")):
         return None
-    out.write_bytes(fetch(url))
     artist = re.sub(r"<[^>]+>", "", html.unescape(str((meta.get("Artist") or {}).get("value") or "")))
     artist = " ".join(artist.split())
     # Commons repeats the name in a hidden copy ("Unknown authorUnknown author").
     artist = re.sub(r"^(.+?)\1$", r"\1", artist)
     credit = f"Photo: {artist[:80] or 'Wikimedia Commons'} ({licence}), via Wikimedia Commons"
-    return out, credit
+    return url, credit, min(int(image.get("width") or 0), int(image.get("height") or 0))
+
+
+def _commons_photo(title: str) -> tuple[str, str] | None:
+    """A free photo of the person from the whole of Wikimedia Commons: (url, credit).
+
+    Many articles lead with a picture Wikipedia only holds under "fair use",
+    while Commons has free photos of the same person. They are found through
+    the person's Wikidata entry, not by searching for the name, so a namesake
+    cannot slip in: first the entry's own portrait (P18), then the files in
+    the person's Commons category (P373).
+    """
+    from .verified_facts import _api
+
+    pages = _api({"action": "query", "prop": "pageprops", "ppprop": "wikibase_item",
+                  "redirects": "1", "titles": title}).get("query", {}).get("pages") or []
+    entity = ((pages[0] if pages else {}).get("pageprops") or {}).get("wikibase_item")
+    if not entity:
+        return None
+    claims = _api({"action": "wbgetclaims", "entity": entity}, base=WIKIDATA_API).get("claims") or {}
+
+    def value(prop: str) -> str:
+        try:
+            return str(claims[prop][0]["mainsnak"]["datavalue"]["value"])
+        except (KeyError, IndexError, TypeError):
+            return ""
+
+    portrait, category = value("P18"), value("P373")
+    if portrait:
+        found = _api({"action": "query", "titles": f"File:{portrait}", **_PHOTO_INFO},
+                     base=COMMONS_API).get("query", {}).get("pages") or []
+        usable = _usable(found[0]) if found else None
+        if usable:
+            return usable[0], usable[1]
+    if not category:
+        return None
+    files = _api({"action": "query", "generator": "categorymembers", "gcmtitle": f"Category:{category}",
+                  "gcmtype": "file", "gcmlimit": "60", **_PHOTO_INFO},
+                 base=COMMONS_API).get("query", {}).get("pages") or []
+    best: tuple[float, str, str] | None = None
+    for page in files:
+        name = str(page.get("title") or "").lower()
+        if any(word in name for word in _NOT_THE_PERSON):
+            continue
+        usable = _usable(page)
+        if not usable or usable[2] < 500:
+            continue
+        image = page["imageinfo"][0]
+        # Sharper is better; an upright picture is more likely a portrait.
+        score = min(usable[2], 2000) * (1.25 if image.get("height", 0) >= image.get("width", 0) else 1.0)
+        if best is None or score > best[0]:
+            best = (score, usable[0], usable[1])
+    return (best[1], best[2]) if best else None
+
+
+def _free_article_photo(title: str, out: Path) -> tuple[Path, str] | None:
+    """A photo of the subject that may be reused, and its credit line.
+
+    The article's own lead picture when that is free; otherwise a free photo
+    of the same person from Wikimedia Commons. None when there is neither.
+    """
+    from .verified_facts import _api, fetch
+
+    pages = _api({"action": "query", "prop": "pageimages", "piprop": "name", "redirects": "1",
+                  "titles": title}).get("query", {}).get("pages") or []
+    name = (pages[0] if pages else {}).get("pageimage")
+    chosen: tuple[str, str] | None = None
+    if name:
+        info = _api({"action": "query", "titles": f"File:{name}", **_PHOTO_INFO}).get("query", {}).get("pages") or []
+        page = info[0] if info else {}
+        usable = _usable(page, own_repository=page.get("imagerepository") == "shared")
+        if usable:
+            chosen = usable[0], usable[1]
+    if chosen is None:
+        chosen = _commons_photo(title)
+    if chosen is None:
+        return None
+    out.write_bytes(fetch(chosen[0]))
+    return out, chosen[1]
 
 
 def _whole_photo(photo: Path, out: Path) -> Path:
