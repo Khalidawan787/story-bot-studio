@@ -530,6 +530,12 @@ def generate_from_prompt(
             raw = candidate
             break
     if long_form:
+        draft = raw or best_candidate or {}
+        if not any(str(row.get("line") or "").strip() for row in draft.get("scenes") or []):
+            # No script at all came back. Completing "nothing" used to build a
+            # five-minute video out of one filler sentence repeated twenty
+            # times, titled with the writing instruction itself, and upload it.
+            raise RuntimeError("No script could be written (every script provider failed); no video made.")
         # Free providers often stop early. Complete the best draft locally so a
         # valid five-minute job is not discarded only because of word count.
         raw = _complete_long_script(raw or best_candidate or {}, channel, user_prompt, scenes)

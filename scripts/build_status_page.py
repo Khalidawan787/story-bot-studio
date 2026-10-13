@@ -41,7 +41,8 @@ STATUS_WORDS = {
     "scheduled": ("Scheduled on YouTube", "ok"),
     "uploaded": ("Public on YouTube", "ok"),
     "uploading": ("Uploading", "warn"),
-    "daily_upload_pending": ("Built · waiting for upload quota", "warn"),
+    "daily_upload_pending": ("Built · waiting to upload", "warn"),
+    "files_lost": ("Not uploaded · video files expired", "bad"),
     "rendered": ("Built · not uploaded", "warn"),
     "facebook_only": ("Facebook only · no YouTube channel yet", "ok"),
     "thumbnail_pending": ("Uploaded · thumbnail pending", "warn"),
@@ -132,7 +133,7 @@ def collect() -> dict:
                 continue  # a channel that publishes nowhere has nothing to report
             latest = _rows(
                 conn,
-                """SELECT title, status, created_at FROM videos
+                """SELECT title, status, created_at, error FROM videos
                    WHERE channel = ? AND hidden_at IS NULL ORDER BY id DESC LIMIT 1""",
                 (channel.id,),
             )
@@ -178,7 +179,7 @@ def collect() -> dict:
             conn,
             """SELECT title, channel, status, substr(COALESCE(error,''),1,180) AS error
                FROM videos
-               WHERE status IN ('upload_failed','quality_failed')
+               WHERE status IN ('upload_failed','quality_failed','files_lost')
                  AND video_url IS NULL AND hidden_at IS NULL
                ORDER BY id DESC LIMIT 6""",
         )
@@ -241,8 +242,26 @@ def collect() -> dict:
         conn.close()
 
 
-def _status(status: str) -> str:
+# Why a built video is not on YouTube yet, read from its error text. The state
+# alone used to be shown as "waiting for upload quota", which was wrong for a
+# refused login or a lost file and sent people looking for a quota problem.
+_WAITING_REASONS = [
+    (("cap reached", "quota", "uploadlimitexceeded", "upload paused"), ("Built · waiting for upload quota", "warn")),
+    (("has been deleted", "invalid_grant", "invalid_client", "unauthorized", "401", "403"),
+     ("Upload refused · connect YouTube again", "bad")),
+    (("not connected", "not authorized"), ("Built · YouTube not connected", "warn")),
+    (("missing:",), ("Not uploaded · video file is gone", "bad")),
+]
+
+
+def _status(status: str, error: str | None = None) -> str:
     words, cls = STATUS_WORDS.get(status, (status.replace("_", " "), "muted"))
+    if status in PENDING_STATUSES and status != "thumbnail_pending":
+        lowered = str(error or "").lower()
+        for needles, label in _WAITING_REASONS:
+            if any(needle in lowered for needle in needles):
+                words, cls = label
+                break
     return f"<span class='pill {cls}'>{html.escape(words)}</span>"
 
 
@@ -287,7 +306,7 @@ def _card(channel: dict) -> str:
                      f"<div class='reason'>{html.escape(str(last.get('detail') or ''))}</div></div>")
     elif video:
         last_html = (f"<div class='last'><div class='last-top'><span class='muted'>Latest video · "
-                     f"{_local(video['created_at'])}</span>{_status(video['status'])}</div>"
+                     f"{_local(video['created_at'])}</span>{_status(video['status'], video.get('error'))}</div>"
                      f"<div class='last-title'>{html.escape(str(video['title'] or 'Untitled'))}</div></div>")
     else:
         last_html = "<div class='last'><span class='muted'>No video made yet</span></div>"
@@ -367,7 +386,7 @@ def _last_day(rows: list) -> str:
         items.append(
             f"<li class='row'><div class='row-main'><div class='row-title'>{title}</div>"
             f"<div class='meta'>{_chips(r['channel'], r['content_type'])}</div>{error}</div>"
-            f"<div class='row-side'>{_status(r['status'])}<span class='muted'>{when}</span></div></li>"
+            f"<div class='row-side'>{_status(r['status'], r['error'])}<span class='muted'>{when}</span></div></li>"
         )
     return f"<ul class='rows'>{''.join(items)}</ul>"
 

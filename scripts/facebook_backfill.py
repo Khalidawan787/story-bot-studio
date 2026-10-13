@@ -31,6 +31,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from src.config import settings  # noqa: E402
+from src.github_artifacts import github as _github  # noqa: E402
 from src.social_accounts import account  # noqa: E402
 from src.social_publish import FB_API_VERSION, _facebook_long, _request_json  # noqa: E402
 
@@ -65,32 +66,6 @@ def _candidates(channel: str, days: int) -> list[sqlite3.Row]:
     conn.close()
     # A title that is the writing instruction itself is not worth posting.
     return [r for r in rows if not str(r["title"] or "").lower().startswith(("create a ", "write a "))]
-
-
-class _DropAuthOnRedirect(urllib.request.HTTPRedirectHandler):
-    """An artifact download redirects to a signed storage URL that rejects
-    the GitHub token, so the token must not follow the redirect."""
-
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        new = super().redirect_request(req, fp, code, msg, headers, newurl)
-        if new is not None and urllib.parse.urlparse(newurl).netloc != urllib.parse.urlparse(req.full_url).netloc:
-            new.headers.pop("Authorization", None)
-            new.unredirected_hdrs.pop("Authorization", None)
-        return new
-
-
-_OPENER = urllib.request.build_opener(_DropAuthOnRedirect)
-
-
-def _github(path: str) -> bytes:
-    token = os.environ["GITHUB_TOKEN"]
-    url = path if path.startswith("http") else f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}/{path}"
-    request = urllib.request.Request(url, headers={
-        "Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json",
-        "User-Agent": "StoryBotStudio",
-    })
-    with _OPENER.open(request, timeout=600) as response:
-        return response.read()
 
 
 def _find_videos(job_ids: set[str], out_dir: Path) -> dict[str, Path]:

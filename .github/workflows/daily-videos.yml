@@ -32,6 +32,7 @@ on:
 
 permissions:
   contents: write
+  actions: read       # fetch a kept video back for a later upload
   pages: write        # publish the status page
   id-token: write     # required by actions/deploy-pages
 
@@ -123,8 +124,12 @@ jobs:
         if: ${{ env.UPLOAD != 'false' }}
         run: python -m src.cli page-posts --slot "$SLOT"
 
+      # A video left from an earlier run is fetched back from that run's kept
+      # artifact first; the runner itself starts empty every time.
       - name: Upload anything still waiting
         if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: python -m src.cli retry-uploads --limit 20
 
       - name: Report

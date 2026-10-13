@@ -423,6 +423,20 @@ def thumbnail_upload_allowed(channel_id: str) -> bool:
     finally:
         conn.close()
 
+def _mark_files_lost(video_id: int) -> None:
+    """Take a video whose files are gone for good out of the upload queue."""
+    conn = sqlite3.connect(settings.db_path)
+    try:
+        conn.execute(
+            "UPDATE videos SET status = 'files_lost', error = ?, upload_progress = 0 WHERE id = ?",
+            ("The video was built but could not be uploaded at the time, and its files were "
+             "only kept for a week.", video_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
     video_id = int(row["id"])
     video_path = Path(row["video_path"])
@@ -453,6 +467,22 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
     try:
         if row["status"] == "thumbnail_pending" and _thumbnail_rate_limited_today(row):
             return f"{video_id}: thumbnail rate-limited today, will retry later"
+        if not row["video_url"] and not (thumbnail_path.exists() and video_path.exists()):
+            # On GitHub every run starts with an empty disk, so a video left
+            # over from an earlier run has to come back from that run's kept
+            # artifact. If the artifact has expired too, the video can never be
+            # uploaded: say so once instead of failing on every run for ever.
+            from . import github_artifacts
+
+            if github_artifacts.available():
+                try:
+                    restored = github_artifacts.restore_run_files(video_path.parent)
+                except Exception as exc:
+                    return f"{video_id}: could not fetch the kept video from GitHub ({exc}); will retry"
+                if not (thumbnail_path.exists() and video_path.exists()):
+                    _mark_files_lost(video_id)
+                    return f"{video_id}: video files are no longer kept; marked as not uploadable"
+                print(f"[retry] {video_id}: restored {', '.join(restored)} from the kept artifacts")
         if not thumbnail_path.exists():
             raise FileNotFoundError(f"Thumbnail missing: {thumbnail_path}")
 
