@@ -445,12 +445,12 @@ def _never_written(video_id: int) -> bool:
     ("Create a factual, neutral ... explainer about ..."). Those must not reach
     YouTube now that left-over videos can be fetched back and uploaded.
     """
-    from .genre_topics import _looks_like_instruction_title
-
     conn = sqlite3.connect(settings.db_path)
     try:
         found = conn.execute("SELECT title FROM videos WHERE id = ?", (video_id,)).fetchone()
-        if not found or not _looks_like_instruction_title(found[0]):
+        # Only a title that opens with the instruction: "How to Create a
+        # Budget" is a real title.
+        if not found or not str(found[0] or "").lower().startswith(("create a ", "write a ")):
             return False
         conn.execute(
             "UPDATE videos SET status = 'quality_failed', error = ? WHERE id = ?",
