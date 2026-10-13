@@ -437,6 +437,31 @@ def _mark_files_lost(video_id: int) -> None:
         conn.close()
 
 
+def _never_written(video_id: int) -> bool:
+    """True, and the video leaves the queue, when it is one of the filler videos.
+
+    Before generate_from_prompt refused to work without a script, a failed
+    script call still produced a video whose title is the writing instruction
+    ("Create a factual, neutral ... explainer about ..."). Those must not reach
+    YouTube now that left-over videos can be fetched back and uploaded.
+    """
+    from .genre_topics import _looks_like_instruction_title
+
+    conn = sqlite3.connect(settings.db_path)
+    try:
+        found = conn.execute("SELECT title FROM videos WHERE id = ?", (video_id,)).fetchone()
+        if not found or not _looks_like_instruction_title(found[0]):
+            return False
+        conn.execute(
+            "UPDATE videos SET status = 'quality_failed', error = ? WHERE id = ?",
+            ("No script was written for this video, so it is not uploaded.", video_id),
+        )
+        conn.commit()
+        return True
+    finally:
+        conn.close()
+
+
 def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
     video_id = int(row["id"])
     video_path = Path(row["video_path"])
@@ -467,6 +492,8 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
     try:
         if row["status"] == "thumbnail_pending" and _thumbnail_rate_limited_today(row):
             return f"{video_id}: thumbnail rate-limited today, will retry later"
+        if not row["video_url"] and _never_written(video_id):
+            return f"{video_id}: skipped for good; its script was never written (the title is the instruction)"
         if not row["video_url"] and not (thumbnail_path.exists() and video_path.exists()):
             # On GitHub every run starts with an empty disk, so a video left
             # over from an earlier run has to come back from that run's kept
