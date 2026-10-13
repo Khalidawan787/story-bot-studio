@@ -298,7 +298,7 @@ def _long_metadata(lesson: Lesson, channel=None) -> dict[str, object]:
     labels = [scene.label for scene in lesson.scenes]
     keywords = _keyword_phrases(lesson)
     core = _with_urdu(channel, list(getattr(channel, "keywords", ()) or ()) or _GENRE_KEYWORDS.get(genre, [genre]))
-    title = _seo_title(clean_title, f"| {suffix or genre.title() + ' Video'}", core[:2])
+    title = _seo_title(clean_title, f"| {suffix or genre.title() + ' Video'}", _title_keywords(channel, core))
 
     chapter_step = max(10, int(300 / max(1, len(labels))))
     chapters = [
@@ -353,6 +353,15 @@ def _news_metadata(lesson: Lesson, channel, content_type: str) -> dict[str, obje
     return {"title": title, "description": description, "tags": tags}
 
 
+def _title_keywords(channel, core: list[str]) -> list[str]:
+    """Channel keywords a title may borrow; none on a fact-only channel.
+
+    "Abdul Sattar Edhi | Ancient Civilizations" is a false claim made by a
+    search keyword, so true-story titles carry only their own words.
+    """
+    return [] if getattr(channel, "verified_facts", False) else core[:2]
+
+
 def _seo_title(hook: str, suffix: str, keywords: list[str]) -> str:
     """Hook first, then the genre suffix, then one more searched keyword if it fits."""
     title = f"{hook} {suffix}".strip() if suffix else hook
@@ -376,7 +385,7 @@ def _genre_metadata(lesson: Lesson, channel) -> dict[str, object]:
     keywords = _keyword_phrases(lesson)
     core = _with_urdu(channel, list(getattr(channel, "keywords", ()) or ()) or _GENRE_KEYWORDS.get(genre, [genre]))
     hook = _clean_publish_title(lesson.title)
-    title = _seo_title(hook, channel.seo_suffix, core[:2])
+    title = _seo_title(hook, channel.seo_suffix, _title_keywords(channel, core))
 
     description = _assemble_description([
         lesson.intro or f"A {genre} story: {hook}.",

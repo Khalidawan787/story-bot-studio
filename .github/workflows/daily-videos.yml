@@ -118,6 +118,11 @@ jobs:
         if: ${{ env.SHORTS_PER_CHANNEL != '0' }}
         run: python -m src.cli daily-all --upload "$UPLOAD" --count "$SHORTS_PER_CHANNEL" --slot "$SLOT"
 
+      # One picture post a day for each Page that has it switched on.
+      - name: Post today's picture to the Facebook Pages
+        if: ${{ env.UPLOAD != 'false' }}
+        run: python -m src.cli page-posts --slot "$SLOT"
+
       - name: Upload anything still waiting
         if: always()
         run: python -m src.cli retry-uploads --limit 20

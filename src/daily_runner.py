@@ -190,7 +190,10 @@ def load_custom_lessons_safe(channel: Channel) -> dict:
 
 def select_daily_topics(count: int = 2, channel: Channel | None = None) -> list[str]:
     channel = _resolve(channel)
-    lessons = load_topics_for(channel)
+    from .verified_facts import only_verified
+
+    # A fact-only channel must never pick up an older free-written script.
+    lessons = only_verified(channel, load_topics_for(channel))
     history = _topic_history(channel.id)
     today_topics = _topics_generated_today(channel.id)
 
@@ -238,7 +241,7 @@ def select_daily_topics(count: int = 2, channel: Channel | None = None) -> list[
                 else:
                     from .genre_topics import generate_genre_topics
                     generate_genre_topics(channel, count=shortage, scenes=8)
-                lessons = load_topics_for(channel)
+                lessons = only_verified(channel, load_topics_for(channel))
             except Exception as exc:
                 print(f"[daily_runner] {channel.id}: could not replenish unique topics ({exc})")
 

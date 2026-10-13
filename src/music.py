@@ -109,12 +109,37 @@ def _write_music_bed(output_path: Path, duration: float, seed_text: str) -> Path
     return output_path
 
 
-def add_background_music(video_path: Path, run_dir: Path, seed_text: str = "") -> Path:
+def _music_for(run_dir: Path, duration: float, seed_text: str, channel, lesson) -> tuple[Path, bool]:
+    """The music file for this video and whether it must be looped to fit.
+
+    The kids channel keeps its toy-piano tune. Every other video gets music in
+    the mood of its channel and script (music_moods.py), or one of the owner's
+    own tracks from data/music/ when there is one.
+    """
+    from .music_moods import mood_for, own_track, write_mood_music
+
+    mood = mood_for(channel, lesson)
+    track = own_track(channel, mood, seed_text)
+    if track is not None:
+        print(f"[music] {mood}: own track {track.name}")
+        return track, True
+    output = run_dir / "background_music.wav"
+    if mood != "kids":
+        try:
+            print(f"[music] {mood}")
+            return write_mood_music(output, duration, mood, seed_text), False
+        except Exception as exc:
+            print(f"[music] {mood} music failed ({exc}); using the plain tune")
+    return _write_music_bed(output, duration, seed_text), False
+
+
+def add_background_music(video_path: Path, run_dir: Path, seed_text: str = "",
+                         channel=None, lesson=None) -> Path:
     if not settings.enable_background_music:
         return video_path
 
     duration = _media_duration(video_path)
-    music_path = _write_music_bed(run_dir / "background_music.wav", duration, seed_text or run_dir.name)
+    music_path, looped = _music_for(run_dir, duration, seed_text or run_dir.name, channel, lesson)
     mixed_path = run_dir / "video_with_music.mp4"
 
     volume = settings.background_music_volume
@@ -141,6 +166,8 @@ def add_background_music(video_path: Path, run_dir: Path, seed_text: str = "") -
             "-y",
             "-i",
             str(video_path),
+            # An owner's track is repeated until the video ends (-shortest cuts it).
+            *(["-stream_loop", "-1"] if looped else []),
             "-i",
             str(music_path),
             "-filter_complex",

@@ -181,7 +181,9 @@ def run_pipeline(
         scene_audio_paths=scene_audio_paths, channel=channel,
         scene_marks=scene_marks, content_type=content_type,
     )
-    video_path = add_background_music(video_path, run_dir, seed_text=lesson.topic_key)
+    video_path = add_background_music(
+        video_path, run_dir, seed_text=lesson.topic_key, channel=channel, lesson=lesson,
+    )
     validate_rendered_video(video_path, content_type=content_type)
     quality_report = inspect_video(video_path, content_type)
     subtitle_path = generate_subtitles(audio_path, run_dir / "subtitles.srt", lesson.narration)
@@ -208,6 +210,12 @@ def run_pipeline(
     )
     metadata = build_metadata(lesson, channel, content_type=content_type)
     _append_image_credits(metadata, run_dir)
+    if channel is not None:
+        from .verified_facts import source_url
+
+        source = source_url(channel, lesson.topic_key)
+        if source:
+            metadata["description"] = f"{metadata['description']}\n\nSource: Wikipedia — {source}"
 
     approval_required = upload and quality_report["passed"] and not is_daily and approval_mode_enabled(channel_id)
     # There is no timed upload queue: a rendered video uploads straight away,

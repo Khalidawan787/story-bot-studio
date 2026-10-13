@@ -107,6 +107,17 @@ def verify_facebook(channel_id: str) -> str:
     query = urlencode({"fields": "id,name", "access_token": token})
     try:
         data = _request_json(f"https://graph.facebook.com/{FB_API_VERSION}/{page_id}?{query}")
+        # A personal token can read a Page (or an app) by its ID, so that
+        # lookup alone proves nothing. A real Page token is the Page itself.
+        me = _request_json(
+            f"https://graph.facebook.com/{FB_API_VERSION}/me?" + urlencode({"fields": "id", "access_token": token})
+        )
+        if str(me.get("id")) != str(page_id):
+            raise RuntimeError(
+                "The saved token is not this Page's own token, so nothing can be posted with it. "
+                "Paste the Graph API Explorer token into the 'Fast way' box instead; it finds the "
+                "right Page ID and Page token by itself."
+            )
     except Exception:
         mark_verified(channel_id, "facebook", "")
         raise

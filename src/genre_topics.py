@@ -214,6 +214,12 @@ def _script_json(prompt: str) -> dict:
 
 
 def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) -> dict:
+    from .verified_facts import is_verified_channel, write_next_lesson
+
+    if is_verified_channel(channel):
+        # A fact-only channel never gets a free-written story.
+        key, lesson = write_next_lesson(channel, scenes, long_form=False)
+        return {"_key": key, **lesson}
     tone = getattr(channel, "tone", "") or GENRE_TONE.get(channel.genre, "engaging and well-paced")
     avoid = "; ".join(avoid_titles[-40:]) if avoid_titles else "none yet"
     schema = (
@@ -461,6 +467,11 @@ def generate_from_prompt(
     long_form: bool = False,
 ) -> str:
     """Write and save a script from a user prompt for any configured channel."""
+    from .verified_facts import is_verified_channel, write_next_lesson
+
+    if is_verified_channel(channel):
+        key, lesson = write_next_lesson(channel, scenes, long_form, user_prompt=user_prompt)
+        return _save_custom_lesson(channel, f"long_{key}" if long_form else key, lesson)
     tone = getattr(channel, "tone", "") or GENRE_TONE.get(channel.genre, "engaging and well-paced")
     if long_form:
         format_instructions = (
@@ -525,7 +536,11 @@ def generate_from_prompt(
     key, lesson = _build_lesson(channel, raw, fallback_title=user_prompt[:60])
     if long_form:
         key = f"long_{key}"
+    return _save_custom_lesson(channel, key, lesson)
 
+
+def _save_custom_lesson(channel: Channel, key: str, lesson: dict) -> str:
+    """Add a written script to the channel's custom bank; returns its final key."""
     path = channel.custom_lessons_path
     lessons = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     if key in lessons:

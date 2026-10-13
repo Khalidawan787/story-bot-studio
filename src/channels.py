@@ -45,6 +45,9 @@ class Channel:
     slot: int = 0
     # Video language: "en" (default) or "ur" for Roman Urdu (language.py).
     language: str = "en"
+    # True stories about real people only: every script is written from a
+    # Wikipedia article and checked against it (verified_facts.py).
+    verified_facts: bool = False
 
     @property
     def client_secret_path(self) -> Path:

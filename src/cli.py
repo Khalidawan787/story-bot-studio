@@ -98,6 +98,10 @@ def main() -> None:
     prevthumb.add_argument("--channel", default="kids", help="Channel id")
     prevthumb.add_argument("--out", default="", help="Output .jpg path (default: runs/preview_thumbnail.jpg)")
 
+    posts = sub.add_parser("page-posts", help="Today's picture post on each Facebook Page that has it switched on.")
+    posts.add_argument("--slot", default="all", help="all, auto, or a slot number 0-3")
+    posts.add_argument("--dry-run", default="false", help="true = build and show the post without publishing")
+
     catchup = sub.add_parser("catch-up-daily", help="Create today's missing daily videos after schedule time.")
     catchup.add_argument("--target", default="2", help="Daily target video count.")
     catchup.add_argument("--channel", default="kids", help="Channel id")
@@ -246,6 +250,15 @@ def main() -> None:
             print(f"=== Channel: {channel.name} ({missing} of {n} Shorts) ===")
             for topic, status in run_daily_batch(count=missing, upload=_bool(args.upload), channel=channel):
                 print(f"[{channel.id}] {topic}: {status}")
+        return
+    elif args.command == "page-posts":
+        from .page_posts import run_daily_posts
+        from .slots import current_slot
+
+        wanted = str(args.slot or "all").strip().lower()
+        slot = None if wanted == "all" else current_slot() if wanted == "auto" else int(wanted)
+        for channel_id, status in run_daily_posts(slot=slot, dry_run=_bool(args.dry_run)):
+            print(f"[{channel_id}] {status}")
         return
     elif args.command == "daily-long-all":
         from .slots import current_slot, label

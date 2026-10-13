@@ -28,8 +28,12 @@ def facebook_language(channel) -> str | None:
     return wanted
 
 
-def translate_lesson(lesson: Lesson, target: str) -> Lesson:
-    """The same scenes, narrated in `target` ("ur" = Roman Urdu + Urdu script)."""
+def translate_lesson(lesson: Lesson, target: str, strict: bool = False) -> Lesson:
+    """The same scenes, narrated in `target` ("ur" = Roman Urdu + Urdu script).
+
+    `strict` is for fact-checked scripts: a translation that drops, adds or
+    changes a number is refused, and the caller posts the original instead.
+    """
     import json
 
     from .genre_topics import _script_json
@@ -52,6 +56,8 @@ def translate_lesson(lesson: Lesson, target: str) -> Lesson:
     prompt = (
         rules
         + f"Keep exactly {len(lesson.scenes)} scenes in the same order; translate, do not summarise.\n"
+        + ("Every fact must stay exactly the same: write each number as the same digits, keep each "
+           "name unchanged, and add nothing.\n" if strict else "")
         + f"Return ONLY JSON: {shape}\n\n"
         + json.dumps(source, ensure_ascii=False)
     )
@@ -65,6 +71,12 @@ def translate_lesson(lesson: Lesson, target: str) -> Lesson:
         if not line:
             raise RuntimeError("translation left a scene empty")
         speech = " ".join(str(row.get("speech") or "").split()) if target == "ur" else ""
+        if strict:
+            from .verified_facts import numbers_in
+
+            for text in filter(None, (line, speech)):
+                if numbers_in(text) != numbers_in(scene.line):
+                    raise RuntimeError(f"translation changed the numbers in: {scene.line[:80]}")
         scenes.append(dataclasses.replace(scene, line=line, speech=speech))
     return Lesson(
         topic_key=lesson.topic_key, title=str(raw.get("title") or lesson.title).strip(),
@@ -79,7 +91,9 @@ def build_copy(lesson: Lesson, channel, run_dir: Path, content_type: str, target
     from .tts import generate_voice_with_marks
     from .video import render_video, validate_rendered_video
 
-    translated = translate_lesson(lesson, target)
+    from .verified_facts import is_verified_channel
+
+    translated = translate_lesson(lesson, target, strict=is_verified_channel(channel))
     copy_channel = dataclasses.replace(channel, language=target)
     voice = voice_for(copy_channel)
     out_dir = run_dir / f"facebook_{target}"
@@ -100,7 +114,9 @@ def build_copy(lesson: Lesson, channel, run_dir: Path, content_type: str, target
         translated, audios[0], out_dir / "video.mp4", out_dir, scene_audio_paths=audios,
         channel=copy_channel, scene_marks=marks, content_type=content_type, reuse_from=run_dir,
     )
-    video = add_background_music(video, out_dir, seed_text=translated.topic_key)
+    video = add_background_music(
+        video, out_dir, seed_text=translated.topic_key, channel=channel, lesson=lesson,
+    )
     validate_rendered_video(video, content_type=content_type)
     title = str(build_metadata(translated, copy_channel, content_type=content_type)["title"])
     return video, title
