@@ -48,7 +48,10 @@ def _request_json(url: str, method: str = "GET", payload: dict | None = None,
             parsed = json.loads(detail)
             err = parsed.get("error", parsed)
             if isinstance(err, dict):
-                detail = err.get("message") or err.get("code") or detail
+                # Keep TikTok's error code: its message is often only a link
+                # to the guidelines, and the code says what actually went wrong.
+                code, message = err.get("code"), err.get("message")
+                detail = f"{code}: {message}" if code and message else (message or code or detail)
         except Exception:
             pass
         raise RuntimeError(f"HTTP {exc.code}: {detail}") from exc
@@ -103,7 +106,7 @@ def tiktok_login_url(channel_id: str, redirect_uri: str) -> tuple[str, str, str]
     verifier = secrets.token_urlsafe(48)  # 64 chars from A-Z a-z 0-9 - _
     state = secrets.token_urlsafe(16)
     scopes = "user.info.basic,video.upload"
-    if cfg.get("mode") == "direct":
+    if cfg.get("mode") in {"direct", "private"}:
         scopes += ",video.publish"
     query = urlencode({
         "client_key": cfg["client_key"], "scope": scopes, "response_type": "code",
@@ -462,6 +465,11 @@ def upload_tiktok(channel_id: str, video: Path, title: str,
     if mode == "direct" and not direct_consent:
         raise RuntimeError("TikTok Direct Post requires explicit confirmation for this upload.")
     privacy = str(cfg.get("privacy", "SELF_ONLY"))
+    if mode == "private":
+        # A post only the creator can see: it waits in TikTok Studio until the
+        # creator sets it to Everyone, so the creator still decides what goes
+        # public. Used instead of drafts, which do not reach a sandbox app's inbox.
+        mode, privacy = "direct", "SELF_ONLY"
     try:
         publish_id, upload_url, chunk_size = _tiktok_init(video, title, token, mode, privacy)
     except Exception as exc:
@@ -510,11 +518,22 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
             )
             message = f"Facebook upload complete: {post_url}"
         elif platform == "tiktok":
-            remote_id, post_url = upload_tiktok(
-                row["channel"], path, row["title"], direct_consent, force_tiktok_mode,
-            )
             mode = force_tiktok_mode or account(row["channel"], "tiktok").get("mode", "draft")
-            message = "Sent to TikTok drafts" if mode != "direct" else "TikTok Direct Post submitted"
+            try:
+                remote_id, post_url = upload_tiktok(
+                    row["channel"], path, row["title"], direct_consent, force_tiktok_mode,
+                )
+            except RuntimeError as exc:
+                # Until TikTok audits the app it only posts to PRIVATE accounts;
+                # a public account still gets the video, as a draft.
+                if mode != "private" or "unaudited_client_can_only_post_to_private_accounts" not in str(exc):
+                    raise
+                remote_id, post_url = upload_tiktok(row["channel"], path, row["title"], force_mode="draft")
+                mode = "draft"
+            message = {
+                "direct": "TikTok Direct Post submitted",
+                "private": "Posted privately to TikTok; set it to Everyone in TikTok Studio > Posts",
+            }.get(mode, "Sent to TikTok drafts")
         else:
             raise RuntimeError("Unsupported social platform.")
         set_social_upload(video_id, platform, "submitted", remote_id, post_url)
@@ -543,9 +562,11 @@ def auto_publish_video(video_id: int, channel_id: str,
             messages.append(f"Facebook failed: {exc}")
     if tt.get("auto_upload") and tt.get("access_token"):
         try:
-            # TikTok guidelines require per-post consent for Direct Post. Automatic
-            # cross-posting therefore safely exports to the creator's drafts.
-            messages.append(publish_video(video_id, "tiktok", channel_id, force_tiktok_mode="draft"))
+            # TikTok guidelines require per-post consent before anything goes
+            # public, so automatic cross-posting only ever lands as a draft or
+            # as a private post the creator makes public themselves.
+            auto_mode = "private" if tt.get("mode") == "private" else "draft"
+            messages.append(publish_video(video_id, "tiktok", channel_id, force_tiktok_mode=auto_mode))
         except Exception as exc:
             messages.append(f"TikTok failed: {exc}")
     return messages
