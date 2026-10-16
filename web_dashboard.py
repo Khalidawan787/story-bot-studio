@@ -1706,7 +1706,7 @@ PAGE = r"""
   .platform-tabs button.active{background:#283455;color:#fff;border-color:#5268a5}
   .platform-panel{display:none}.platform-panel.active{display:block}.platform-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .guide-box{margin-top:14px;padding:12px 14px;border-radius:12px;background:#14192d;border:1px solid var(--line)}
-  .guide-box summary{cursor:pointer;font-weight:700}.guide-box h4{margin:16px 0 2px;font-size:14px;color:var(--text,#e8ebff)}.guide-box code.copy{display:block;margin:4px 0 6px;padding:6px 8px;border-radius:8px;background:#0b0f1e;border:1px solid var(--line);white-space:pre-wrap;word-break:break-all;user-select:all}.guide-box kbd{padding:0 5px;border:1px solid var(--line);border-radius:4px;font-size:12px}.guide-box ol{margin:10px 0 4px;padding-left:20px;color:var(--muted);font-size:13px;line-height:1.55}
+  .conn-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:0 0 18px}.conn-card{border:1px solid var(--line);border-left:4px solid #59607a;border-radius:12px;padding:12px 14px;background:#161b2e;display:flex;flex-direction:column;gap:6px}.conn-card.ok{border-left-color:var(--ok)}.conn-card.warn{border-left-color:var(--warn)}.conn-card.bad{border-left-color:#ff6b6b}.conn-top{display:flex;justify-content:space-between;align-items:center;gap:8px}.conn-name{font-weight:700;font-size:15px}.conn-pill{font-size:12px;padding:2px 9px;border-radius:999px;background:#262d45;color:var(--muted)}.conn-card.ok .conn-pill{background:rgba(61,220,151,.16);color:var(--ok)}.conn-card.warn .conn-pill{background:rgba(245,197,107,.16);color:var(--warn)}.conn-card.bad .conn-pill{background:rgba(255,107,107,.16);color:#ff8a8a}.conn-who{font-size:13px;word-break:break-all}.conn-auto{font-size:12px;color:var(--muted);flex:1}.conn-card button{align-self:flex-start}.mode-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}.mode-card{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;background:#161b2e}.mode-card:has(input:checked){border-color:#5b7cff;background:#1d2440}.mode-card input{margin-top:3px}.mode-card b{display:block}.mode-card small{color:var(--muted)}.tt-group{border:1px dashed var(--line);border-radius:12px;padding:12px;margin-top:10px}.tt-group h4{margin:0 0 8px}.guide-box summary{cursor:pointer;font-weight:700}.guide-box h4{margin:16px 0 2px;font-size:14px;color:var(--text,#e8ebff)}.guide-box code.copy{display:block;margin:4px 0 6px;padding:6px 8px;border-radius:8px;background:#0b0f1e;border:1px solid var(--line);white-space:pre-wrap;word-break:break-all;user-select:all}.guide-box kbd{padding:0 5px;border:1px solid var(--line);border-radius:4px;font-size:12px}.guide-box ol{margin:10px 0 4px;padding-left:20px;color:var(--muted);font-size:13px;line-height:1.55}
   .social-state{display:flex;gap:6px;flex-wrap:wrap;margin:7px 0}.social-state .chip.failed{color:var(--err)}.social-state .chip.submitted{color:var(--ok)}  @keyframes sectionIn{from{opacity:.45;transform:translateY(3px)}to{opacity:1;transform:none}}  @media(max-width:800px){.action-grid,.stats,.analytics-grid{grid-template-columns:1fr}.action-card.full{grid-column:auto}.channel-banner .only{margin-left:0}}
 </style></head><body>
 <header><div class="logo">🎬</div><div>
@@ -1732,8 +1732,38 @@ PAGE = r"""
 
   <div class="hint" style="margin:-8px 0 16px">Uploaded/scheduled videos automatically disappear from this dashboard after 7 days. Your YouTube videos are not deleted.</div>
 
+
+  {% macro connection_cards() %}
+  <div class="conn-grid">
+    {# YouTube #}
+    <div class="conn-card {{ 'ok' if setup.youtube else 'bad' }}">
+      <div class="conn-top"><span class="conn-name">YouTube</span><span class="conn-pill">{{ 'Connected' if setup.youtube else 'Not connected' }}</span></div>
+      <div class="conn-who">{% if setup.youtube %}{{ accounts[0].email if accounts and accounts[0].email else 'Signed in' }}{% else %}Overview &rarr; Setup mein "Connect &amp; verify"{% endif %}</div>
+      <div class="conn-auto">{% if setup.youtube %}Har nayi video khud upload hoti hai (GitHub, roz){% else %}Upload band: pehle connect karein{% endif %}</div>
+      <button type="button" class="ghost sm" onclick="openPlatform('youtube')">Details</button>
+    </div>
+    {# Facebook #}
+    {% set fb_ok = social.facebook.configured and social.facebook.verified_name %}
+    <div class="conn-card {{ 'ok' if fb_ok else ('warn' if social.facebook.configured else 'off') }}">
+      <div class="conn-top"><span class="conn-name">Facebook Page</span><span class="conn-pill">{{ 'Connected' if fb_ok else ('Verify karein' if social.facebook.configured else 'Not set up') }}</span></div>
+      <div class="conn-who">{{ social.facebook.verified_name if fb_ok else ('Page ID saved, abhi verify nahi hua' if social.facebook.configured else 'Optional') }}</div>
+      <div class="conn-auto">{% if fb_ok and social.facebook.auto_upload %}Auto post ON &middot; chalta hai: {{ social.facebook_places.get(social.facebook_place, social.facebook_place) }}{% elif fb_ok %}Auto post OFF (sirf button se){% else %}Kuch post nahi hota{% endif %}</div>
+      <button type="button" class="ghost sm" onclick="openPlatform('facebook')">{{ 'Settings' if social.facebook.configured else 'Set up' }}</button>
+    </div>
+    {# TikTok #}
+    {% set tt = social.tiktok %}
+    {% set tt_ok = tt.configured and tt.verified_name %}
+    <div class="conn-card {{ 'ok' if tt_ok else ('warn' if tt.configured else 'off') }}">
+      <div class="conn-top"><span class="conn-name">TikTok</span><span class="conn-pill">{{ 'Connected' if tt_ok else ('Verify karein' if tt.configured else 'Not set up') }}</span></div>
+      <div class="conn-who">{{ tt.verified_name if tt_ok else ('Saved, abhi verify nahi hua' if tt.configured else 'Optional') }}</div>
+      <div class="conn-auto">{% if not tt_ok %}Kuch post nahi hota{% elif not tt.auto_upload %}Auto post OFF (sirf button se){% elif tt.mode == 'zernio' %}Auto PUBLIC post ON (Zernio){% elif tt.mode == 'private' %}Auto: private post (aap public karein){% else %}Auto: TikTok drafts mein{% endif %}</div>
+      <button type="button" class="ghost sm" onclick="openPlatform('tiktok')">{{ 'Settings' if tt.configured else 'Set up' }}</button>
+    </div>
+  </div>
+  {% endmacro %}
   <nav class="section-nav" aria-label="Dashboard sections">
     <button type="button" data-section="overview" class="active">Overview</button>
+    <button type="button" data-section="connections">Connections</button>
     <button type="button" data-section="create">Create Videos</button>
     <button type="button" data-section="analytics">Analytics &amp; Queue</button>
     <button type="button" data-section="library">Video Library</button>
@@ -1742,12 +1772,14 @@ PAGE = r"""
 
   <section class="dash-section active" id="section-overview">
   <div class="section-head"><h2>{{ch.name}} Overview</h2><div class="muted">Connection, automation mode and today&rsquo;s progress</div></div>
+  <h3 style="margin:0 0 8px">Kahan kahan post hota hai</h3>
+  {{ connection_cards() }}
 
   <div class="card" style="margin-bottom:18px">
     <form method="post" action="/approval-mode" class="row" style="justify-content:space-between">
       <input type="hidden" name="channel" value="{{ch.id}}">
       <div><strong>Preview &amp; Approval Mode</strong><div class="hint">When ON, requested uploads wait for your approval after the quality check.</div></div>
-      <label class="chk"><input type="checkbox" name="enabled" {{'checked' if approval_mode else ''}} onchange="this.form.submit()"> {{'ON ? review before upload' if approval_mode else 'OFF ? automatic upload'}}</label>
+      <label class="chk"><input type="checkbox" name="enabled" {{'checked' if approval_mode else ''}} onchange="this.form.submit()"> {{'ON: review before upload' if approval_mode else 'OFF: automatic upload'}}</label>
     </form>
   </div>
 
@@ -1919,216 +1951,12 @@ PAGE = r"""
   </div>
 
   </section>
-  <section class="dash-section" id="section-analytics">
-  <div class="section-head"><h2>Analytics &amp; Queue</h2><div class="muted">Performance report and upcoming publish schedule</div></div>
-
-  <div class="row" style="justify-content:space-between;margin-top:22px">
-    <h2 style="margin:0">YouTube Analytics ? Last 28 Days</h2>
-    {% if analytics.connected %}
-    <form method="post" action="/analytics-refresh"><input type="hidden" name="channel" value="{{ch.id}}"><button class="ghost sm" type="submit">Refresh Analytics</button></form>
-    {% endif %}
-  </div>
-  <div class="card" style="margin-top:12px">
-    {% if not analytics.connected %}
-      <strong>Analytics is not connected for {{ch.name}}.</strong>
-      <div class="hint">This uses a separate read-only permission and does not change the upload connection.</div>
-      <form method="post" action="/analytics-connect" style="margin-top:12px"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green" type="submit">Connect Analytics</button></form>
-    {% elif not analytics.data %}
-      <strong>Analytics permission is connected.</strong>
-      <div class="hint">Enable the YouTube Analytics API in Google Cloud once, wait a few minutes, then click Refresh Analytics.</div>
-      <a href="https://console.cloud.google.com/apis/library/youtubeanalytics.googleapis.com" target="_blank"><button class="green" type="button" style="margin-top:12px">Enable YouTube Analytics API</button></a>
-    {% else %}
-      {% set a=analytics.data %}{% set m=a.summary %}
-      <div class="row" style="justify-content:space-between"><div class="muted">{{a.start_date}} to {{a.end_date}}{% if analytics.stale %} ? cached report needs refresh{% endif %}</div></div>
-      <div class="analytics-grid">
-        <div class="metric"><div class="n">{{m.get('views',0)|int}}</div><div class="l">Views</div></div>
-        <div class="metric"><div class="n">{{m.get('estimatedMinutesWatched',0)|round(0)|int}}</div><div class="l">Minutes watched</div></div>
-        <div class="metric"><div class="n">{{m.get('averageViewDuration',0)|round(1)}}s</div><div class="l">Average view duration</div></div>
-        <div class="metric"><div class="n">{{m.get('averageViewPercentage',0)|round(1)}}%</div><div class="l">Average viewed</div></div>
-        <div class="metric"><div class="n">+{{m.get('subscribersGained',0)|int}}</div><div class="l">Subscribers gained</div></div>
-      </div>
-      {% if a.content_types %}
-      <h2 style="margin-top:12px">Shorts vs Long</h2>
-      <table class="analytics-table"><tr><th>Type</th><th>Views</th><th>Watch minutes</th><th>Avg duration</th><th>Avg viewed</th></tr>
-      {% for row in a.content_types %}<tr><td>{{row.creatorContentType}}</td><td>{{row.views|int}}</td><td>{{row.estimatedMinutesWatched|round(0)|int}}</td><td>{{row.averageViewDuration|round(1)}}s</td><td>{{row.averageViewPercentage|round(1)}}%</td></tr>{% endfor %}</table>
-      {% endif %}
-      <h2 style="margin-top:16px">Top Videos</h2>
-      {% if a.top_videos %}<table class="analytics-table"><tr><th>Video</th><th>Views</th><th>Watch minutes</th><th>Avg duration</th><th>Subscribers</th></tr>
-      {% for row in a.top_videos %}<tr><td><a href="https://youtu.be/{{row.video}}" target="_blank">{{row.title}}</a></td><td>{{row.views|int}}</td><td>{{row.estimatedMinutesWatched|round(0)|int}}</td><td>{{row.averageViewDuration|round(1)}}s</td><td>+{{row.subscribersGained|int}}</td></tr>{% endfor %}</table>{% else %}<div class="muted">No analytics rows returned for this period.</div>{% endif %}
-    {% endif %}
-  </div>
-
-  <div class="row" style="justify-content:space-between;margin-top:22px"><h2 style="margin:0">Content Calendar &amp; Queue</h2><span class="chip">{{ch.name}} only</span></div>
-  <div class="card" style="margin-top:12px">
-    {% if calendar %}<table class="analytics-table"><tr><th>Publish time (UTC)</th><th>Type</th><th>Video</th><th>Status</th></tr>
-    {% for row in calendar %}<tr><td>{{row.publish_at[:16].replace('T',' ')}}</td><td>{{row.content_type}}</td><td>{{row.title}}</td><td>{{row.status}}</td></tr>{% endfor %}</table>
-    {% else %}<div class="muted">No scheduled videos in this channel queue yet.</div>{% endif %}
-  </div>
-
-  </section>
-  <section class="dash-section" id="section-create">
-  <div class="section-head"><h2>Create Videos</h2><div class="muted">Every action below applies to {{ch.name}} only</div></div>
-
-  <div class="card" style="margin-bottom:16px;border-left:4px solid var(--ok)">
-    <div class="row" style="justify-content:space-between">
-      <div><strong>Direct YouTube Upload</strong><div class="hint">Videos upload to YouTube as soon as they are rendered — there is no waiting queue. YouTube then releases each one publicly at its own scheduled time.</div><div class="hint"><strong>{{ch.name}} upload budget today:</strong> {{channel_uploads_today}} / {{channel_upload_limit}} for this channel.{% if upload_queue.count %} <strong>{{upload_queue.count}}</strong> video(s) waiting for the next quota day.{% endif %}</div>{% if upload_pause %}<div class="hint" style="color:#ffd27a"><strong>Waiting for YouTube quota:</strong> resumes {{upload_pause[1]|localdt}}. Video creation remains active.</div>{% endif %}</div>
-    </div>
-  </div>
-
-  <div class="workspace-title">Create videos for {{ch.name}}</div>
-  <div class="action-grid">
-    <div class="card action-card">
-      <div class="action-head"><h2>Short Videos</h2><span class="scope">{{ch.name}} only</span></div>
-      <form method="post" action="/generate">
-        <input type="hidden" name="channel" value="{{ch.id}}">
-        <label class="field">Choose topic
-          <select name="topic" required style="max-width:none;width:100%">
-            <option value="" disabled selected>Select from {{stats.topics}} topics...</option>
-            {% for k,t in topics %}<option value="{{k}}">{{t}}</option>{% endfor %}
-          </select>
-        </label>
-        <div class="row" style="margin-top:12px">
-          <label class="chk"><input type="checkbox" name="upload" checked> Upload to YouTube</label>
-          <button type="submit">Create One Short</button>
-        </div>
-      </form>
-      <div class="row" style="margin-top:14px">
-        <form method="post" action="/daily">
-          <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="upload" value="on">
-          <button class="pink" type="submit">Daily Shorts ({{ch.topics_per_day}})</button>
-        </form>
-        <form method="post" action="/batch" class="row">
-          <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="upload" value="on">
-          <input type="number" name="count" value="3" min="1" max="50" style="width:70px">
-          <button class="ghost" type="submit">Create Batch</button>
-        </form>
-        <form method="post" action="/retry">
-          <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="content_type" value="short"><button class="ghost" type="submit">Retry Shorts</button>
-        </form>
-      </div>
-      {% if not ch.builtin %}
-      <div class="row" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
-        <form method="post" action="/gen-topics" class="row">
-          <input type="hidden" name="channel" value="{{ch.id}}">
-          <input type="number" name="count" value="10" min="1" max="30" style="width:70px" title="topics">
-          <input type="hidden" name="scenes" value="5"><button class="ghost" type="submit">Add Short Topics</button>
-        </form>
-      </div>
-      {% endif %}
-      <div class="action-note">Creates vertical Shorts for {{ch.name}} only. Finished videos upload to YouTube straight away.</div>
-    </div>
-
-    <div class="card action-card long">
-      <div class="action-head"><h2>Long Videos (~5 min)</h2><span class="scope">{{ch.name}} only</span></div>
-
-      <form method="post" action="/long-topic">
-        <input type="hidden" name="channel" value="{{ch.id}}">
-        <label class="field">Choose topic
-          <select name="topic" required style="max-width:none;width:100%">
-            <option value="" disabled selected>Select from {{stats.topics}} topics...</option>
-            {% for key,title in topics %}<option value="{{key}}">{{title}}</option>{% endfor %}
-          </select>
-        </label>
-        <div class="row" style="margin-top:12px">
-          <label class="chk"><input type="checkbox" name="upload" checked> Upload to YouTube</label>
-          <button class="pink" type="submit">Create One Long</button>
-        </div>
-      </form>
-
-      <div class="row" style="margin-top:14px">
-        <form method="post" action="/long-auto" class="row">
-          <input type="hidden" name="channel" value="{{ch.id}}">
-          <label class="chk"><input type="checkbox" name="upload" checked> Upload to YouTube</label>
-          <button class="green" type="submit">Auto Long</button>
-        </form>
-        <form method="post" action="/long-batch" class="row">
-          <input type="hidden" name="channel" value="{{ch.id}}">
-          <input type="number" name="count" value="2" min="1" max="20" style="width:70px" title="long videos">
-          <label class="chk"><input type="checkbox" name="upload" checked> Upload to YouTube</label>
-          <button class="ghost" type="submit">Create Batch</button>
-        </form>
-        <form method="post" action="/retry">
-          <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="content_type" value="long">
-          <button class="ghost" type="submit">Retry Long</button>
-        </form>
-      </div>
-
-      <div style="margin:16px 0;border-top:1px solid var(--line)"></div>
-      <form method="post" action="/long-custom">
-        <input type="hidden" name="channel" value="{{ch.id}}">
-        <label class="field">New long-video topic
-          <input type="text" name="prompt" placeholder="e.g. A complete story about a brave little lion" required>
-        </label>
-        <div class="row" style="margin-top:12px">
-          <label class="chk"><input type="checkbox" name="upload" checked> Upload to YouTube</label>
-          <button class="pink" type="submit">Create From My Topic</button>
-        </div>
-      </form>
-      <div class="action-note">Create as many long videos as needed for {{ch.name}}. <b>Upload to YouTube</b> off = the video stays in the dashboard only; on = it uploads to YouTube as soon as it is rendered.</div>
-    </div>
-
-    <details class="card action-card buffer full advanced-card">
-      <summary>Offline Buffer <span class="scope">{{ch.name}} only</span></summary><div class="advanced-body">
-      <form method="post" action="/offline-buffer" onsubmit="return confirm('Prepare this offline buffer for {{ch.name}} only? Keep the PC online until it finishes.')">
-        <input type="hidden" name="channel" value="{{ch.id}}">
-        <div class="row">
-          <label class="field" style="max-width:130px">Days offline (1-14)
-            <input type="number" name="days" value="3" min="1" max="14">
-          </label>
-          <label class="field">Video type
-            <select name="content_mode" style="max-width:none;width:100%">
-              <option value="both" selected>Shorts + Long videos</option>
-              <option value="long">Long videos only</option>
-              <option value="short">Shorts only</option>
-            </select>
-          </label>
-        </div>
-        <label class="field" style="margin-top:12px">Optional content guideline
-          <input type="text" name="guideline" placeholder="e.g. Focus on animal stories and do not repeat topics">
-        </label>
-        <button class="green" type="submit" style="margin-top:12px">Prepare {{ch.name}} Offline Buffer</button>
-      </form>
-      <div class="action-note">Only {{ch.name}} videos are prepared. Keep this PC online until the job finishes; afterward YouTube publishes the private queue automatically every 3 hours.</div>
-      </div>
-    </details>
-
-    <details class="card action-card custom full advanced-card">
-      <summary>Custom Short <span class="scope">{{ch.name}} only</span></summary><div class="advanced-body">
-      <form method="post" action="/custom" class="row">
-        <input type="hidden" name="channel" value="{{ch.id}}">
-        <input type="text" name="prompt" placeholder="Type your short-video idea..." required style="flex:1;min-width:260px">
-        <select name="scenes" style="max-width:160px"><option value="5">~30 sec</option><option value="6" selected>6 scenes</option><option value="8">8 scenes</option><option value="12">12 scenes</option></select>
-        <label class="chk"><input type="checkbox" name="upload" checked> Add to queue</label>
-        <button type="submit">Create Custom Short</button>
-      </form>
-      </div>
-    </details>
-  </div>
-
-  <div class="row" style="justify-content:space-between;margin-top:18px">
-    <h2 style="margin:0">Live Creation Status</h2>
-    <span class="scope">{{ch.name}} only</span>
-  </div>
-  <div class="card jobs-box" data-job-scope="{{ch.id}}" style="margin-top:12px">
-    <div class="muted jobs-empty">No creation jobs yet.</div>
-  </div>
-
-  </section>
-  <section class="dash-section" id="section-system">
-  <div class="section-head"><h2>System &amp; Storage</h2><div class="muted">Images, API limits, backup and background jobs</div></div>
-  <div class="card" style="margin-bottom:18px">
-    <form method="post" action="/automation" class="row" style="justify-content:space-between;align-items:center;gap:12px">
-      <input type="hidden" name="channel" value="{{ch.id}}">
-      <div><strong>This PC's automation: {% if automation_on %}<span style="color:var(--ok)">ON</span>{% else %}<span style="color:var(--warn)">OFF</span>{% endif %}</strong>
-        <div class="hint">ON: while this dashboard is open it makes any of today's missing videos and uploads them. OFF: only the daily GitHub run does that; every button here still works. Keep it OFF while GitHub runs the channels, or both upload and share the same quota.</div></div>
-      <input type="hidden" name="on" value="{{'0' if automation_on else '1'}}">
-      <button class="{{'ghost' if automation_on else 'green'}} sm" type="submit">{{'Switch OFF' if automation_on else 'Switch ON'}}</button>
-    </form>
-  </div>
-
-  <h2>Publishing Platforms</h2>
+  <section class="dash-section" id="section-connections">
+  <div class="section-head"><h2>Connections</h2><div class="muted">{{ch.name}}: kaun sa account juda hai aur kya khud post hota hai</div></div>
+  {{ connection_cards() }}
+  <div class="hint" style="margin:-6px 0 14px">Koi setting ya login badla? Overview &rarr; Setup mein <b>Send to GitHub</b> dabayein, warna roz ka GitHub run purani settings se chalega.</div>
   <div class="card">
-    <div class="row" style="justify-content:space-between"><div><strong>Cross-platform publishing</strong><div class="hint">Settings below apply to {{ch.name}} only. Secrets stay on this PC and are never shown again.</div></div><span class="scope">{{ch.name}} only</span></div>
+    <div class="row" style="justify-content:space-between"><div><strong>Platform settings</strong><div class="hint">Upar platform chunein. Yeh settings sirf {{ch.name}} ki hain. Keys/tokens isi PC par rehte hain aur dobara nazar nahi aate.</div></div><span class="scope">{{ch.name}} only</span></div>
     <div class="platform-tabs">
       <button type="button" data-platform="youtube" class="active">YouTube</button>
       <button type="button" data-platform="facebook">Facebook Page</button>
@@ -2187,25 +2015,59 @@ PAGE = r"""
     </div>
 
     <div class="platform-panel" id="platform-tiktok">
-      <div class="row" style="justify-content:space-between"><div><strong>TikTok</strong> <span class="chip">{{'configured' if social.tiktok.configured else 'setup required'}}</span><div class="hint">Safe default sends videos to TikTok drafts. Public Direct Post needs TikTok audit and per-post consent.</div></div><a href="{{social.guides.tiktok_app}}" target="_blank"><button class="ghost sm" type="button">Create TikTok App</button></a></div>
-      <form method="post" action="/social-settings" style="margin-top:14px">
+      <div><strong>TikTok</strong> {% if social.tiktok.verified_name %}<span class="chip" style="background:rgba(61,220,151,.18);color:var(--ok)">Connected: {{social.tiktok.verified_name}}</span>{% elif social.tiktok.configured %}<span class="chip" style="color:var(--warn)">Saved: Verify dabayein</span>{% else %}<span class="chip">Not set up</span>{% endif %}
+        <div class="hint">Pehle tareeqa chunein. Neeche sirf usi tareeqe ki settings nazar aayengi.</div></div>
+      <form method="post" action="/social-settings" style="margin-top:6px">
         <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="tiktok">
-        <div class="platform-grid">
-          <label class="field">Client Key<input type="text" name="client_key" value="{{social.tiktok.client_key}}" placeholder="TikTok Client Key"></label>
-          <label class="field">Client Secret<input type="password" name="client_secret" placeholder="Saved securely - leave blank to keep"></label>
-          <label class="field">Access Token<input type="password" name="access_token" placeholder="{{'Saved - leave blank to keep it' if social.tiktok.configured else 'Paste user Access Token'}}"></label>
-          <label class="field">Refresh Token<input type="password" name="refresh_token" placeholder="Optional but recommended"></label>
-          <label class="field">Zernio API key (for auto public post)<input type="password" name="zernio_api_key" placeholder="{{'Saved - leave blank to keep it' if social.tiktok.zernio else 'sk_... from zernio.com > API Keys'}}"></label>
-          <label class="field">Zernio TikTok username (is channel ka)<input type="text" name="zernio_username" value="{{social.tiktok.zernio_username}}" placeholder="e.g. trendnerve.global - Zernio mein ek se zyada TikTok hon to zaroori"></label>
-          <label class="field">Posting mode<select name="mode" style="width:100%;max-width:none"><option value="draft" {{'selected' if social.tiktok.mode=='draft' else ''}}>Send to TikTok drafts (recommended)</option><option value="zernio" {{'selected' if social.tiktok.mode=='zernio' else ''}}>Auto PUBLIC post via Zernio (free, no click)</option><option value="private" {{'selected' if social.tiktok.mode=='private' else ''}}>Private post (Only me) - make public in TikTok Studio</option><option value="direct" {{'selected' if social.tiktok.mode=='direct' else ''}}>Direct Post (audited app only)</option></select></label>
-          <label class="field">Direct Post privacy<select name="privacy" style="width:100%;max-width:none"><option value="SELF_ONLY" {{'selected' if social.tiktok.privacy=='SELF_ONLY' else ''}}>Private / Self only</option><option value="PUBLIC_TO_EVERYONE" {{'selected' if social.tiktok.privacy=='PUBLIC_TO_EVERYONE' else ''}}>Public</option><option value="MUTUAL_FOLLOW_FRIENDS" {{'selected' if social.tiktok.privacy=='MUTUAL_FOLLOW_FRIENDS' else ''}}>Friends</option></select></label>
+        <input type="hidden" name="privacy" value="{{social.tiktok.privacy}}">
+        <div class="mode-cards">
+          <label class="mode-card"><input type="radio" name="mode" value="zernio" {{'checked' if social.tiktok.mode=='zernio' else ''}}><span><b>Auto PUBLIC post (Zernio)</b><small>Recommended. Har video khud public, koi click nahi. Free (2 accounts).</small></span></label>
+          <label class="mode-card"><input type="radio" name="mode" value="draft" {{'checked' if social.tiktok.mode in ('draft','direct') else ''}}><span><b>TikTok drafts</b><small>Apni TikTok developer app se. Video phone ke inbox mein, aap Post karein.</small></span></label>
+          <label class="mode-card"><input type="radio" name="mode" value="private" {{'checked' if social.tiktok.mode=='private' else ''}}><span><b>Private post</b><small>Apni app se, "Only me". Aap TikTok Studio mein public karein. App audit ke baad.</small></span></label>
         </div>
-        <div class="row" style="margin-top:12px"><label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.tiktok.auto_upload else ''}}> Automatically send new videos to TikTok (drafts or private post)</label><button class="green sm" type="submit">Save TikTok Settings</button></div>
+
+        <div class="tt-group" data-tt-for="zernio">
+          <h4>Zernio settings</h4>
+          <div class="platform-grid">
+            <label class="field">Zernio API key<input type="password" name="zernio_api_key" autocomplete="new-password" placeholder="{{'Saved - khaali chhorein to wahi rahegi' if social.tiktok.zernio else 'sk_... (zernio.com > API Keys)'}}"></label>
+            <label class="field">Is channel ka TikTok username<input type="text" name="zernio_username" value="{{social.tiktok.zernio_username}}" placeholder="e.g. trendnerve.global"></label>
+          </div>
+          <div class="hint">Ek hi Zernio account sab channels ke liye. Har channel ka TikTok usi Zernio mein Connect karein aur yahan us ka username likhein. <a href="https://zernio.com" target="_blank">zernio.com</a></div>
+        </div>
+
+        <div class="tt-group" data-tt-for="draft private">
+          <h4>Apni TikTok developer app</h4>
+          <div class="platform-grid">
+            <label class="field">Client Key<input type="text" name="client_key" value="{{social.tiktok.client_key}}" placeholder="developers.tiktok.com > app > Credentials"></label>
+            <label class="field">Client Secret<input type="password" name="client_secret" autocomplete="new-password" placeholder="Saved - khaali chhorein to wahi rahegi"></label>
+          </div>
+          <details style="margin-top:8px"><summary class="hint" style="cursor:pointer">Tokens khud paste karne hain? (zaroorat nahi: neeche "Login with TikTok" use karein)</summary>
+            <div class="platform-grid" style="margin-top:8px">
+              <label class="field">Access Token<input type="password" name="access_token" autocomplete="new-password" placeholder="{{'Saved' if social.tiktok.configured else 'Optional'}}"></label>
+              <label class="field">Refresh Token<input type="password" name="refresh_token" autocomplete="new-password" placeholder="Optional"></label>
+            </div>
+          </details>
+        </div>
+
+        <div class="row" style="margin-top:12px"><label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.tiktok.auto_upload else ''}}> Har nayi video khud TikTok par bhejo</label><button class="green sm" type="submit">Save TikTok Settings</button></div>
       </form>
       <div class="row" style="margin-top:10px">
-        <form method="post" action="/tiktok-login"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green sm" type="submit">Login with TikTok</button></form>
+        <form method="post" action="/tiktok-login" data-tt-for="draft private"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green sm" type="submit">Login with TikTok</button></form>
         <form method="post" action="/social-verify"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="tiktok"><button class="ghost sm" type="submit">Verify TikTok</button></form>
       </div>
+      <script>
+      (function(){
+        var panel=document.getElementById('platform-tiktok');
+        function sync(){
+          var picked=(panel.querySelector('input[name=mode]:checked')||{}).value||'zernio';
+          panel.querySelectorAll('[data-tt-for]').forEach(function(el){
+            el.style.display=el.getAttribute('data-tt-for').split(' ').indexOf(picked)>=0?'':'none';
+          });
+        }
+        panel.querySelectorAll('input[name=mode]').forEach(function(r){r.addEventListener('change',sync)});
+        sync();
+      })();
+      </script>
       {% if social.tiktok.mode == 'zernio' %}
       <div class="guide-box" style="margin-top:12px">
         <div class="row" style="justify-content:space-between;align-items:center">
@@ -2320,6 +2182,215 @@ Content Posting API (video.upload): the tool sends my finished videos to my TikT
       </details>
     </div>
   </div>
+  </section>
+
+  <section class="dash-section" id="section-analytics">
+  <div class="section-head"><h2>Analytics &amp; Queue</h2><div class="muted">Performance report and upcoming publish schedule</div></div>
+
+  <div class="row" style="justify-content:space-between;margin-top:22px">
+    <h2 style="margin:0">YouTube Analytics: Last 28 Days</h2>
+    {% if analytics.connected %}
+    <form method="post" action="/analytics-refresh"><input type="hidden" name="channel" value="{{ch.id}}"><button class="ghost sm" type="submit">Refresh Analytics</button></form>
+    {% endif %}
+  </div>
+  <div class="card" style="margin-top:12px">
+    {% if not analytics.connected %}
+      <strong>Analytics is not connected for {{ch.name}}.</strong>
+      <div class="hint">This uses a separate read-only permission and does not change the upload connection.</div>
+      <form method="post" action="/analytics-connect" style="margin-top:12px"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green" type="submit">Connect Analytics</button></form>
+    {% elif not analytics.data %}
+      <strong>Analytics permission is connected.</strong>
+      <div class="hint">Enable the YouTube Analytics API in Google Cloud once, wait a few minutes, then click Refresh Analytics.</div>
+      <a href="https://console.cloud.google.com/apis/library/youtubeanalytics.googleapis.com" target="_blank"><button class="green" type="button" style="margin-top:12px">Enable YouTube Analytics API</button></a>
+    {% else %}
+      {% set a=analytics.data %}{% set m=a.summary %}
+      <div class="row" style="justify-content:space-between"><div class="muted">{{a.start_date}} to {{a.end_date}}{% if analytics.stale %} ? cached report needs refresh{% endif %}</div></div>
+      <div class="analytics-grid">
+        <div class="metric"><div class="n">{{m.get('views',0)|int}}</div><div class="l">Views</div></div>
+        <div class="metric"><div class="n">{{m.get('estimatedMinutesWatched',0)|round(0)|int}}</div><div class="l">Minutes watched</div></div>
+        <div class="metric"><div class="n">{{m.get('averageViewDuration',0)|round(1)}}s</div><div class="l">Average view duration</div></div>
+        <div class="metric"><div class="n">{{m.get('averageViewPercentage',0)|round(1)}}%</div><div class="l">Average viewed</div></div>
+        <div class="metric"><div class="n">+{{m.get('subscribersGained',0)|int}}</div><div class="l">Subscribers gained</div></div>
+      </div>
+      {% if a.content_types %}
+      <h2 style="margin-top:12px">Shorts vs Long</h2>
+      <table class="analytics-table"><tr><th>Type</th><th>Views</th><th>Watch minutes</th><th>Avg duration</th><th>Avg viewed</th></tr>
+      {% for row in a.content_types %}<tr><td>{{row.creatorContentType}}</td><td>{{row.views|int}}</td><td>{{row.estimatedMinutesWatched|round(0)|int}}</td><td>{{row.averageViewDuration|round(1)}}s</td><td>{{row.averageViewPercentage|round(1)}}%</td></tr>{% endfor %}</table>
+      {% endif %}
+      <h2 style="margin-top:16px">Top Videos</h2>
+      {% if a.top_videos %}<table class="analytics-table"><tr><th>Video</th><th>Views</th><th>Watch minutes</th><th>Avg duration</th><th>Subscribers</th></tr>
+      {% for row in a.top_videos %}<tr><td><a href="https://youtu.be/{{row.video}}" target="_blank">{{row.title}}</a></td><td>{{row.views|int}}</td><td>{{row.estimatedMinutesWatched|round(0)|int}}</td><td>{{row.averageViewDuration|round(1)}}s</td><td>+{{row.subscribersGained|int}}</td></tr>{% endfor %}</table>{% else %}<div class="muted">No analytics rows returned for this period.</div>{% endif %}
+    {% endif %}
+  </div>
+
+  <div class="row" style="justify-content:space-between;margin-top:22px"><h2 style="margin:0">Content Calendar &amp; Queue</h2><span class="chip">{{ch.name}} only</span></div>
+  <div class="card" style="margin-top:12px">
+    {% if calendar %}<table class="analytics-table"><tr><th>Publish time (UTC)</th><th>Type</th><th>Video</th><th>Status</th></tr>
+    {% for row in calendar %}<tr><td>{{row.publish_at[:16].replace('T',' ')}}</td><td>{{row.content_type}}</td><td>{{row.title}}</td><td>{{row.status}}</td></tr>{% endfor %}</table>
+    {% else %}<div class="muted">No scheduled videos in this channel queue yet.</div>{% endif %}
+  </div>
+
+  </section>
+  <section class="dash-section" id="section-create">
+  <div class="section-head"><h2>Create Videos</h2><div class="muted">Every action below applies to {{ch.name}} only</div></div>
+
+  <div class="card" style="margin-bottom:16px;border-left:4px solid var(--ok)">
+    <div class="row" style="justify-content:space-between">
+      <div><strong>Direct YouTube Upload</strong><div class="hint">Videos upload to YouTube as soon as they are rendered — there is no waiting queue. YouTube then releases each one publicly at its own scheduled time.</div><div class="hint"><strong>{{ch.name}} upload budget today:</strong> {{channel_uploads_today}} / {{channel_upload_limit}} for this channel.{% if upload_queue.count %} <strong>{{upload_queue.count}}</strong> video(s) waiting for the next quota day.{% endif %}</div>{% if upload_pause %}<div class="hint" style="color:#ffd27a"><strong>Waiting for YouTube quota:</strong> resumes {{upload_pause[1]|localdt}}. Video creation remains active.</div>{% endif %}</div>
+    </div>
+  </div>
+
+  <div class="workspace-title">Create videos for {{ch.name}}</div>
+  <div class="action-grid">
+    <div class="card action-card">
+      <div class="action-head"><h2>Short Videos</h2><span class="scope">{{ch.name}} only</span></div>
+      <form method="post" action="/generate">
+        <input type="hidden" name="channel" value="{{ch.id}}">
+        <label class="field">Choose topic
+          <select name="topic" required style="max-width:none;width:100%">
+            <option value="" disabled selected>Select from {{stats.topics}} topics...</option>
+            {% for k,t in topics %}<option value="{{k}}">{{t}}</option>{% endfor %}
+          </select>
+        </label>
+        <div class="row" style="margin-top:12px">
+          <label class="chk"><input type="checkbox" name="upload" checked title="YouTube par upload, aur Facebook/TikTok par bhi agar Connections mein auto ON hai"> Upload &amp; post</label>
+          <button type="submit">Create One Short</button>
+        </div>
+      </form>
+      <div class="row" style="margin-top:14px">
+        <form method="post" action="/daily">
+          <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="upload" value="on">
+          <button class="pink" type="submit">Daily Shorts ({{ch.topics_per_day}})</button>
+        </form>
+        <form method="post" action="/batch" class="row">
+          <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="upload" value="on">
+          <input type="number" name="count" value="3" min="1" max="50" style="width:70px">
+          <button class="ghost" type="submit">Create Batch</button>
+        </form>
+        <form method="post" action="/retry">
+          <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="content_type" value="short"><button class="ghost" type="submit">Retry Shorts</button>
+        </form>
+      </div>
+      {% if not ch.builtin %}
+      <div class="row" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+        <form method="post" action="/gen-topics" class="row">
+          <input type="hidden" name="channel" value="{{ch.id}}">
+          <input type="number" name="count" value="10" min="1" max="30" style="width:70px" title="topics">
+          <input type="hidden" name="scenes" value="5"><button class="ghost" type="submit">Add Short Topics</button>
+        </form>
+      </div>
+      {% endif %}
+      <div class="action-note">Creates vertical Shorts for {{ch.name}} only. Finished videos upload to YouTube straight away.</div>
+    </div>
+
+    <div class="card action-card long">
+      <div class="action-head"><h2>Long Videos (~5 min)</h2><span class="scope">{{ch.name}} only</span></div>
+
+      <form method="post" action="/long-topic">
+        <input type="hidden" name="channel" value="{{ch.id}}">
+        <label class="field">Choose topic
+          <select name="topic" required style="max-width:none;width:100%">
+            <option value="" disabled selected>Select from {{stats.topics}} topics...</option>
+            {% for key,title in topics %}<option value="{{key}}">{{title}}</option>{% endfor %}
+          </select>
+        </label>
+        <div class="row" style="margin-top:12px">
+          <label class="chk"><input type="checkbox" name="upload" checked title="YouTube par upload, aur Facebook/TikTok par bhi agar Connections mein auto ON hai"> Upload &amp; post</label>
+          <button class="pink" type="submit">Create One Long</button>
+        </div>
+      </form>
+
+      <div class="row" style="margin-top:14px">
+        <form method="post" action="/long-auto" class="row">
+          <input type="hidden" name="channel" value="{{ch.id}}">
+          <label class="chk"><input type="checkbox" name="upload" checked title="YouTube par upload, aur Facebook/TikTok par bhi agar Connections mein auto ON hai"> Upload &amp; post</label>
+          <button class="green" type="submit">Auto Long</button>
+        </form>
+        <form method="post" action="/long-batch" class="row">
+          <input type="hidden" name="channel" value="{{ch.id}}">
+          <input type="number" name="count" value="2" min="1" max="20" style="width:70px" title="long videos">
+          <label class="chk"><input type="checkbox" name="upload" checked title="YouTube par upload, aur Facebook/TikTok par bhi agar Connections mein auto ON hai"> Upload &amp; post</label>
+          <button class="ghost" type="submit">Create Batch</button>
+        </form>
+        <form method="post" action="/retry">
+          <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="content_type" value="long">
+          <button class="ghost" type="submit">Retry Long</button>
+        </form>
+      </div>
+
+      <div style="margin:16px 0;border-top:1px solid var(--line)"></div>
+      <form method="post" action="/long-custom">
+        <input type="hidden" name="channel" value="{{ch.id}}">
+        <label class="field">New long-video topic
+          <input type="text" name="prompt" placeholder="e.g. A complete story about a brave little lion" required>
+        </label>
+        <div class="row" style="margin-top:12px">
+          <label class="chk"><input type="checkbox" name="upload" checked title="YouTube par upload, aur Facebook/TikTok par bhi agar Connections mein auto ON hai"> Upload &amp; post</label>
+          <button class="pink" type="submit">Create From My Topic</button>
+        </div>
+      </form>
+      <div class="action-note">Create as many long videos as needed for {{ch.name}}. <b>Upload &amp; post</b> off = video sirf dashboard mein rehti hai; on = banne ke foran baad YouTube par, aur Facebook/TikTok par bhi agar Connections mein un ka auto ON hai.</div>
+    </div>
+
+    <details class="card action-card buffer full advanced-card">
+      <summary>Offline Buffer <span class="scope">{{ch.name}} only</span></summary><div class="advanced-body">
+      <form method="post" action="/offline-buffer" onsubmit="return confirm('Prepare this offline buffer for {{ch.name}} only? Keep the PC online until it finishes.')">
+        <input type="hidden" name="channel" value="{{ch.id}}">
+        <div class="row">
+          <label class="field" style="max-width:130px">Days offline (1-14)
+            <input type="number" name="days" value="3" min="1" max="14">
+          </label>
+          <label class="field">Video type
+            <select name="content_mode" style="max-width:none;width:100%">
+              <option value="both" selected>Shorts + Long videos</option>
+              <option value="long">Long videos only</option>
+              <option value="short">Shorts only</option>
+            </select>
+          </label>
+        </div>
+        <label class="field" style="margin-top:12px">Optional content guideline
+          <input type="text" name="guideline" placeholder="e.g. Focus on animal stories and do not repeat topics">
+        </label>
+        <button class="green" type="submit" style="margin-top:12px">Prepare {{ch.name}} Offline Buffer</button>
+      </form>
+      <div class="action-note">Only {{ch.name}} videos are prepared. Keep this PC online until the job finishes; afterward YouTube publishes the private queue automatically every 3 hours.</div>
+      </div>
+    </details>
+
+    <details class="card action-card custom full advanced-card">
+      <summary>Custom Short <span class="scope">{{ch.name}} only</span></summary><div class="advanced-body">
+      <form method="post" action="/custom" class="row">
+        <input type="hidden" name="channel" value="{{ch.id}}">
+        <input type="text" name="prompt" placeholder="Type your short-video idea..." required style="flex:1;min-width:260px">
+        <select name="scenes" style="max-width:160px"><option value="5">~30 sec</option><option value="6" selected>6 scenes</option><option value="8">8 scenes</option><option value="12">12 scenes</option></select>
+        <label class="chk"><input type="checkbox" name="upload" checked> Add to queue</label>
+        <button type="submit">Create Custom Short</button>
+      </form>
+      </div>
+    </details>
+  </div>
+
+  <div class="row" style="justify-content:space-between;margin-top:18px">
+    <h2 style="margin:0">Live Creation Status</h2>
+    <span class="scope">{{ch.name}} only</span>
+  </div>
+  <div class="card jobs-box" data-job-scope="{{ch.id}}" style="margin-top:12px">
+    <div class="muted jobs-empty">No creation jobs yet.</div>
+  </div>
+
+  </section>
+  <section class="dash-section" id="section-system">
+  <div class="section-head"><h2>System &amp; Storage</h2><div class="muted">Images, API limits, backup and background jobs</div></div>
+  <div class="card" style="margin-bottom:18px">
+    <form method="post" action="/automation" class="row" style="justify-content:space-between;align-items:center;gap:12px">
+      <input type="hidden" name="channel" value="{{ch.id}}">
+      <div><strong>This PC's automation: {% if automation_on %}<span style="color:var(--ok)">ON</span>{% else %}<span style="color:var(--warn)">OFF</span>{% endif %}</strong>
+        <div class="hint">ON: while this dashboard is open it makes any of today's missing videos and uploads them. OFF: only the daily GitHub run does that; every button here still works. Keep it OFF while GitHub runs the channels, or both upload and share the same quota.</div></div>
+      <input type="hidden" name="on" value="{{'0' if automation_on else '1'}}">
+      <button class="{{'ghost' if automation_on else 'green'}} sm" type="submit">{{'Switch OFF' if automation_on else 'Switch ON'}}</button>
+    </form>
+  </div>
+
   {% if assets %}
   <h2>🖼 Asset Coverage</h2>
   <div class="card">
@@ -2389,7 +2460,7 @@ Content Posting API (video.upload): the tool sends my finished videos to my TikT
   <div class="section-head"><h2>Video Library</h2><div class="muted">Preview, upload, retry or remove generated videos</div></div>
 
   <div class="row" style="justify-content:space-between;margin-top:22px">
-    <h2 style="margin:0">Videos ? {{ch.name}}</h2>
+    <h2 style="margin:0">Videos: {{ch.name}}</h2>
     <div class="row">
       {% if accounts|length > 1 %}
       <select onchange="location.href=this.value" title="Show videos of one YouTube channel">
@@ -2450,8 +2521,9 @@ function showPlatform(name){
   localStorage.setItem('storybot-platform',name);
 }
 document.querySelectorAll('.platform-tabs button').forEach(x=>x.addEventListener('click',()=>showPlatform(x.dataset.platform)));
+function openPlatform(name){showSection('connections');showPlatform(name);}
 showPlatform(localStorage.getItem('storybot-platform')||'youtube');function showSection(name){
-  const valid=['overview','create','analytics','library','system'];
+  const valid=['overview','connections','create','analytics','library','system'];
   if(!valid.includes(name)) name='overview';
   document.querySelectorAll('.dash-section').forEach(x=>x.classList.toggle('active',x.id==='section-'+name));
   document.querySelectorAll('.section-nav button').forEach(x=>x.classList.toggle('active',x.dataset.section===name));
@@ -2459,7 +2531,10 @@ showPlatform(localStorage.getItem('storybot-platform')||'youtube');function show
   window.scrollTo({top:0,behavior:'instant'});
 }
 document.querySelectorAll('.section-nav button').forEach(x=>x.addEventListener('click',()=>showSection(x.dataset.section)));
-showSection(localStorage.getItem('storybot-section')||'overview');
+// A link can open a place directly: #connections, #tiktok, #facebook, #youtube.
+(function(){const h=location.hash.slice(1);
+  if(['youtube','facebook','tiktok'].includes(h)) openPlatform(h);
+  else showSection(h||localStorage.getItem('storybot-section')||'overview');})();
 async function poll(){
   try{
     const r=await fetch('/status'); const jobs=await r.json();
