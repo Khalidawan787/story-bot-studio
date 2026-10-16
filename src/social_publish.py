@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import hashlib
 import json
-import math
 import re
 import mimetypes
+import secrets
 import time
 import uuid
 from pathlib import Path
@@ -87,6 +88,47 @@ def _refresh_tiktok(channel_id: str) -> str:
         "refresh_token": str(result.get("refresh_token") or required[2]),
     })
     return access_token
+
+
+def tiktok_login_url(channel_id: str, redirect_uri: str) -> tuple[str, str, str]:
+    """(TikTok sign-in URL, code verifier, state) for the dashboard's Login button.
+
+    Uses TikTok's Desktop Login Kit, which accepts an http://localhost redirect,
+    so the local dashboard needs no public https address. TikTok wants the PKCE
+    challenge as the HEX SHA-256 of the verifier, not base64url.
+    """
+    cfg = account(channel_id, "tiktok")
+    if not (cfg.get("client_key") and cfg.get("client_secret")):
+        raise RuntimeError("Save the Client Key and Client Secret first, then click Login with TikTok.")
+    verifier = secrets.token_urlsafe(48)  # 64 chars from A-Z a-z 0-9 - _
+    state = secrets.token_urlsafe(16)
+    scopes = "user.info.basic,video.upload"
+    if cfg.get("mode") == "direct":
+        scopes += ",video.publish"
+    query = urlencode({
+        "client_key": cfg["client_key"], "scope": scopes, "response_type": "code",
+        "redirect_uri": redirect_uri, "state": state,
+        "code_challenge": hashlib.sha256(verifier.encode("ascii")).hexdigest(),
+        "code_challenge_method": "S256",
+    })
+    return f"https://www.tiktok.com/v2/auth/authorize/?{query}", verifier, state
+
+
+def tiktok_finish_login(channel_id: str, code: str, verifier: str, redirect_uri: str) -> str:
+    """Swap the code TikTok sent back for tokens, save them, return the account name."""
+    cfg = account(channel_id, "tiktok")
+    result = _request_form(f"{TT_API}/v2/oauth/token/", {
+        "client_key": str(cfg.get("client_key", "")), "client_secret": str(cfg.get("client_secret", "")),
+        "code": code, "grant_type": "authorization_code",
+        "redirect_uri": redirect_uri, "code_verifier": verifier,
+    })
+    access_token = str(result.get("access_token", ""))
+    if not access_token:
+        raise RuntimeError("TikTok did not return an access token.")
+    save_account(channel_id, "tiktok", {
+        "access_token": access_token, "refresh_token": str(result.get("refresh_token", "")),
+    })
+    return _verify_tiktok_token(access_token)
 
 def _send_binary(url: str, data: bytes, headers: dict[str, str], method: str) -> dict:
     request = Request(url, data=data, headers={"User-Agent": USER_AGENT, **headers}, method=method)
@@ -362,8 +404,13 @@ def verify_tiktok(channel_id: str) -> str:
 
 def _tiktok_init(video: Path, title: str, token: str, mode: str, privacy: str) -> tuple[str, str, int]:
     size = video.stat().st_size
-    chunk_size = size if size < 5 * 1024 * 1024 else min(32 * 1024 * 1024, size)
-    count = max(1, math.ceil(size / chunk_size))
+    # TikTok's rules: a file up to 64 MB goes whole, with chunk_size equal to
+    # the file size ("The chunk size is invalid" otherwise). Bigger files go in
+    # 5-64 MB chunks, counted as size // chunk_size ROUNDED DOWN; the leftover
+    # bytes ride in the last chunk (which may grow to 128 MB). Rounding up is
+    # rejected with "The total chunk count is invalid".
+    chunk_size = size if size <= 64 * 1024 * 1024 else 32 * 1024 * 1024
+    count = _tiktok_chunk_count(size, chunk_size)
     source = {"source": "FILE_UPLOAD", "video_size": size, "chunk_size": chunk_size, "total_chunk_count": count}
     headers = {"Authorization": f"Bearer {token}"}
     if mode == "direct":
@@ -387,12 +434,18 @@ def _tiktok_init(video: Path, title: str, token: str, mode: str, privacy: str) -
     return publish_id, upload_url, chunk_size
 
 
+def _tiktok_chunk_count(size: int, chunk_size: int) -> int:
+    return max(1, size // chunk_size)
+
+
 def _tiktok_transfer(video: Path, upload_url: str, chunk_size: int) -> None:
     total = video.stat().st_size
+    count = _tiktok_chunk_count(total, chunk_size)
     start = 0
     with video.open("rb") as handle:
-        while start < total:
-            chunk = handle.read(chunk_size)
+        for index in range(count):
+            # The last chunk takes everything that is left.
+            chunk = handle.read() if index == count - 1 else handle.read(chunk_size)
             end = start + len(chunk) - 1
             _send_binary(upload_url, chunk, {
                 "Content-Type": "video/mp4", "Content-Length": str(len(chunk)),

@@ -373,15 +373,21 @@ def run_pipeline(
                 print(f"[social] {target} copy for Facebook: {facebook_title}")
         except Exception as exc:
             print(f"[social] second-language copy failed ({exc}); Facebook gets the original")
-    try:
-        from .social_publish import auto_publish_video
-        social_messages = auto_publish_video(
-            video_db_id, channel_id, facebook_video=facebook_video, facebook_title=facebook_title,
-        )
-        for message in social_messages:
-            print(f"[social] {message}")
-    except Exception as exc:
-        print(f"[social] automatic publish skipped: {exc}")
+    # Cross-posting follows the same rule as YouTube: a build-only run, a video
+    # held for approval, or one that failed its checks is never posted anywhere.
+    if upload and quality_report["passed"] and not approval_required \
+            and status not in {"quality_failed", "duplicate_blocked"}:
+        try:
+            from .social_publish import auto_publish_video
+            social_messages = auto_publish_video(
+                video_db_id, channel_id, facebook_video=facebook_video, facebook_title=facebook_title,
+            )
+            for message in social_messages:
+                print(f"[social] {message}")
+        except Exception as exc:
+            print(f"[social] automatic publish skipped: {exc}")
+    else:
+        print("[social] not posted: this run does not upload")
     # Optional: push the final video to Google Drive and free the local copy.
     if settings.enable_drive_storage and status not in {"daily_upload_pending", "duplicate_blocked", "quality_failed"}:
         try:

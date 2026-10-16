@@ -777,6 +777,59 @@ def social_verify_route():
     return redirect(url_for("home", channel=ch.id))
 
 
+# TikTok sign-ins waiting for TikTok to send the person back: state -> (channel, verifier).
+_TIKTOK_LOGINS: dict[str, tuple[str, str]] = {}
+# Must match, character for character, the Redirect URI saved in the TikTok app
+# (Login Kit -> Desktop).
+TIKTOK_REDIRECT_URI = f"http://localhost:{PORT}/tiktok/callback/"
+app.jinja_env.globals.update(tiktok_redirect_uri=TIKTOK_REDIRECT_URI, tiktok_site=setup_guide.SITE)
+
+
+@app.route("/tiktok-login", methods=["POST"])
+def tiktok_login_route():
+    ch = current_channel()
+    try:
+        url, verifier, state = social_publish.tiktok_login_url(ch.id, TIKTOK_REDIRECT_URI)
+    except Exception as exc:
+        flash(f"TikTok: {exc}", "error")
+        return redirect(url_for("home", channel=ch.id))
+    _TIKTOK_LOGINS[state] = (ch.id, verifier)
+    return redirect(url)
+
+
+@app.route("/tiktok/callback/")
+def tiktok_callback_route():
+    pending = _TIKTOK_LOGINS.pop(request.args.get("state", ""), None)
+    if pending is None:
+        return _tiktok_done("", "TikTok login expired or did not start from this dashboard. Click Login with TikTok again.", False)
+    channel_id, verifier = pending
+    if request.args.get("error"):
+        reason = request.args.get("error_description") or request.args.get("error")
+        return _tiktok_done(channel_id, f"TikTok login cancelled: {reason}", False)
+    try:
+        name = social_publish.tiktok_finish_login(channel_id, request.args.get("code", ""), verifier, TIKTOK_REDIRECT_URI)
+        social_accounts.mark_verified(channel_id, "tiktok", name)
+        return _tiktok_done(channel_id, f"TikTok connected to: {name}", True)
+    except Exception as exc:
+        return _tiktok_done(channel_id, f"TikTok login failed: {exc}", False)
+
+
+def _tiktok_done(channel_id: str, message: str, ok: bool):
+    # TikTok returns to "localhost", but the dashboard (and its message cookie)
+    # lives on 127.0.0.1, so hand the result over in the address instead.
+    from urllib.parse import urlencode
+
+    query = urlencode({"channel": channel_id, "msg": message, "ok": "1" if ok else ""})
+    return redirect(f"http://127.0.0.1:{PORT}/tiktok/done?{query}")
+
+
+@app.route("/tiktok/done")
+def tiktok_done_route():
+    flash(request.args.get("msg", "")[:500], "ok" if request.args.get("ok") else "error")
+    channel_id = request.args.get("channel", "")
+    return redirect(url_for("home", channel=channel_id) if channel_id else url_for("home"))
+
+
 @app.post("/facebook-user-token")
 def facebook_user_token_route():
     ch = current_channel()
@@ -1640,7 +1693,7 @@ PAGE = r"""
   .platform-tabs button.active{background:#283455;color:#fff;border-color:#5268a5}
   .platform-panel{display:none}.platform-panel.active{display:block}.platform-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .guide-box{margin-top:14px;padding:12px 14px;border-radius:12px;background:#14192d;border:1px solid var(--line)}
-  .guide-box summary{cursor:pointer;font-weight:700}.guide-box ol{margin:10px 0 4px;padding-left:20px;color:var(--muted);font-size:13px;line-height:1.55}
+  .guide-box summary{cursor:pointer;font-weight:700}.guide-box h4{margin:16px 0 2px;font-size:14px;color:var(--text,#e8ebff)}.guide-box code.copy{display:block;margin:4px 0 6px;padding:6px 8px;border-radius:8px;background:#0b0f1e;border:1px solid var(--line);white-space:pre-wrap;word-break:break-all;user-select:all}.guide-box kbd{padding:0 5px;border:1px solid var(--line);border-radius:4px;font-size:12px}.guide-box ol{margin:10px 0 4px;padding-left:20px;color:var(--muted);font-size:13px;line-height:1.55}
   .social-state{display:flex;gap:6px;flex-wrap:wrap;margin:7px 0}.social-state .chip.failed{color:var(--err)}.social-state .chip.submitted{color:var(--ok)}  @keyframes sectionIn{from{opacity:.45;transform:translateY(3px)}to{opacity:1;transform:none}}  @media(max-width:800px){.action-grid,.stats,.analytics-grid{grid-template-columns:1fr}.action-card.full{grid-column:auto}.channel-banner .only{margin-left:0}}
 </style></head><body>
 <header><div class="logo">🎬</div><div>
@@ -2134,8 +2187,66 @@ PAGE = r"""
         </div>
         <div class="row" style="margin-top:12px"><label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.tiktok.auto_upload else ''}}> Automatically send new videos to drafts</label><button class="green sm" type="submit">Save TikTok Settings</button></div>
       </form>
-      <form method="post" action="/social-verify" style="margin-top:10px"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="tiktok"><button class="ghost sm" type="submit">Connect &amp; Verify TikTok</button></form>
-      <details class="guide-box"><summary>TikTok setup guide + official URLs</summary><ol><li>Open <a href="{{social.guides.tiktok_app}}" target="_blank">TikTok Developer Apps</a> and create an app.</li><li>Add the Content Posting API product.</li><li>Request <strong>video.upload</strong> for drafts; add <strong>video.publish</strong> only for Direct Post. Include <strong>user.info.basic</strong> for verification.</li><li>Authorize your TikTok account and paste the returned tokens above.</li><li>Save, then click Connect &amp; Verify. Full official guide: <a href="{{social.guides.tiktok}}" target="_blank">TikTok Content Posting API</a>.</li><li>Unaudited apps can only Direct Post privately; use drafts until TikTok approves the app.</li></ol></details>
+      <div class="row" style="margin-top:10px">
+        <form method="post" action="/tiktok-login"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green sm" type="submit">Login with TikTok</button></form>
+        <form method="post" action="/social-verify"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="tiktok"><button class="ghost sm" type="submit">Verify TikTok</button></form>
+      </div>
+      <details class="guide-box"{{' open' if not social.tiktok.configured else ''}}><summary>TikTok connect karne ki poori guide (pehli dafa ~30 minute; URLs aur copy-paste text ke saath)</summary>
+        <p class="hint" style="margin-top:8px">Tarteeb yaad rakhein: <strong>Sandbox se connect &rarr; demo video record &rarr; Production submit</strong>. Production form demo video ke baghair save bhi nahi hota, aur review mein kuch din lagte hain. Sandbox mein review nahi hota, us se aaj hi drafts chalne lagte hain.</p>
+
+        <h4>A. App banayein</h4><ol>
+        <li><a href="https://developers.tiktok.com/apps/" target="_blank">developers.tiktok.com/apps</a> &rarr; <strong>Connect an app</strong> (ya maujooda app kholein). Ownership: Individual.</li>
+        <li><strong>App icon:</strong> 1024&times;1024 PNG. Channel ka logo na ho to koi bhi saaf icon chalega.</li>
+        <li><strong>Category:</strong> Entertainment.</li>
+        <li><strong>Description</strong> (120 akshar tak):<code class="copy">Posts my own daily {{ch.genre or 'short'}} videos to my TikTok account as drafts, so I can review them before posting.</code></li>
+        <li><strong>Terms of Service URL:</strong><code class="copy">{{tiktok_site}}terms.html</code><strong>Privacy Policy URL:</strong><code class="copy">{{tiktok_site}}privacy.html</code></li>
+        <li><strong>Platforms:</strong> sirf &#9745; <strong>Desktop</strong>. <strong>Web/Desktop URL</strong> mein website ka link jata hai, redirect nahi:<code class="copy">{{tiktok_site}}</code></li>
+        </ol>
+
+        <h4>B. "This URL is not verified" ho to</h4><ol>
+        <li>Upar dayein <strong>URL properties</strong> &rarr; <strong>Verify properties</strong> &rarr; type <strong>URL prefix</strong> (Domain nahi) &rarr; URL: <code>{{tiktok_site}}</code></li>
+        <li>TikTok ki <code>tiktok&hellip;.txt</code> file download karein. <strong>Verify abhi na dabayein.</strong></li>
+        <li>File bot ke <code>site_extra</code> folder mein rakhein, commit + push karein, phir GitHub Actions mein <strong>Status page</strong> workflow chalayein (2&ndash;3 minute). File ka link browser mein khul jaye to TikTok mein <strong>Verify</strong> dabayein.</li>
+        <li>Verification har app aur har mode (Production / Sandbox) ki alag hoti hai. URL properties ke dropdown mein "for Production" / "for Sandbox" badal kar dekh lein. File ek dafa website par ho to baad mein sirf Verify dabana hota hai.</li>
+        </ol>
+
+        <h4>C. Products aur Scopes</h4><ol>
+        <li><strong>Add products</strong> &rarr; pehle <strong>Login Kit</strong>, phir <strong>Content Posting API</strong>. Share Kit, Webhooks, Data Portability add na karein.</li>
+        <li><strong>Login Kit &rarr; Redirect URI &rarr; Desktop*</strong> tab (Web tab nahi) mein bilkul yeh, aakhri <code>/</code> samet:<code class="copy">{{tiktok_redirect_uri}}</code></li>
+        <li>Content Posting API mein <strong>Direct Post off</strong> rakhein. <strong>Verify domains</strong> ki zaroorat nahi, bot video file khud bhejta hai.</li>
+        <li><strong>Scopes</strong> mein sirf <code>user.info.basic</code> aur <code>video.upload</code>. TikTok khud <code>user.info.profile</code>, <code>video.list</code> jaise extra scopes jor deta hai; unhe <strong>(&minus;)</strong> se hata dein, warna review late hota hai.</li>
+        </ol>
+
+        <h4>D. Sandbox (aaj hi connect karne ke liye)</h4><ol>
+        <li>Upar <strong>Sandbox</strong> tab &rarr; <strong>Create sandbox</strong>. Sandbox mein bhi A (icon, category, description, links, Desktop) aur C dobara bharein.</li>
+        <li><strong>Sandbox settings &rarr; Target Users &rarr; Add account</strong> &rarr; channel ka TikTok account. Is ke baghair login nahi hota.</li>
+        <li>Upar laal <strong>Apply changes</strong> dabayein jab tak "Saved" na aa jaye. "Unsaved changes" likha ho to kuch save nahi hua.</li>
+        </ol>
+
+        <h4>E. Bot se connect</h4><ol>
+        <li>Sandbox ki <strong>Credentials</strong> mein aankh ke icon se <strong>Client key</strong> aur <strong>Client secret</strong> copy karein (sandbox aur production ki keys alag hoti hain).</li>
+        <li>Upar Client Key / Client Secret paste karein, Access/Refresh Token khaali chhorein &rarr; <strong>Save TikTok Settings</strong>.</li>
+        <li><strong>Login with TikTok</strong> &rarr; channel ke TikTok account se login &rarr; <strong>Authorize</strong>. Upar "TikTok connected to: &hellip;" aa jayega. Login ~1 saal chalta hai; roz ka token bot khud renew karta hai.</li>
+        <li><strong>Automatically send new videos to drafts</strong> tick &rarr; Save. Test: Video Library mein kisi video par <strong>Send TikTok</strong>, phir TikTok app &rarr; Inbox / Profile &rarr; Drafts.</li>
+        <li><strong>Roz ki videos GitHub banata hai</strong>, is liye connect ke baad yeh login GitHub ko bhejna zaroori hai:<code class="copy">.venv\Scripts\python.exe scripts\setup_github_actions.py</code>Jab bhi TikTok dobara login ho ya keys badlein, yeh command phir chalayein.</li>
+        </ol>
+
+        <h4>F. Production review (public app)</h4><ol>
+        <li><strong>Demo video</strong> (MP4, 50MB se kam): <kbd>Win</kbd>+<kbd>Alt</kbd>+<kbd>R</kbd> se screen record. Dikhayein: yeh dashboard &rarr; TikTok panel &rarr; Login with TikTok &rarr; authorize &rarr; "connected" &rarr; Send TikTok &rarr; phone mein draft. Koi purani YouTube video na lagayein; us se app reject hoti hai.</li>
+        <li><strong>"Explain how each product and scope works"</strong> mein:<code class="copy">This is a personal desktop tool that I run on my own computer to publish the short videos I create for my own TikTok account.
+Login Kit (user.info.basic): I sign in with my own TikTok account so the tool can show which account is connected.
+Content Posting API (video.upload): the tool sends my finished videos to my TikTok inbox as drafts. I then open the TikTok app, review each draft, and post it myself. Nothing is posted automatically and no other users' data is collected.</code></li>
+        <li><strong>Submit for review</strong>. Approve hone ke baad production ki Client Key/Secret yahan paste karein, dobara <strong>Login with TikTok</strong>, aur E-5 wali command chalayein.</li>
+        </ol>
+
+        <h4>Masle aur hal</h4><ol>
+        <li><strong>redirect_uri</strong> error: Login Kit ke Desktop tab ka URI upar wale se harf-ba-harf match nahi.</li>
+        <li><strong>scope</strong> error: Scopes mein <code>video.upload</code> nahi, ya changes Apply nahi hue.</li>
+        <li>Login page par account qubool na ho: Sandbox ke Target Users mein woh account nahi.</li>
+        <li>"Please correct all errors before you save": koi lazmi box khaali hai (aksar page refresh se Description/Links mit jate hain), ya production mein demo video nahi.</li>
+        <li>Official docs: <a href="{{social.guides.tiktok}}" target="_blank">Content Posting API</a> &middot; <a href="https://developers.tiktok.com/doc/login-kit-desktop" target="_blank">Login Kit (Desktop)</a></li>
+        </ol>
+      </details>
     </div>
   </div>
   {% if assets %}
