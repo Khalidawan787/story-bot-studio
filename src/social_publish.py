@@ -559,6 +559,29 @@ def upload_tiktok_zernio(channel_id: str, video: Path, caption: str) -> tuple[st
     return post_id, url
 
 
+
+def recent_zernio_posts(channel_id: str, limit: int = 8) -> list[dict]:
+    """The latest posts Zernio made for this account, wherever they were made.
+
+    Zernio publishes after the bot has moved on, and the daily videos are made
+    on GitHub, so this asks Zernio directly instead of the local database.
+    """
+    data = _request_json(f"{ZERNIO_API}/posts?limit={int(limit)}", headers=_zernio_headers(channel_id))
+    rows = []
+    for post in data.get("posts", []):
+        for entry in post.get("platforms", []) or []:
+            if entry.get("platform") != "tiktok":
+                continue
+            rows.append({
+                "title": str(post.get("content", "")).split("\n", 1)[0][:120],
+                "status": entry.get("status") or post.get("status") or "?",
+                "url": entry.get("platformPostUrl") or "",
+                "error": entry.get("errorMessage") or "",
+                "time": entry.get("publishedAt") or post.get("createdAt") or "",
+            })
+    return rows
+
+
 def publish_video(video_id: int, platform: str, channel_id: str | None = None,
                   direct_consent: bool = False, force_tiktok_mode: str | None = None,
                   video_override: Path | None = None, title_override: str | None = None) -> str:

@@ -833,6 +833,15 @@ def tiktok_done_route():
     return redirect(url_for("home", channel=channel_id) if channel_id else url_for("home"))
 
 
+@app.route("/tiktok-recent")
+def tiktok_recent_route():
+    ch = current_channel()
+    try:
+        return jsonify({"ok": True, "posts": social_publish.recent_zernio_posts(ch.id)})
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc)[:300]})
+
+
 @app.post("/facebook-user-token")
 def facebook_user_token_route():
     ch = current_channel()
@@ -2195,6 +2204,33 @@ PAGE = r"""
         <form method="post" action="/tiktok-login"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green sm" type="submit">Login with TikTok</button></form>
         <form method="post" action="/social-verify"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="tiktok"><button class="ghost sm" type="submit">Verify TikTok</button></form>
       </div>
+      {% if social.tiktok.mode == 'zernio' %}
+      <div class="guide-box" style="margin-top:12px">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <strong>TikTok auto PUBLIC post: {{ 'ON' if social.tiktok.auto_upload else 'OFF (box tick karein)' }}{% if social.tiktok.verified_name %} &middot; {{ social.tiktok.verified_name }}{% endif %}</strong>
+          <button class="ghost sm" type="button" onclick="checkTikTokPosts('{{ch.id}}')">TikTok ki aakhri posts check karein</button>
+        </div>
+        <div id="tiktok-recent" class="hint" style="margin-top:8px">Button dabayein: Zernio se aakhri posts ka haal aayega (GitHub par bani posts bhi). <strong>failed</strong> dikhe to neeche "System kab ruk sakta hai" dekhein.</div>
+      </div>
+      <script>
+      function checkTikTokPosts(channel){
+        var box=document.getElementById('tiktok-recent'); box.textContent='Zernio se pooch raha hoon...';
+        fetch('/tiktok-recent?channel='+encodeURIComponent(channel)).then(function(r){return r.json()}).then(function(d){
+          if(!d.ok){box.innerHTML='<span style="color:#ff8a8a">Zernio se jawab nahi aaya: </span>'; box.appendChild(document.createTextNode(d.error)); return;}
+          if(!d.posts.length){box.textContent='Abhi tak koi TikTok post nahi.'; return;}
+          var t=document.createElement('table'); t.style.width='100%'; t.style.fontSize='13px';
+          d.posts.forEach(function(p){
+            var tr=t.insertRow(), a=tr.insertCell(), b=tr.insertCell(), c=tr.insertCell();
+            a.textContent=(p.time||'').replace('T',' ').slice(0,16);
+            b.textContent=p.status; b.style.color=p.status==='published'?'#5be39a':(p.status==='failed'?'#ff8a8a':'#f5c56b');
+            if(p.url){var l=document.createElement('a'); l.href=p.url; l.target='_blank'; l.textContent=p.title; c.appendChild(l);} else {c.textContent=p.title;}
+            if(p.error){var e=document.createElement('div'); e.style.color='#ff8a8a'; e.textContent=p.error; c.appendChild(e);}
+          });
+          box.innerHTML=''; box.appendChild(t);
+        }).catch(function(e){box.textContent='Error: '+e;});
+      }
+      </script>
+      {% endif %}
       <details class="guide-box"{{' open' if not social.tiktok.configured else ''}}><summary>TikTok connect karne ki poori guide (pehli dafa ~30 minute; URLs aur copy-paste text ke saath)</summary>
         <p class="hint" style="margin-top:8px">Tarteeb yaad rakhein: <strong>Sandbox se connect &rarr; demo video record &rarr; Production submit</strong>. Production form demo video ke baghair save bhi nahi hota, aur review mein kuch din lagte hain. Sandbox mein review nahi hota, us se aaj hi drafts chalne lagte hain.</p>
 
@@ -2250,6 +2286,25 @@ Content Posting API (video.upload): the tool sends my finished videos to my TikT
         <li>Upar <strong>Zernio API key</strong> mein paste karein, <strong>Posting mode</strong> = "Auto PUBLIC post via Zernio", auto wala box tick &rarr; <strong>Save TikTok Settings</strong> &rarr; <strong>Verify TikTok</strong> ("&hellip; (via Zernio)" aana chahiye).</li>
         <li>GitHub ko bhejein:<code class="copy">.venv\Scripts\python.exe scripts\setup_github_actions.py</code>Ab har nayi video YouTube ke saath TikTok par bhi khud public hogi, "AI-generated" label ke saath.</li>
         <li>Yaad rahe: khabar bina dekhe public hogi. Ghalat video ho to TikTok Studio &rarr; Posts se delete karein.</li>
+        </ol>
+
+        <h4>H. Roz kya hota hai (Zernio mode)</h4><ol>
+        <li>GitHub din mein 4 dafa chalta hai (subah ~7:30, dopahar ~1:30, shaam ~7:30, raat ~1:30 Pakistan time). Har run mein channel ki video banti hai.</li>
+        <li>Video bante hi, quality check pass ho to, <strong>TikTok par foran public</strong> post hoti hai, YouTube se alag. YouTube ka quota ya schedule TikTok ko nahi rokta.</li>
+        <li>Caption: video ka title + channel ke hashtags. TikTok par "AI-generated" label khud lagta hai. Long (5 minute) videos bhi TikTok par jaati hain.</li>
+        <li>Haal dekhne ke liye upar <strong>TikTok ki aakhri posts check karein</strong>: <span style="color:#5be39a">published</span> = live (title par click se TikTok khulega), <span style="color:#f5c56b">pending/publishing</span> = chal rahi hai, <span style="color:#ff8a8a">failed</span> = neeche wali list dekhein.</li>
+        </ol>
+
+        <h4>I. System kab ruk sakta hai, aur kya karein</h4><ol>
+        <li><strong>TikTok ka Zernio se rabta toot jaye</strong> (TikTok password badla, "Disconnect" hua, ya TikTok ne login khatam kiya): zernio.com &rarr; Connections &rarr; TikTok &rarr; dobara Connect. Bot mein kuch nahi badalna.</li>
+        <li><strong>Zernio API key delete/badli</strong>: nayi key upar box mein &rarr; Save &rarr; Verify &rarr; GitHub wali command (E-5) chalayein. Is ke baghair GitHub purani key se fail hota rahega.</li>
+        <li><strong>Teesra social account</strong> Zernio mein jora: free sirf 2 accounts tak hai, phir paisay lagte hain.</li>
+        <li><strong>TikTok ki had</strong>: ek account roz ~15 posts tak. Roz 2&ndash;3 videos is se bohat kam hain.</li>
+        <li><strong>Zernio ka rush</strong>: bina card wale free accounts ko TikTok ke rush ke waqt kabhi der ho sakti hai. Post "pending" rahe to thori der baad check karein.</li>
+        <li><strong>Video post hi na ho</strong> agar: quality check fail ho, duplicate ho, approval mode on ho, ya "Automatically send" ka box untick ho. Yeh jaan boojh kar rokta hai.</li>
+        <li><strong>TikTok khud post hata de</strong> (community guidelines, jang/siyasat ki khabar par): TikTok app ke inbox mein notice aata hai. Bot ko is ka pata nahi chalta.</li>
+        <li><strong>GitHub run hi na chale</strong> (GitHub band, ya secret purana): repo &rarr; Actions &rarr; Daily videos mein laal nishaan. Koi bhi key ya login badle to E-5 wali command zaroor chalayein.</li>
+        <li><strong>Ghalat khabar</strong>: ab bina dekhe public hoti hai. Nazar aaye to TikTok Studio &rarr; Posts se delete karein, aur YouTube Studio se bhi.</li>
         </ol>
 
         <h4>Masle aur hal</h4><ol>
