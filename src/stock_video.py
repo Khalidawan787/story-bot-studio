@@ -1,6 +1,6 @@
 """Free stock video clips (Pexels) used as moving scene footage.
 
-Real-world channels (crime, trending) look far better with actual footage than
+Every channel except the kids ones looks far better with actual footage than
 with a still picture and a slow camera move. Pexels clips are free to use, need
 no attribution, and share the same key and rate limit as Pexels photos.
 
@@ -38,9 +38,18 @@ def stock_video_enabled(channel=None) -> bool:
     """True when this channel is set to use stock footage and a key exists."""
     from .thumbnails import pexels_api_key
 
+    return stock_video_wanted(channel) and bool(pexels_api_key())
+
+
+def stock_video_wanted(channel=None) -> bool:
+    """True when this channel is set to use stock footage (key not checked)."""
     channel_id = str(getattr(channel, "id", "") or "").lower()
-    wanted = channel_id in settings.stock_video_channels or getattr(channel, "visuals", "") == "stock"
-    return bool(channel_id) and wanted and bool(pexels_api_key())
+    if not channel_id:
+        return False
+    if getattr(channel, "visuals", "") == "stock" or channel_id in settings.stock_video_channels:
+        return True
+    kids = channel_id == "kids" or bool(getattr(channel, "made_for_kids", False))
+    return "all" in settings.stock_video_channels and not kids
 
 
 def _scene_queries(scene: Scene, channel=None) -> list[str]:

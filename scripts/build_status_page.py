@@ -96,7 +96,9 @@ def _clean(text: str | None, limit: int = 200) -> str:
 def _visuals(channel) -> str:
     if getattr(channel, "visuals", ""):
         return VISUAL_WORDS.get(channel.visuals, channel.visuals)
-    if channel.id in settings.stock_video_channels:
+    from src.stock_video import stock_video_wanted
+
+    if stock_video_wanted(channel):
         return VISUAL_WORDS["stock"]
     if channel.id in settings.animated_channels:
         return VISUAL_WORDS["cartoon"]

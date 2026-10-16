@@ -318,6 +318,21 @@ def _scene_clip(scene: Scene, duration: float, output_path: Path, run_dir: Path,
             landscape=content_type == "long", min_seconds=duration,
         )
     except Exception as exc:
+        # Usually Pexels' hourly limit. A clip this video already has beats a
+        # still picture: reuse one, not the scene just before (that would look
+        # like a freeze), so the video stays all footage.
+        earlier = sorted(p for p in run_dir.glob("clip_scene_*.mp4")
+                         if p != clip_path and p.stat().st_size > 100_000)
+        if len(earlier) > 1:
+            earlier = earlier[:-1]
+        if earlier:
+            import random
+            import shutil
+
+            reused = random.choice(earlier)
+            shutil.copy2(reused, clip_path)
+            print(f"[video] {output_path.stem}: {exc}; reusing {reused.name}")
+            return clip_path
         print(f"[video] {output_path.stem}: {exc}; using a still image")
         return None
 

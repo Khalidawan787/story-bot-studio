@@ -457,6 +457,9 @@ _GENRE_STOCK_HINT = {
     "motivation": "sunrise determined success",
     "trending": "news documentary photography",
     "kids": "colorful cartoon illustration children",
+    "bedtime stories": "calm night moon stars",
+    "cooking": "kitchen cooking food",
+    "heroic history": "historic documentary landscape",
 }
 _STOCK_STOP_WORDS = {
     "can", "you", "the", "and", "for", "with", "your", "this", "that", "what",

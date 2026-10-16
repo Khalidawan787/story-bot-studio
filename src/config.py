@@ -51,12 +51,12 @@ class Settings:
     # of 1080p, so this pass is what stops the upscale from looking soft.
     enable_image_polish: bool = os.getenv("ENABLE_IMAGE_POLISH", "true").lower() == "true"
     # Channels whose scenes use free Pexels stock video clips instead of a still
-    # picture with a camera move (comma-separated channel ids, blank = none). A
-    # scene with no matching clip falls back to its normal image. The cartoon
-    # kids channel must stay off this list: stock footage is real-world only.
+    # picture with a camera move (comma-separated channel ids, blank = none).
+    # "all" = every channel except the kids ones (id "kids" or made for kids):
+    # stock footage is real-world only, and those stay cartoon pictures.
     stock_video_channels: frozenset = frozenset(
         part.strip().lower()
-        for part in os.getenv("STOCK_VIDEO_CHANNELS", "crime,trending").split(",")
+        for part in os.getenv("STOCK_VIDEO_CHANNELS", "all").split(",")
         if part.strip()
     )
     # Channels whose still images are animated in layers (character moves over

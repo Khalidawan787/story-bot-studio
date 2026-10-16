@@ -12,6 +12,7 @@ import time
 import threading
 import urllib.parse
 import urllib.request
+import uuid
 import urllib.error
 from dataclasses import dataclass
 from pathlib import Path
@@ -143,6 +144,11 @@ def save_cloudflare_credentials(account_id: str, api_token: str) -> None:
 # wins. flux-1-schnell leads on quality; the SDXL models honour width/height,
 # which frames a 9:16 scene properly instead of cropping a square.
 _CLOUDFLARE_MODELS = (
+    # FLUX.2 [klein] 4B: far cleaner, more detailed pictures than schnell for
+    # about the same free-tier cost (~150 Neurons at 768x1344, so roughly 60 a
+    # day inside the free 10,000). The older models stay as fallbacks for when
+    # that allowance is used up or the model is busy.
+    "@cf/black-forest-labs/flux-2-klein-4b",
     "@cf/black-forest-labs/flux-1-schnell",
     "@cf/bytedance/stable-diffusion-xl-lightning",
     "@cf/stabilityai/stable-diffusion-xl-base-1.0",
@@ -157,6 +163,20 @@ def _cloudflare_body(model: str, prompt: str, seed: int, landscape: bool) -> dic
     # models use "num_steps".
     body["steps" if "flux" in model else "num_steps"] = 8
     return body
+
+
+def _cloudflare_request_body(model: str, prompt: str, seed: int, landscape: bool) -> tuple[bytes, str]:
+    """(body, Content-Type). The FLUX.2 models take multipart form fields."""
+    if "flux-2" not in model:
+        return json.dumps(_cloudflare_body(model, prompt, seed, landscape)).encode("utf-8"), "application/json"
+    width, height = (1344, 768) if landscape else (768, 1344)
+    fields = {"prompt": prompt, "width": str(width), "height": str(height), "seed": str(seed)}
+    boundary = uuid.uuid4().hex
+    body = b"".join(
+        f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'.encode("utf-8")
+        for name, value in fields.items()
+    ) + f"--{boundary}--\r\n".encode("utf-8")
+    return body, f"multipart/form-data; boundary={boundary}"
 
 
 def _cloudflare_image_bytes(payload: bytes, content_type: str) -> bytes:
@@ -202,12 +222,13 @@ def generate_cloudflare_scene_image(
 
     errors: list[str] = []
     for model in _CLOUDFLARE_MODELS:
+        body, content_type = _cloudflare_request_body(model, prompt, seed, landscape)
         request = urllib.request.Request(
             f"https://api.cloudflare.com/client/v4/accounts/{account}/ai/run/{model}",
-            data=json.dumps(_cloudflare_body(model, prompt, seed, landscape)).encode("utf-8"),
+            data=body,
             headers={
                 "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json",
+                "Content-Type": content_type,
                 "User-Agent": "StoryBotStudio/1.0",
             },
             method="POST",
