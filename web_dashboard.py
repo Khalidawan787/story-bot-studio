@@ -1706,7 +1706,7 @@ PAGE = r"""
   .platform-tabs button.active{background:#283455;color:#fff;border-color:#5268a5}
   .platform-panel{display:none}.platform-panel.active{display:block}.platform-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .guide-box{margin-top:14px;padding:12px 14px;border-radius:12px;background:#14192d;border:1px solid var(--line)}
-  .conn-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:0 0 18px}.conn-card{border:1px solid var(--line);border-left:4px solid #59607a;border-radius:12px;padding:12px 14px;background:#161b2e;display:flex;flex-direction:column;gap:6px}.conn-card.ok{border-left-color:var(--ok)}.conn-card.warn{border-left-color:var(--warn)}.conn-card.bad{border-left-color:#ff6b6b}.conn-top{display:flex;justify-content:space-between;align-items:center;gap:8px}.conn-name{font-weight:700;font-size:15px}.conn-pill{font-size:12px;padding:2px 9px;border-radius:999px;background:#262d45;color:var(--muted)}.conn-card.ok .conn-pill{background:rgba(61,220,151,.16);color:var(--ok)}.conn-card.warn .conn-pill{background:rgba(245,197,107,.16);color:var(--warn)}.conn-card.bad .conn-pill{background:rgba(255,107,107,.16);color:#ff8a8a}.conn-who{font-size:13px;word-break:break-all}.conn-auto{font-size:12px;color:var(--muted);flex:1}.conn-card button{align-self:flex-start}.mode-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}.mode-card{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;background:#161b2e}.mode-card:has(input:checked){border-color:#5b7cff;background:#1d2440}.mode-card input{margin-top:3px}.mode-card b{display:block}.mode-card small{color:var(--muted)}.tt-group{border:1px dashed var(--line);border-radius:12px;padding:12px;margin-top:10px}.tt-group h4{margin:0 0 8px}.guide-box summary{cursor:pointer;font-weight:700}.guide-box h4{margin:16px 0 2px;font-size:14px;color:var(--text,#e8ebff)}.guide-box code.copy{display:block;margin:4px 0 6px;padding:6px 8px;border-radius:8px;background:#0b0f1e;border:1px solid var(--line);white-space:pre-wrap;word-break:break-all;user-select:all}.guide-box kbd{padding:0 5px;border:1px solid var(--line);border-radius:4px;font-size:12px}.guide-box ol{margin:10px 0 4px;padding-left:20px;color:var(--muted);font-size:13px;line-height:1.55}
+  .conn-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:0 0 18px}.conn-card{border:1px solid var(--line);border-left:4px solid #59607a;border-radius:12px;padding:12px 14px;background:#161b2e;display:flex;flex-direction:column;gap:6px}.conn-card.ok{border-left-color:var(--ok)}.conn-card.warn{border-left-color:var(--warn)}.conn-card.bad{border-left-color:#ff6b6b}.conn-top{display:flex;justify-content:space-between;align-items:center;gap:8px}.conn-name{font-weight:700;font-size:15px}.conn-pill{font-size:12px;padding:2px 9px;border-radius:999px;background:#262d45;color:var(--muted)}.conn-card.ok .conn-pill{background:rgba(61,220,151,.16);color:var(--ok)}.conn-card.warn .conn-pill{background:rgba(245,197,107,.16);color:var(--warn)}.conn-card.bad .conn-pill{background:rgba(255,107,107,.16);color:#ff8a8a}.conn-who{font-size:13px;word-break:break-all}.conn-auto{font-size:12px;color:var(--muted);flex:1}.conn-card button{align-self:flex-start}.mode-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}.mode-card{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;background:#161b2e}.mode-card:has(input:checked){border-color:#5b7cff;background:#1d2440}.mode-card input{margin-top:3px}.mode-card b{display:block}.mode-card small{color:var(--muted)}.tt-group{border:1px dashed var(--line);border-radius:12px;padding:12px;margin-top:10px}.tt-group h4{margin:0 0 8px}.targets{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 16px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#161b2e;font-size:13px}.tgt{padding:3px 10px;border-radius:999px;background:#262d45}.tgt.on{background:rgba(61,220,151,.14);color:var(--ok)}.tgt.off{color:var(--muted)}.guide-box summary{cursor:pointer;font-weight:700}.guide-box h4{margin:16px 0 2px;font-size:14px;color:var(--text,#e8ebff)}.guide-box code.copy{display:block;margin:4px 0 6px;padding:6px 8px;border-radius:8px;background:#0b0f1e;border:1px solid var(--line);white-space:pre-wrap;word-break:break-all;user-select:all}.guide-box kbd{padding:0 5px;border:1px solid var(--line);border-radius:4px;font-size:12px}.guide-box ol{margin:10px 0 4px;padding-left:20px;color:var(--muted);font-size:13px;line-height:1.55}
   .social-state{display:flex;gap:6px;flex-wrap:wrap;margin:7px 0}.social-state .chip.failed{color:var(--err)}.social-state .chip.submitted{color:var(--ok)}  @keyframes sectionIn{from{opacity:.45;transform:translateY(3px)}to{opacity:1;transform:none}}  @media(max-width:800px){.action-grid,.stats,.analytics-grid{grid-template-columns:1fr}.action-card.full{grid-column:auto}.channel-banner .only{margin-left:0}}
 </style></head><body>
 <header><div class="logo">🎬</div><div>
@@ -1737,28 +1737,39 @@ PAGE = r"""
   <div class="conn-grid">
     {# YouTube #}
     <div class="conn-card {{ 'ok' if setup.youtube else 'bad' }}">
-      <div class="conn-top"><span class="conn-name">YouTube</span><span class="conn-pill">{{ 'Connected' if setup.youtube else 'Not connected' }}</span></div>
-      <div class="conn-who">{% if setup.youtube %}{{ accounts[0].email if accounts and accounts[0].email else 'Signed in' }}{% else %}Overview &rarr; Setup mein "Connect &amp; verify"{% endif %}</div>
-      <div class="conn-auto">{% if setup.youtube %}Har nayi video khud upload hoti hai (GitHub, roz){% else %}Upload band: pehle connect karein{% endif %}</div>
-      <button type="button" class="ghost sm" onclick="openPlatform('youtube')">Details</button>
+      <div class="conn-top"><span class="conn-name">YouTube</span><span class="conn-pill">{{ '✅ Connected' if setup.youtube else '❌ Setup required' }}</span></div>
+      <div class="conn-who">{% if setup.youtube %}{% set live = accounts|selectattr('connected')|list %}{{ live|length }} channel{{ '' if live|length == 1 else 's' }}: {{ live|map(attribute='name')|join(', ') }}{% else %}Koi YouTube channel connect nahi{% endif %}</div>
+      <div class="conn-auto">Google OAuth: {{ '✅ apna project' if setup.project else '⚠️ project shared/missing' }} &middot; {% if setup.youtube %}har nayi video khud upload{% else %}upload band{% endif %}</div>
+      {% if setup.youtube and setup.project %}<button type="button" class="ghost sm" onclick="openPlatform('youtube')">Details</button>{% else %}<button type="button" class="green sm" onclick="openSetup()">Setup required &rarr;</button>{% endif %}
     </div>
     {# Facebook #}
     {% set fb_ok = social.facebook.configured and social.facebook.verified_name %}
     <div class="conn-card {{ 'ok' if fb_ok else ('warn' if social.facebook.configured else 'off') }}">
-      <div class="conn-top"><span class="conn-name">Facebook Page</span><span class="conn-pill">{{ 'Connected' if fb_ok else ('Verify karein' if social.facebook.configured else 'Not set up') }}</span></div>
+      <div class="conn-top"><span class="conn-name">Facebook Page</span><span class="conn-pill">{{ '✅ Connected' if fb_ok else ('⚠️ Verify karein' if social.facebook.configured else '❌ Not connected') }}</span></div>
       <div class="conn-who">{{ social.facebook.verified_name if fb_ok else ('Page ID saved, abhi verify nahi hua' if social.facebook.configured else 'Optional') }}</div>
       <div class="conn-auto">{% if fb_ok and social.facebook.auto_upload %}Auto post ON &middot; chalta hai: {{ social.facebook_places.get(social.facebook_place, social.facebook_place) }}{% elif fb_ok %}Auto post OFF (sirf button se){% else %}Kuch post nahi hota{% endif %}</div>
-      <button type="button" class="ghost sm" onclick="openPlatform('facebook')">{{ 'Settings' if social.facebook.configured else 'Set up' }}</button>
+      <button type="button" class="{{ 'ghost' if fb_ok else 'green' }} sm" onclick="openPlatform('facebook')">{{ 'Settings' if fb_ok else 'Setup required &rarr;' }}</button>
     </div>
     {# TikTok #}
     {% set tt = social.tiktok %}
     {% set tt_ok = tt.configured and tt.verified_name %}
     <div class="conn-card {{ 'ok' if tt_ok else ('warn' if tt.configured else 'off') }}">
-      <div class="conn-top"><span class="conn-name">TikTok</span><span class="conn-pill">{{ 'Connected' if tt_ok else ('Verify karein' if tt.configured else 'Not set up') }}</span></div>
+      <div class="conn-top"><span class="conn-name">TikTok</span><span class="conn-pill">{{ '✅ Connected' if tt_ok else ('⚠️ Verify karein' if tt.configured else '❌ Not connected') }}</span></div>
       <div class="conn-who">{{ tt.verified_name if tt_ok else ('Saved, abhi verify nahi hua' if tt.configured else 'Optional') }}</div>
       <div class="conn-auto">{% if not tt_ok %}Kuch post nahi hota{% elif not tt.auto_upload %}Auto post OFF (sirf button se){% elif tt.mode == 'zernio' %}Auto PUBLIC post ON (Zernio){% elif tt.mode == 'private' %}Auto: private post (aap public karein){% else %}Auto: TikTok drafts mein{% endif %}</div>
-      <button type="button" class="ghost sm" onclick="openPlatform('tiktok')">{{ 'Settings' if tt.configured else 'Set up' }}</button>
+      <button type="button" class="{{ 'ghost' if tt_ok else 'green' }} sm" onclick="openPlatform('tiktok')">{{ 'Settings' if tt_ok else 'Setup required &rarr;' }}</button>
     </div>
+  </div>
+  {% endmacro %}
+
+  {% macro post_targets() %}
+  {% set fb_on = social.facebook.configured and social.facebook.verified_name and social.facebook.auto_upload %}
+  {% set tt_on = social.tiktok.configured and social.tiktok.verified_name and social.tiktok.auto_upload %}
+  <div class="targets"><b>"Upload &amp; post" tick ho to nayi video yahan jayegi:</b>
+    <span class="tgt {{ 'on' if setup.youtube else 'off' }}">{{ '✅' if setup.youtube else '❌' }} YouTube{% if setup.youtube %} ({{ (accounts|selectattr('connected')|first).name if accounts|selectattr('connected')|list else '' }}){% endif %}</span>
+    <span class="tgt {{ 'on' if fb_on else 'off' }}">{{ '✅' if fb_on else '❌' }} Facebook{% if fb_on %} ({{ social.facebook.verified_name }}){% endif %}</span>
+    <span class="tgt {{ 'on' if tt_on else 'off' }}">{{ '✅' if tt_on else '❌' }} TikTok{% if tt_on %} ({{ 'public' if social.tiktok.mode == 'zernio' else ('private' if social.tiktok.mode == 'private' else 'drafts') }}){% endif %}</span>
+    <a href="#" onclick="showSection('connections');return false" class="hint">badlein</a>
   </div>
   {% endmacro %}
   <nav class="section-nav" aria-label="Dashboard sections">
@@ -1787,7 +1798,7 @@ PAGE = r"""
   <div class="flash error"><strong>YouTube uploads are temporarily paused.</strong> Video creation still continues and finished videos appear below; YouTube upload/retry will wait until <strong>{{upload_pause[1]|localdt}}</strong>. Reason: {{upload_pause[0]}}</div>
   {% endif %}
 
-  <div class="card setup-card" style="margin-bottom:18px">
+  <div class="card setup-card" id="yt-setup" style="margin-bottom:18px">
     <strong>Setup for {{ch.name}}</strong>
     <div class="hint">Three steps. When all three are green, GitHub makes and uploads this channel's videos every day, even with this PC off.</div>
     <form method="post" action="/channel-slot" class="row slot-row">
@@ -1964,7 +1975,26 @@ PAGE = r"""
     </div>
 
     <div class="platform-panel active" id="platform-youtube">
-      <div class="row" style="justify-content:space-between"><div><strong>YouTube</strong> <span class="chip">{{'connected' if connected else 'not connected'}}</span><div class="hint">Existing YouTube connection, scheduling and 3-hour safety gap remain unchanged.</div></div><a href="{{social.guides.youtube}}" target="_blank"><button class="ghost sm" type="button">Open YouTube API Guide</button></a></div>
+      <div><strong>YouTube</strong> {% if setup.youtube %}<span class="chip" style="background:rgba(61,220,151,.18);color:var(--ok)">✅ Connected</span>{% else %}<span class="chip" style="color:#ff8a8a">❌ Setup required</span>{% endif %}</div>
+      <div class="tt-group">
+        <h4>Google OAuth (Cloud project)</h4>
+        {% if setup.project %}<div style="color:var(--ok)">✅ {{ch.name}} ka apna Google project hai: apna upload quota.</div>
+        {% elif api.youtube_project.shared_with %}<div style="color:var(--warn)">⚠️ Project in ke saath shared hai: {{ api.youtube_project.shared_with|join(', ') }}. Quota bhi shared.</div>
+        {% else %}<div style="color:#ff8a8a">❌ Google OAuth JSON abhi nahi lagi.</div>{% endif %}
+      </div>
+      <div class="tt-group">
+        <h4>YouTube channels jin par video jati hai</h4>
+        {% for a in accounts %}
+        <div class="row" style="justify-content:space-between;padding:6px 0;border-top:1px solid var(--line)">
+          <span>{{ '✅' if a.connected else '❌' }} <b>{{a.name}}</b> <span class="chip">{{a.id}}</span></span>
+          <span class="hint">{{ a.email or '' }} &middot; aaj {{a.used_today}} / {{a.limit}}</span>
+        </div>
+        {% else %}<div class="hint">Koi channel nahi.</div>{% endfor %}
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button type="button" class="{{ 'ghost' if setup.youtube and setup.project else 'green' }} sm" onclick="openSetup()">{{ 'Channels / login manage karein' if setup.youtube else 'Setup required &rarr;' }}</button>
+        <a href="{{social.guides.youtube}}" target="_blank"><button class="ghost sm" type="button">YouTube API guide</button></a>
+      </div>
     </div>
 
     <div class="platform-panel" id="platform-facebook">
@@ -2233,6 +2263,7 @@ Content Posting API (video.upload): the tool sends my finished videos to my TikT
   </section>
   <section class="dash-section" id="section-create">
   <div class="section-head"><h2>Create Videos</h2><div class="muted">Every action below applies to {{ch.name}} only</div></div>
+  {{ post_targets() }}
 
   <div class="card" style="margin-bottom:16px;border-left:4px solid var(--ok)">
     <div class="row" style="justify-content:space-between">
@@ -2362,8 +2393,8 @@ Content Posting API (video.upload): the tool sends my finished videos to my TikT
       <form method="post" action="/custom" class="row">
         <input type="hidden" name="channel" value="{{ch.id}}">
         <input type="text" name="prompt" placeholder="Type your short-video idea..." required style="flex:1;min-width:260px">
-        <select name="scenes" style="max-width:160px"><option value="5">~30 sec</option><option value="6" selected>6 scenes</option><option value="8">8 scenes</option><option value="12">12 scenes</option></select>
-        <label class="chk"><input type="checkbox" name="upload" checked> Add to queue</label>
+        <select name="scenes" style="max-width:200px" title="Lambai: har scene ek jumla (~6-7 second)"><option value="5">~30 sec (5 scenes)</option><option value="6" selected>~40 sec (6 scenes)</option><option value="8">~1 min (8 scenes)</option><option value="12">~1.5 min (12 scenes)</option></select>
+        <label class="chk" title="YouTube par upload, aur Facebook/TikTok par bhi agar Connections mein auto ON hai"><input type="checkbox" name="upload" checked> Upload &amp; post</label>
         <button type="submit">Create Custom Short</button>
       </form>
       </div>
@@ -2498,7 +2529,7 @@ Content Posting API (video.upload): the tool sends my finished videos to my TikT
         <div class="hint">Automatic retry: {{upload_pause[1]|localdt}}. Video creation continues while uploads wait.</div>
       </div>
       {% endif %}
-      {% if v['status']=='daily_upload_pending' %}<div class="hint" style="margin:6px 0;color:#9fc4ff"><strong>Daily direct upload:</strong> {% if upload_pause %}YouTube quota paused. Automatic retry: {{upload_pause[1]|localdt}}.{% else %}Ready; automatic upload retry will start shortly.{% endif %}</div>{% endif %}      {% if vs %}<div class="social-state">{% for platform,item in vs.items() %}<span class="chip {{item.status}}">{{platform|title}}: {{item.status}}</span>{% if item.post_url %}<a href="{{item.post_url}}" target="_blank">Open</a>{% endif %}{% endfor %}</div>{% endif %}      {% if v['status']=='scheduled' and v['publish_at'] %}<div class="hint"><strong>Goes public on YouTube:</strong> {{v['publish_at']|localdt}}</div>{% endif %}
+      {% if v['status']=='daily_upload_pending' %}<div class="hint" style="margin:6px 0;color:#9fc4ff"><strong>Daily direct upload:</strong> {% if upload_pause %}YouTube quota paused. Automatic retry: {{upload_pause[1]|localdt}}.{% else %}Ready; automatic upload retry will start shortly.{% endif %}</div>{% endif %}      {% if vs %}<div class="social-state">{% for platform,item in vs.items() %}<span class="chip {{item.status}}">{{ {'facebook': 'Facebook', 'tiktok': 'TikTok'}.get(platform, platform|title) }}: {{ {'submitted': '✅ posted', 'failed': '❌ failed', 'uploading': '⏳ uploading'}.get(item.status, item.status) }}</span>{% if item.post_url %}<a href="{{item.post_url}}" target="_blank">Open</a>{% endif %}{% endfor %}</div>{% endif %}      {% if v['status']=='scheduled' and v['publish_at'] %}<div class="hint"><strong>Goes public on YouTube:</strong> {{v['publish_at']|localdt}}</div>{% endif %}
       <div class="row">
         <a href="/media?path={{v['video_path']|urlencode}}" download><button class="ghost sm" type="button">Download</button></a>
         {% if upload_pause and not v['video_url'] and v['status'] in ('rendered','upload_failed','daily_upload_pending') %}<button class="ghost sm" type="button" disabled>Waiting for YouTube quota</button>{% elif v['status']=='daily_upload_pending' %}<form method="post" action="/upload-now"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><input type="hidden" name="type" value="{{selected_type}}"><button class="green sm" type="submit">Upload Now</button></form>{% elif v['status'] in ('awaiting_approval','rendered','upload_failed') %}<form method="post" action="/upload-now"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><input type="hidden" name="type" value="{{selected_type}}"><button class="green sm" type="submit">Upload to YouTube</button></form>{% elif v['status']=='thumbnail_pending' %}<form method="post" action="/upload-one"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="id" value="{{v['id']}}"><button class="green sm" type="submit">Retry Thumbnail</button></form>{% endif %}
@@ -2522,6 +2553,7 @@ function showPlatform(name){
 }
 document.querySelectorAll('.platform-tabs button').forEach(x=>x.addEventListener('click',()=>showPlatform(x.dataset.platform)));
 function openPlatform(name){showSection('connections');showPlatform(name);}
+function openSetup(){showSection('overview');const el=document.getElementById('yt-setup');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});}
 showPlatform(localStorage.getItem('storybot-platform')||'youtube');function showSection(name){
   const valid=['overview','connections','create','analytics','library','system'];
   if(!valid.includes(name)) name='overview';
