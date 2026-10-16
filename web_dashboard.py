@@ -750,6 +750,7 @@ def social_settings_route():
             "privacy": request.form.get("privacy", "SELF_ONLY"),
             "auto_upload": request.form.get("auto_upload") == "on",
             "zernio_api_key": request.form.get("zernio_api_key", ""),
+            "zernio_username": request.form.get("zernio_username", ""),
         }
     else:
         flash("Unknown social platform.", "error")
@@ -2195,6 +2196,7 @@ PAGE = r"""
           <label class="field">Access Token<input type="password" name="access_token" placeholder="{{'Saved - leave blank to keep it' if social.tiktok.configured else 'Paste user Access Token'}}"></label>
           <label class="field">Refresh Token<input type="password" name="refresh_token" placeholder="Optional but recommended"></label>
           <label class="field">Zernio API key (for auto public post)<input type="password" name="zernio_api_key" placeholder="{{'Saved - leave blank to keep it' if social.tiktok.zernio else 'sk_... from zernio.com > API Keys'}}"></label>
+          <label class="field">Zernio TikTok username (is channel ka)<input type="text" name="zernio_username" value="{{social.tiktok.zernio_username}}" placeholder="e.g. trendnerve.global - Zernio mein ek se zyada TikTok hon to zaroori"></label>
           <label class="field">Posting mode<select name="mode" style="width:100%;max-width:none"><option value="draft" {{'selected' if social.tiktok.mode=='draft' else ''}}>Send to TikTok drafts (recommended)</option><option value="zernio" {{'selected' if social.tiktok.mode=='zernio' else ''}}>Auto PUBLIC post via Zernio (free, no click)</option><option value="private" {{'selected' if social.tiktok.mode=='private' else ''}}>Private post (Only me) - make public in TikTok Studio</option><option value="direct" {{'selected' if social.tiktok.mode=='direct' else ''}}>Direct Post (audited app only)</option></select></label>
           <label class="field">Direct Post privacy<select name="privacy" style="width:100%;max-width:none"><option value="SELF_ONLY" {{'selected' if social.tiktok.privacy=='SELF_ONLY' else ''}}>Private / Self only</option><option value="PUBLIC_TO_EVERYONE" {{'selected' if social.tiktok.privacy=='PUBLIC_TO_EVERYONE' else ''}}>Public</option><option value="MUTUAL_FOLLOW_FRIENDS" {{'selected' if social.tiktok.privacy=='MUTUAL_FOLLOW_FRIENDS' else ''}}>Friends</option></select></label>
         </div>
@@ -2285,7 +2287,8 @@ Content Posting API (video.upload): the tool sends my finished videos to my TikT
         <li>Zernio dashboard &rarr; <strong>API Keys</strong> &rarr; <strong>Create key</strong> &rarr; <code>sk_&hellip;</code> wali key copy karein (yeh sirf ek dafa dikhti hai).</li>
         <li>Upar <strong>Zernio API key</strong> mein paste karein, <strong>Posting mode</strong> = "Auto PUBLIC post via Zernio", auto wala box tick &rarr; <strong>Save TikTok Settings</strong> &rarr; <strong>Verify TikTok</strong> ("&hellip; (via Zernio)" aana chahiye).</li>
         <li>GitHub ko bhejein:<code class="copy">.venv\Scripts\python.exe scripts\setup_github_actions.py</code>Ab har nayi video YouTube ke saath TikTok par bhi khud public hogi, "AI-generated" label ke saath.</li>
-        <li>Yaad rahe: khabar bina dekhe public hogi. Ghalat video ho to TikTok Studio &rarr; Posts se delete karein.</li>
+        <li><strong>Doosre channel ke liye:</strong> naya Zernio account nahi banana. Usi Zernio mein us channel ka TikTok bhi Connect karein, us channel ke TikTok panel mein <em>wahi</em> API key aur us ka <strong>Zernio TikTok username</strong> likhein. Free plan poore Zernio mein sirf pehle 2 social accounts tak hai; teesre par paisay lagte hain.</li>
+                <li>Yaad rahe: khabar bina dekhe public hogi. Ghalat video ho to TikTok Studio &rarr; Posts se delete karein.</li>
         </ol>
 
         <h4>H. Roz kya hota hai (Zernio mode)</h4><ol>

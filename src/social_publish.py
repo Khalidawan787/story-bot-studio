@@ -498,13 +498,30 @@ def _zernio_headers(channel_id: str) -> dict[str, str]:
 
 
 def _zernio_tiktok_account(channel_id: str) -> tuple[str, str]:
-    """(accountId, @username) of the TikTok account connected in Zernio."""
+    """(accountId, @username) of THIS channel's TikTok account in Zernio.
+
+    One Zernio key can hold several TikTok accounts (one per channel), so the
+    channel names its @username. With a single TikTok account connected that
+    one is used; with several and no username saved, nothing is guessed.
+    """
     cfg = account(channel_id, "tiktok")
     data = _request_json(f"{ZERNIO_API}/accounts", headers=_zernio_headers(channel_id))
     tiktoks = [a for a in data.get("accounts", []) if a.get("platform") == "tiktok" and a.get("isActive", True)]
     if not tiktoks:
         raise RuntimeError("No TikTok account is connected in Zernio. Connect it at zernio.com first.")
-    chosen = next((a for a in tiktoks if a.get("_id") == cfg.get("zernio_account_id")), tiktoks[0])
+    wanted = str(cfg.get("zernio_username", "")).strip().lstrip("@").lower()
+    if wanted:
+        matches = [a for a in tiktoks if str(a.get("username", "")).lstrip("@").lower() == wanted]
+        if not matches:
+            names = ", ".join("@" + str(a.get("username", "?")) for a in tiktoks)
+            raise RuntimeError(f"@{wanted} is not connected in Zernio (connected: {names}).")
+        chosen = matches[0]
+    elif len(tiktoks) == 1:
+        chosen = tiktoks[0]
+    else:
+        names = ", ".join("@" + str(a.get("username", "?")) for a in tiktoks)
+        raise RuntimeError(f"Zernio has several TikTok accounts ({names}). "
+                           "Write this channel's one in 'Zernio TikTok username' and Save.")
     if chosen.get("_id") != cfg.get("zernio_account_id"):
         save_account(channel_id, "tiktok", {"zernio_account_id": str(chosen.get("_id", ""))})
     return str(chosen.get("_id", "")), str(chosen.get("username") or chosen.get("displayName") or "TikTok")

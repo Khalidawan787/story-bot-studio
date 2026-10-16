@@ -100,7 +100,7 @@ def save_account(channel_id: str, platform: str, values: dict[str, object]) -> d
     allowed = {
         "facebook": {"page_id", "page_access_token", "auto_upload", "language", "daily_post"},
         "tiktok": {"client_key", "client_secret", "access_token", "refresh_token", "mode", "privacy", "auto_upload",
-                   "zernio_api_key", "zernio_account_id"},
+                   "zernio_api_key", "zernio_account_id", "zernio_username"},
     }[platform]
     with _LOCK:
         data = _load_all()
@@ -114,8 +114,10 @@ def save_account(channel_id: str, platform: str, values: dict[str, object]) -> d
                 if not value and key not in {"mode", "privacy"}:
                     continue  # blank secret/input keeps the existing value
             current[key] = value
-            if key in {"page_id", "page_access_token", "access_token", "zernio_api_key"}:
+            if key in {"page_id", "page_access_token", "access_token", "zernio_api_key", "zernio_username"}:
                 current.pop("verified_name", None)  # verify again after a change
+            if key == "zernio_username":
+                current.pop("zernio_account_id", None)  # look the account up again
         if platform == "tiktok":
             current.setdefault("mode", "draft")
             current.setdefault("privacy", "SELF_ONLY")
@@ -152,6 +154,7 @@ def public_status(channel_id: str) -> dict:
         "tiktok": {
             "configured": bool(tt.get("access_token") or tt.get("zernio_api_key")),
             "zernio": bool(tt.get("zernio_api_key")),
+            "zernio_username": tt.get("zernio_username", ""),
             "verified_name": tt.get("verified_name", ""),
             "client_key": tt.get("client_key", ""),
             "mode": tt.get("mode", "draft"),
