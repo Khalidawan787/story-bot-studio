@@ -482,6 +482,83 @@ def upload_tiktok(channel_id: str, video: Path, title: str,
     return publish_id, None
 
 
+
+# ------------------------------------------------------------------ Zernio
+# Zernio (zernio.com, formerly getlate.dev) is a posting service whose own
+# TikTok app is already audited, so it can publish PUBLIC posts by API with no
+# click per video. Free for the first 2 connected accounts, unlimited posts.
+ZERNIO_API = "https://zernio.com/api/v1"
+
+
+def _zernio_headers(channel_id: str) -> dict[str, str]:
+    key = str(account(channel_id, "tiktok").get("zernio_api_key", ""))
+    if not key:
+        raise RuntimeError("Zernio API key is not saved for this channel.")
+    return {"Authorization": f"Bearer {key}"}
+
+
+def _zernio_tiktok_account(channel_id: str) -> tuple[str, str]:
+    """(accountId, @username) of the TikTok account connected in Zernio."""
+    cfg = account(channel_id, "tiktok")
+    data = _request_json(f"{ZERNIO_API}/accounts", headers=_zernio_headers(channel_id))
+    tiktoks = [a for a in data.get("accounts", []) if a.get("platform") == "tiktok" and a.get("isActive", True)]
+    if not tiktoks:
+        raise RuntimeError("No TikTok account is connected in Zernio. Connect it at zernio.com first.")
+    chosen = next((a for a in tiktoks if a.get("_id") == cfg.get("zernio_account_id")), tiktoks[0])
+    if chosen.get("_id") != cfg.get("zernio_account_id"):
+        save_account(channel_id, "tiktok", {"zernio_account_id": str(chosen.get("_id", ""))})
+    return str(chosen.get("_id", "")), str(chosen.get("username") or chosen.get("displayName") or "TikTok")
+
+
+def verify_zernio(channel_id: str) -> str:
+    _, username = _zernio_tiktok_account(channel_id)
+    return f"{username} (via Zernio)"
+
+
+def tiktok_caption(row) -> str:
+    """Title plus the channel's hashtags, within TikTok's 2,200 characters."""
+    tags = facebook_tags(row["channel"], str(row["topic"] or ""), row["content_type"], row["title"])
+    return f"{row['title']}\n\n{tags}".strip()[:2200]
+
+
+def upload_tiktok_zernio(channel_id: str, video: Path, caption: str) -> tuple[str, str | None]:
+    """Publish publicly on TikTok through Zernio: presign, upload, post now."""
+    headers = _zernio_headers(channel_id)
+    account_id, _ = _zernio_tiktok_account(channel_id)
+    presign = _request_json(f"{ZERNIO_API}/media/presign", method="POST", headers=headers, payload={
+        "filename": video.name, "contentType": "video/mp4", "size": video.stat().st_size,
+    })
+    upload_url, public_url = presign.get("uploadUrl"), presign.get("publicUrl")
+    if not (upload_url and public_url):
+        raise RuntimeError("Zernio did not return an upload address.")
+    # Goes to storage, not the API: no Authorization header.
+    _send_binary(upload_url, video.read_bytes(), {"Content-Type": "video/mp4"}, "PUT")
+    result = _request_json(f"{ZERNIO_API}/posts", method="POST", headers=headers, timeout=300, payload={
+        "content": caption,
+        "mediaItems": [{"type": "video", "url": public_url}],
+        "platforms": [{"platform": "tiktok", "accountId": account_id}],
+        "tiktokSettings": {
+            "privacy_level": "PUBLIC_TO_EVERYONE",
+            "allow_comment": True, "allow_duet": True, "allow_stitch": True,
+            "video_cover_timestamp_ms": 1000,
+            # AI pictures and an AI voice: TikTok asks for the label.
+            "video_made_with_ai": True,
+            "draft": False,
+            "content_preview_confirmed": True, "express_consent_given": True,
+        },
+        "publishNow": True,
+    })
+    post = result.get("post", result)
+    post_id = str(post.get("_id") or post.get("id") or "")
+    url = None
+    for entry in post.get("platforms", []) or []:
+        if entry.get("platform") == "tiktok":
+            url = entry.get("platformPostUrl") or url
+            if entry.get("status") == "failed":
+                raise RuntimeError(f"Zernio: TikTok rejected the post: {entry.get('errorMessage') or entry}")
+    return post_id, url
+
+
 def publish_video(video_id: int, platform: str, channel_id: str | None = None,
                   direct_consent: bool = False, force_tiktok_mode: str | None = None,
                   video_override: Path | None = None, title_override: str | None = None) -> str:
@@ -517,6 +594,9 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
                 row["channel"], path, row["title"], row["content_type"], description,
             )
             message = f"Facebook upload complete: {post_url}"
+        elif platform == "tiktok" and (force_tiktok_mode or account(row["channel"], "tiktok").get("mode")) == "zernio":
+            remote_id, post_url = upload_tiktok_zernio(row["channel"], path, tiktok_caption(row))
+            message = f"TikTok public post via Zernio: {post_url or 'publishing'}"
         elif platform == "tiktok":
             mode = force_tiktok_mode or account(row["channel"], "tiktok").get("mode", "draft")
             try:
@@ -560,7 +640,13 @@ def auto_publish_video(video_id: int, channel_id: str,
             ))
         except Exception as exc:
             messages.append(f"Facebook failed: {exc}")
-    if tt.get("auto_upload") and tt.get("access_token"):
+    if tt.get("auto_upload") and tt.get("mode") == "zernio" and tt.get("zernio_api_key"):
+        # Zernio's audited app posts publicly with no click per video.
+        try:
+            messages.append(publish_video(video_id, "tiktok", channel_id, force_tiktok_mode="zernio"))
+        except Exception as exc:
+            messages.append(f"TikTok (Zernio) failed: {exc}")
+    elif tt.get("auto_upload") and tt.get("access_token"):
         try:
             # TikTok guidelines require per-post consent before anything goes
             # public, so automatic cross-posting only ever lands as a draft or

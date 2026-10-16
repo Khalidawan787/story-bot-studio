@@ -99,7 +99,8 @@ def save_account(channel_id: str, platform: str, values: dict[str, object]) -> d
         raise ValueError("Unsupported social platform")
     allowed = {
         "facebook": {"page_id", "page_access_token", "auto_upload", "language", "daily_post"},
-        "tiktok": {"client_key", "client_secret", "access_token", "refresh_token", "mode", "privacy", "auto_upload"},
+        "tiktok": {"client_key", "client_secret", "access_token", "refresh_token", "mode", "privacy", "auto_upload",
+                   "zernio_api_key", "zernio_account_id"},
     }[platform]
     with _LOCK:
         data = _load_all()
@@ -113,7 +114,7 @@ def save_account(channel_id: str, platform: str, values: dict[str, object]) -> d
                 if not value and key not in {"mode", "privacy"}:
                     continue  # blank secret/input keeps the existing value
             current[key] = value
-            if key in {"page_id", "page_access_token", "access_token"}:
+            if key in {"page_id", "page_access_token", "access_token", "zernio_api_key"}:
                 current.pop("verified_name", None)  # verify again after a change
         if platform == "tiktok":
             current.setdefault("mode", "draft")
@@ -149,7 +150,9 @@ def public_status(channel_id: str) -> dict:
             "daily_post": bool(fb.get("daily_post")),
         },
         "tiktok": {
-            "configured": bool(tt.get("access_token")),
+            "configured": bool(tt.get("access_token") or tt.get("zernio_api_key")),
+            "zernio": bool(tt.get("zernio_api_key")),
+            "verified_name": tt.get("verified_name", ""),
             "client_key": tt.get("client_key", ""),
             "mode": tt.get("mode", "draft"),
             "privacy": tt.get("privacy", "SELF_ONLY"),
