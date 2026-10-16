@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import html
 import re
+import shutil
 import sqlite3
 import sys
 from datetime import datetime, timedelta, timezone
@@ -760,6 +761,14 @@ def main() -> None:
     import pwa_files
 
     pwa_files.write(out_dir)
+    # Files a website owner must host to prove the site is theirs (TikTok's
+    # URL-property file, Google/Meta verification files) go in site_extra/
+    # and are published as-is at the site root.
+    extra = ROOT / "site_extra"
+    if extra.is_dir():
+        for item in extra.iterdir():
+            if item.is_file() and item.name != "README.md":
+                shutil.copy2(item, out_dir / item.name)
     # Stops GitHub Pages running the file through Jekyll, which would mangle it.
     (out_dir / ".nojekyll").write_text("", encoding="utf-8")
     print(f"Wrote {out_dir / 'index.html'} ({len(page) // 1024} KB)")
