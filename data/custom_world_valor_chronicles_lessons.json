@@ -1,0 +1,950 @@
+{
+  "long_yuri_gagarin_first_human_in_space": {
+    "title": "Yuri Gagarin: First Human in Space",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "First Cosmonaut",
+        "line": "Yuri Alekseyevich Gagarin was a Soviet pilot and cosmonaut, the first person to journey into outer space. Yuri Alekseyevich Gagarin was born on 9 March 1934 in the village of Klushino, Russian SFSR.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_01.jpg",
+        "image_prompt": "A vintage Soviet pilot's uniform., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Family Farm",
+        "line": "His parents, Aleksey Ivanovich Gagarin and Anna Timofeyevna Gagarina, worked as a carpenter and dairy farmer. Yuri was the third of four children, with an elder brother and a sister.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_02.jpg",
+        "image_prompt": "A collective farm in the Soviet era., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Elder Brother",
+        "line": "His elder brother Valentin was born in 1924 and helped with cattle on the family farm. His sister Zoya, born in 1927, helped take care of Yuri and their youngest brother Boris.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_03.jpg",
+        "image_prompt": "A young boy tending cattle on a farm., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "War Impact",
+        "line": "The Gagarin family suffered during the German occupation of their village during World War II. Retreating Red Army soldiers seized the collective farm's livestock during the German advance on Moscow.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_04.jpg",
+        "image_prompt": "A village scene during wartime occupation., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Village Captured",
+        "line": "Nazis captured Klushino on 18 October 1941, impacting the village and its residents. On their first day, the Germans burned down the school, ending Yuri's first year of education.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_05.jpg",
+        "image_prompt": "German soldiers entering a village., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Forced Labor",
+        "line": "Germans burned 27 houses and forced residents, including the Gagarins, to work farms for soldiers. A Nazi officer took over the Gagarin family's residence in the occupied village.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_06.jpg",
+        "image_prompt": "Villagers working in fields under supervision., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mud Hut Living",
+        "line": "The family built a 3 by 3 meter mud hut behind their house, living there for 21 months. Yuri became a saboteur after a German soldier tried to hang his younger brother Boris.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_07.jpg",
+        "image_prompt": "A small, crude mud hut., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Acts of Sabotage",
+        "line": "Yuri retaliated by pouring soil into tank batteries and mixing chemical supplies for the soldier's work. In early 1943, his two elder siblings were deported to Poland for slave labor.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_08.jpg",
+        "image_prompt": "Hands secretly tampering with military equipment., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Escape and Conscription",
+        "line": "His siblings escaped, were found by Soviet soldiers, and conscripted into the war effort. His elder siblings did not return home until 1945, after World War II ended.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_09.jpg",
+        "image_prompt": "Soldiers interacting with civilians., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Feared Dead",
+        "line": "The rest of the Gagarin family believed their two elder children were dead. Yuri's father was overcome with grief and hunger, often sickly, and beaten for refusing German work.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_10.jpg",
+        "image_prompt": "A grieving family., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Hospital Service",
+        "line": "He spent the remainder of the war at a hospital, first as a patient, then an orderly. Yuri's mother was hospitalized after a soldier gashed her leg with a scythe during this period.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_11.jpg",
+        "image_prompt": "A hospital ward during wartime., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mine Clearance Aid",
+        "line": "Aleksey helped the Red Army find mines buried by fleeing Germans after their rout from Klushino. In 1946, the family moved to Gzhatsk, where Yuri Gagarin continued his education.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_12.jpg",
+        "image_prompt": "Soldiers searching for mines on a road., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Crude School",
+        "line": "Yuri and Boris enrolled in a crude town school run by a young volunteer teacher. They learned to read using a discarded Soviet military manual from the war.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_13.jpg",
+        "image_prompt": "Children in a makeshift classroom., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Airman Teacher",
+        "line": "A former Soviet airman joined to teach maths and science, Yuri's favorite subjects. Yuri was part of a group of children who built various model aeroplanes.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_14.jpg",
+        "image_prompt": "A man teaching mathematics and science., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Aircraft Fascination",
+        "line": "His interest in aeroplanes was energized after a fighter plane crash-landed in Klushino during the war. In 1950, aged 16, Gagarin began an apprenticeship as a foundryman at a steel plant.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_15.jpg",
+        "image_prompt": "A damaged fighter plane in a field., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Evening Classes",
+        "line": "He enrolled at a local \"young workers\" school for seventh-grade evening classes. In 1951, he graduated with honors and was selected for training at Saratov to study tractors.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_16.jpg",
+        "image_prompt": "Students in an evening classroom., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Flying Club Cadet",
+        "line": "In Saratov, Gagarin volunteered at a local flying club for weekend training as an air cadet. He earned extra money as a part-time dock laborer on the River Volga.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_17.jpg",
+        "image_prompt": "A biplane on an airfield., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Air Force School",
+        "line": "In 1955, Gagarin was accepted to the First Chkalov Higher Air Force Pilots School. He began training on the Yak-18 and later progressed to flying the MiG-15 in February 1956.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_18.jpg",
+        "image_prompt": "An entrance to an Air Force school., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Landing Difficulties",
+        "line": "Gagarin struggled twice to land the trainer aircraft and risked dismissal from pilot training. The commander of the regiment decided to give him another chance at landing.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_19.jpg",
+        "image_prompt": "A cockpit interior view., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Cushion Solution",
+        "line": "His flight instructor gave him a cushion to improve his cockpit view, and he landed successfully. After completing his evaluation in a trainer aircraft, Gagarin began flying solo in 1957.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_20.jpg",
+        "image_prompt": "A pilot in a cockpit., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Lieutenant Commission",
+        "line": "On 5 November 1957, Gagarin was commissioned a lieutenant in the Soviet Air Forces. He graduated the next day and was posted to Luostari Air Base near the Norwegian border.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_21.jpg",
+        "image_prompt": "Military epaulets with lieutenant insignia., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Fighter Pilot",
+        "line": "He was assigned to the 769th Fighter Aviation Regiment, flying Mikoyan-Gurevich MiG-15bis aircraft. By October 1959, he had accumulated a total of 265 hours of flight time.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_22.jpg",
+        "image_prompt": "A MiG-15bis jet in flight., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Pilot Rating",
+        "line": "On 7 July 1959, he received the rating of Military Pilot 3rd Class. After Luna 3's launch, he expressed interest in space exploration, and his recommendation was forwarded.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_23.jpg",
+        "image_prompt": "A military pilot badge., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Senior Lieutenant",
+        "line": "Gagarin was promoted to senior lieutenant on 6 November 1959, after a space program medical interview. Military physicians chose 29 cosmonaut candidates from 154 qualified pilots short-listed by Air Force units.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_24.jpg",
+        "image_prompt": "Military rank insignia., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "First Twelve",
+        "line": "Gagarin was among the first twelve approved cosmonaut candidates on 7 March 1960. Gagarin began rigorous training at Khodynka Airfield in central Moscow on 15 March 1960.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_25.jpg",
+        "image_prompt": "A list of names being reviewed., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Yuri Gagarin",
+    "source_url": "https://en.wikipedia.org/wiki/Yuri_Gagarin"
+  },
+  "long_hannibal_a_carthaginian_general_and_statesman": {
+    "title": "Hannibal: A Carthaginian General and Statesman",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Early Life",
+        "line": "Hannibal was a Carthaginian general and statesman during the Second Punic War. He lived during a period of great tension in the Mediterranean Basin. Hannibal made a pledge to his father to never be a friend of Rome. In 218 BC, Hannibal attacked Saguntum, an ally of Rome in Hispania. This attack on Saguntum sparked the Second Punic War.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_01.jpg",
+        "image_prompt": "Ancient Carthaginian harbor with ships., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Alpine Crossing",
+        "line": "Hannibal invaded Italy by crossing the Alps with North African war elephants. He won battles at Ticinus, Trebia, Lake Trasimene, and Cannae against the Romans. Hannibal was distinguished for his ability to assess strengths and weaknesses. His strategies allowed him to conquer and ally with several Italian cities. Hannibal occupied most of southern Italy for fifteen years.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_02.jpg",
+        "image_prompt": "Elephants trekking through a snowy mountain pass., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Fabian Strategy",
+        "line": "Romans, led by Fabius Maximus, waged a war of attrition against him. Carthaginian defeats in Hispania prevented Hannibal from being reinforced. A Roman counter-invasion of North Africa forced him to return to Carthage. Hannibal was defeated at the Battle of Zama, ending the war. After the war, Hannibal successfully ran for the office of sufet.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_03.jpg",
+        "image_prompt": "Roman soldiers marching in formation., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Financial Reforms",
+        "line": "He enacted political and financial reforms to enable war indemnity payment. Unpopular reforms led him to flee into voluntary exile from Carthage. He lived at the Seleucid court and advised Antiochus III the Great. Hannibal advised Antiochus III in his war against Rome. Antiochus met defeat at the Battle of Magnesia and accepted Rome's terms.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_04.jpg",
+        "image_prompt": "Ancient scrolls and coins on a table., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Flight to Armenia",
+        "line": "Hannibal fled again and made a stop in the Kingdom of Armenia. His flight ultimately ended at the court of Bithynia. He was betrayed to the Romans and died by suicide. Hannibal is considered one of the greatest military tacticians of antiquity. Hannibal is a common Semitic Phoenician-Carthaginian personal name.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_05.jpg",
+        "image_prompt": "Travelers on a dusty road leading to distant mountains., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Name Meaning",
+        "line": "His name means 'Baal is gracious' or 'The grace of Baal'. Greek historians rendered the name as Anníbas. Phoenicians and Carthaginians used patronymics or epithets for distinction. He is often referred to as Hannibal, son of Hamilcar Barca. Barca, his father's cognomen, means 'lightning' or 'thunderbolt'.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_06.jpg",
+        "image_prompt": "Symbols of the ancient deity Baal Hammon., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Barcid Family",
+        "line": "His father's progeny are collectively known as the Barcids. His brothers are sometimes referred to as Hasdrubal Barca and Mago Barca. Hannibal was one of the sons of Carthaginian general Hamilcar Barca. He was most likely born in Carthage, a region colonized by Canaanites. He had several sisters and two brothers, Hasdrubal and Mago.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_07.jpg",
+        "image_prompt": "A family crest or sigil from antiquity., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Brothers-in-Law",
+        "line": "His brothers-in-law were Hasdrubal the Fair and Numidian king Naravas. After the First Punic War, Hamilcar set out to improve fortunes. Hamilcar began subjugation of tribes in the Iberian Peninsula. Hamilcar marched his army across Numidia to the Pillars of Hercules. Hamilcar demanded Hannibal swear he would never be a friend of Rome.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_08.jpg",
+        "image_prompt": "Two men in distinct ancient military uniforms., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Oath of Steel",
+        "line": "Hannibal swore he would use fire and steel to arrest Rome's destiny. Hamilcar drowned in battle, and Hasdrubal succeeded to his command. Hannibal, then 18 years old, served as an officer under Hasdrubal. Hasdrubal signed a treaty with Rome not to expand north of the Ebro. Upon Hasdrubal's assassination, Hannibal was proclaimed commander-in-chief.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_09.jpg",
+        "image_prompt": "A sword being held aloft in a fiery glow., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Livy's Description",
+        "line": "Livy described Hannibal as having the same look and fire as his father. Hannibal married a woman from the Spanish city of Castulo. Hannibal spent two years consolidating holdings and conquering Hispania south of the Ebro. He showed tactical skills at the battle of the River Tagus. Rome made an alliance with Saguntum, claiming the city as protectorate.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_10.jpg",
+        "image_prompt": "A portrait bust of a determined ancient man., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Treaty Breach",
+        "line": "Hannibal perceived the alliance with Saguntum as a treaty breach. He laid siege to Saguntum, and the city fell after eight months. The booty from Saguntum gained him much support from the Carthaginian government. The Roman Senate dispatched a delegation demanding to know about Saguntum. The delegation leader Quintus Fabius Maximus Verrucosus demanded Carthage choose war or peace.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_11.jpg",
+        "image_prompt": "A broken treaty scroll lying on the ground., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Po Valley Alliance",
+        "line": "Romans became aware of an alliance between Carthage and the Celts of the Po Valley. Roughly 10,000 Celtic tribesmen joined Hannibal's army in the Po Valley. By 220 BC, the Romans had annexed the Po region as Cisalpine Gaul. Hannibal departed Cartagena, Spain, in the late spring of 218 BC. He fought his way through northern tribes to the Pyrenees foothills.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_12.jpg",
+        "image_prompt": "Celtic warriors gathered around a campfire., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Troop Detachment",
+        "line": "He left a detachment of 20,000 troops to garrison the conquered region. At the Pyrenees, he released 11,000 Iberian troops who were reluctant. Hannibal reached the Rhône by September, conciliating Gaulish chiefs. Hannibal's army numbered 38,000 infantry, 8,000 cavalry, and 38 elephants. Hannibal outmanoeuvred natives who tried to prevent his crossing of the Alps.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_13.jpg",
+        "image_prompt": "Sentries standing guard at a fortified mountain pass., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Rhône Valley Route",
+        "line": "He evaded a Roman force by turning inland up the Rhône valley. His exact route over the Alps has been a source of scholarly dispute. Biostratigraphic archaeological data suggests passage near the Col de la Traversette. Peat bogs showed ground heavily disturbed by thousands of animals and humans. The soil bore traces of bacteria associated with horses and mules.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_14.jpg",
+        "image_prompt": "Ancient soldiers marching along a riverbank., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Radiocarbon Dating",
+        "line": "Radiocarbon dating secured dates around 218 BC, the year of Hannibal's march. Polybius writes that Hannibal crossed the highest of the Alpine passes. Hannibal used vinegar and fire to break through a rockfall. He arrived in Italy with 20,000 foot soldiers and 6,000 horsemen. This suggests he had lost almost half of his force.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_15.jpg",
+        "image_prompt": "A scientist using a radiocarbon dating machine., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Operating Without Aid",
+        "line": "From the start, he calculated he would operate without aid from Hispania. His grand strategy involved opening a northern front against Rome. The task involved mobilization of 60,000 to 100,000 troops. He trained a war elephant corps, all of which had to be provisioned. His march frustrated enemy attempts to fight on foreign ground.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_16.jpg",
+        "image_prompt": "A lone figure looking towards a distant horizon., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Detaching Tribes",
+        "line": "His appearance among the Gauls enabled him to detach them from Rome. Consul Publius Cornelius Scipio assumed responsibility for dealing with Hannibal. Scipio had not expected Hannibal to attempt crossing the Alps. Scipio transported his army to Italy by sea in time to meet Hannibal. Hannibal's forces were engaged in the Battle of Ticinus in November 218 BC.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_17.jpg",
+        "image_prompt": "Tribal leaders shaking hands with Hannibal., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Evacuating the Plain",
+        "line": "Hannibal forced the Romans to evacuate the plain of Lombardy with superior cavalry. Celtic and Ligurian troops bolstered his army back to around 40,000 men. Scipio was severely injured, his life saved by his son. Consul Tiberius Sempronius Longus was ordered back from Sicily to reinforce Scipio. Hannibal skillfully maneuvered to head off Sempronius's reinforcing army.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_18.jpg",
+        "image_prompt": "Roman infantry retreating across a wide plain., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Capture of Clastidium",
+        "line": "Hannibal captured Clastidium, drawing large amounts of supplies. Sempronius slipped around Hannibal's watchfulness and joined Scipio near the Trebbia. Hannibal showed masterful military skill at the Trebia in December. He wore down Roman infantry before cutting them to pieces with an ambush. Most or all of his war elephants died of injuries or the cold.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_19.jpg",
+        "image_prompt": "Ancient soldiers entering a captured town., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Winter Quarters",
+        "line": "Hannibal quartered his troops for the winter with the Gauls. Fearing assassination, Hannibal wore differently dyed wigs to alter his appearance. In the spring of 217 BC, Hannibal sought a more reliable base farther south. New consuls Servilius and Flaminius took armies to block Hannibal's routes.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_20.jpg",
+        "image_prompt": "Ancient soldiers resting around campfires in a snowy landscape., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Hannibal",
+    "source_url": "https://en.wikipedia.org/wiki/Hannibal"
+  },
+  "long_the_life_and_discoveries_of_louis_pasteur": {
+    "title": "The Life and Discoveries of Louis Pasteur",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Early Life",
+        "line": "Louis Pasteur was born on December 27, 1822, in Dole, France, to a poor tanner's family. His family moved to Marnoz in 1826 and then relocated to Arbois the following year. Louis Pasteur entered primary school in 1831, facing early challenges with reading and writing. He showed early interests in fishing and sketching, drawing portraits of friends and neighbors.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_01.jpg",
+        "image_prompt": "A humble cottage in a French village., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Parisian Venture",
+        "line": "In October 1838, he left for Paris to attend a boarding school but returned home. In 1839, he enrolled at the Collège Royal at Besançon to study philosophy. He earned his Bachelor of Letters degree in 1840 while studying at Besançon. He was appointed a tutor at the Besançon college while continuing his science studies.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_02.jpg",
+        "image_prompt": "A young person looking wistfully out a train window., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Science Degree",
+        "line": "He earned his Bachelor of Science degree in Mathematics from Dijon in 1842. He returned to a Parisian boarding school to prepare for the entrance examination again. In 1843, he passed the entrance test with a high ranking and entered the École Normale Supérieure. He later studied under Jean-Baptiste Boussingault at the Conservatoire national des arts et métiers.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_03.jpg",
+        "image_prompt": "A laboratory with beakers and scientific equipment., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Physics Professor",
+        "line": "He was appointed professor of physics at the Collège de Tournon in 1846. He returned to the École Normale Supérieure as a graduate laboratory assistant. In 1847, he submitted two theses, one in chemistry and one in physics. After briefly serving as professor of physics at the Dijon Lycée in 1848.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_04.jpg",
+        "image_prompt": "A classroom with a blackboard and scientific apparatus., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Strasbourg Appointment",
+        "line": "He became professor of chemistry at the University of Strasbourg in 1848. In 1849, he met and courted Marie Laurent, the university rector's daughter. He became the chair of chemistry at the University of Strasbourg in 1852. In 1854, he was named dean of the new faculty of sciences at the University of Lille.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_05.jpg",
+        "image_prompt": "University students in a chemistry lecture hall., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Move to Paris",
+        "line": "In 1857, he moved to Paris as the director of scientific studies at the École Normale Supérieure. He implemented reforms to improve the standard of scientific work at the school. His rigid decrees sometimes led to student revolts, including one over food. He once threatened to expel students caught smoking, causing many to resign.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_06.jpg",
+        "image_prompt": "The main building of the École Normale Supérieure in Paris., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Beaux-Arts Professor",
+        "line": "In 1863, he became a professor of geology, physics, and chemistry at the École nationale supérieure des Beaux-Arts. In 1867, he became the chair of organic chemistry at the Sorbonne. The laboratory of physiological chemistry was created at his request in 1867. He established the Pasteur Institute in Paris in 1887 and directed it until his death.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_07.jpg",
+        "image_prompt": "An art studio with sculptures and paintings., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Crystallography Work",
+        "line": "Early in his career, he examined the crystallographic properties of tartrates. He worked on a problem concerning the nature of tartaric acid in 1848. Pasteur noticed small faces on the crystals of tartrates during his research. He demonstrated molecular chirality for the first time, explaining optical isomerism.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_08.jpg",
+        "image_prompt": "Microscope slides showing crystal structures., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Fermentation Motivation",
+        "line": "His investigation into fermentation was motivated by a local wine manufacturer's problems. Pasteur confirmed earlier work showing that yeast were living organisms. He sent a paper about lactic acid fermentation to a scientific society in 1857. His memoir on alcoholic fermentation was published in full form in 1858.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_09.jpg",
+        "image_prompt": "Grapevines in a vineyard at sunset., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Disproving Theory",
+        "line": "Pasteur demonstrated that yeast, not decomposition, caused fermentation to produce alcohol. His research showed that microorganisms caused the spoiling of beverages like wine and milk. He invented a process of heating liquids to kill bacteria, known as pasteurization. Beverage contamination led Pasteur to theorize that microorganisms cause animal and human diseases.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_10.jpg",
+        "image_prompt": "A split image showing yeast cells and decaying matter., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Antiseptic Methods",
+        "line": "His ideas about preventing microorganism entry influenced the development of antiseptic surgery. In 1866, Pasteur published Études sur le Vin, discussing wine diseases. He published Études sur la Bière in 1876, focusing on beer diseases. In 1865, Pasteur began studying pébrine, a disease decimating silkworm farms.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_11.jpg",
+        "image_prompt": "A surgeon wearing gloves and a mask in an operating room., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Pébrine Corpuscles",
+        "line": "He initially thought corpuscles found on silkworms were a symptom of pébrine. By 1870, he concluded that these corpuscles were the cause of pébrine. He developed a system to prevent pébrine by examining moths for corpuscles. He also concluded that bacteria caused flacherie, another silkworm disease.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_12.jpg",
+        "image_prompt": "A microscopic image of small particles on a silkworm., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Hygiene Measures",
+        "line": "He suggested using hygiene to prevent the accidental spread of flacherie. His fermentation experiments showed that grape skins were the natural source of yeasts. His findings challenged the prevailing notion of spontaneous generation. He engaged in debate with Félix Archimède Pouchet regarding spontaneous generation.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_13.jpg",
+        "image_prompt": "A cleaner sweeping the floor of a silkworm farm., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Academy Prize",
+        "line": "The French Academy of Sciences offered a prize for experimental proof on the doctrine. Pasteur performed experiments using boiled liquid in sealed and open flasks. He observed that dust entering open flasks caused organisms to grow within them. The number of growing organisms decreased at higher altitudes, showing less dust.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_14.jpg",
+        "image_prompt": "A medal or award resting on a velvet cushion., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Swan Neck Flasks",
+        "line": "He used swan neck flasks, allowing air but trapping dust particles. Organisms only grew when the liquid touched contaminated surfaces inside the flask. Pasteur won the Alhumbert Prize in 1862 for his experimental work. He concluded that microscopic beings always come from pre-existing germs.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_15.jpg",
+        "image_prompt": "A laboratory flask with a long, curved neck., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Silkworm Study Request",
+        "line": "In 1865, Jean-Baptiste Dumas asked Pasteur to study a silkworm disease. Pasteur made five long stays in Alès between 1865 and 1869 for his research. He initially mistook pébrine and flacherie but distinguished them by 1867. He eventually understood the parasitic nature of pébrine after initial doubts.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_16.jpg",
+        "image_prompt": "A scientist receiving a letter from a colleague., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Stopping Infections",
+        "line": "He propagated an effective process to stop pébrine infections in silkworms. His process of sorting 'seeds' helped curb pébrine and saved the silk industry. Despite success against pébrine, he admitted flacherie continued to cause ravages in 1878. Balbiani acknowledged Pasteur's practical process had remedied pébrine by 1884.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_17.jpg",
+        "image_prompt": "A scientist carefully selecting silkworm pupae., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Vaccination Principles",
+        "line": "His discoveries laid the groundwork for the principles of vaccination. His research in chemistry led to understanding disease causes and prevention. His work laid foundations for hygiene, public health, and modern medicine. His developments of vaccines are credited with saving millions of lives.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_18.jpg",
+        "image_prompt": "A doctor administering a vaccine injection., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Bacteriology Founder",
+        "line": "Louis Pasteur is regarded as a founder of modern bacteriology. His body was interred in a vault beneath the Pasteur Institute.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_19.jpg",
+        "image_prompt": "A plaque commemorating a scientific achievement., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Louis Pasteur",
+    "source_url": "https://en.wikipedia.org/wiki/Louis_Pasteur"
+  },
+  "long_saladin_from_vizier_to_sultan": {
+    "title": "Saladin: From Vizier to Sultan",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Birth and Family",
+        "line": "Salah ad-Din Yusuf ibn Ayyub was born into a Kurdish family in Tikrit. His father, Najm al-Din Ayyub, served as the warden of the fortress at Tikrit. His father was banished from Tikrit after his brother killed a friend of the governor. The family later moved to Mosul where his father was appointed commander of a fortress. He studied subjects like Euclid, the Almagest, arithmetic, and law. Sources claim he was more interested in religious studies than military pursuits.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_01.jpg",
+        "image_prompt": "A historical stone fortress on the banks of a river., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Historical Knowledge",
+        "line": "Saladin knew genealogies, biographies, and histories of the Arabs. He spoke Kurdish and Arabic and was knowledgeable in Turkish and Persian. His military career began under his uncle Shirkuh, a commander for Nur al-Din. In 1164, Saladin accompanied his uncle Shirkuh to Fatimid Egypt. Their original purpose was to help restore Shawar as vizier in Egypt. A power struggle ensued between Shirkuh and Shawar after his reinstatement.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_02.jpg",
+        "image_prompt": "An old map spread out on a table with scrolls., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Climbing Ranks",
+        "line": "Saladin rose in the Fatimid government through military success and closeness to the caliph. Following Shawar's assassination and Shirkuh's death, al-Adid appointed Saladin vizier. As vizier, Saladin began to undermine the Fatimid Isma'ili establishment. After al-Adid's death in 1171, he abolished the Fatimid Caliphate. He realigned Egypt with the Sunni Abbasid Caliphate based in Baghdad. Saladin led forays against the Crusader states in Palestine.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_03.jpg",
+        "image_prompt": "A man being saluted by soldiers., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Conquest of Yemen",
+        "line": "He commissioned the successful conquest of Yemen and its port Aden. Saladin staved off pro-Fatimid rebellions within Egypt. After Nur al-Din died, Saladin launched his conquest of Syria. He peacefully entered Damascus at the request of its governor. By mid-1175, Saladin had conquered Hama and Homs. He defeated Zengid lords at the Battle of the Horns of Hama.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_04.jpg",
+        "image_prompt": "Ships arriving at a busy ancient port., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Proclaimed Sultan",
+        "line": "The Abbasid caliph proclaimed Saladin the Sultan of Egypt and Syria. Saladin launched further conquests in northern Syria and Upper Mesopotamia. He escaped two attempts on his life by the Order of Assassins. Saladin returned to Egypt in 1177 to address local issues. By 1182, Saladin had completed the conquest of Syria. He failed to take over the Zengid stronghold of Mosul.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_05.jpg",
+        "image_prompt": "A ruler receiving a royal decree and insignia., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Battle of Hattin",
+        "line": "The Ayyubid army defeated the Crusaders at the decisive Battle of Hattin. Saladin captured Jerusalem, re-establishing Muslim military dominance in the Levant. The 1187 defeat marked a turning point for the Christian military effort. Saladin died in Damascus in 1193. He had given away much of his personal wealth to his subjects. Saladin is buried in a mausoleum adjacent to the Umayyad Mosque.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_06.jpg",
+        "image_prompt": "A large battle unfolding on a hot, dry plain., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Cultural Reverence",
+        "line": "He is revered prominently in Kurdish, Turkic, Arab, and Western cultures. He has frequently been described as the most famous Kurdish figure. His father, Najm al-Din Ayyub, was a Kurdish mercenary commander. His father provided refuge and ferries for Imad al-Din Zengi's defeated army. The military governor reprimanded Ayyub for giving Zengi refuge. Ayyub was banished from Tikrit in 1137 after his brother's actions.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_07.jpg",
+        "image_prompt": "Diverse people gathered in a respectful assembly., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Born During Departure",
+        "line": "Saladin was born the same night his family left Tikrit. In 1139, Imad al-Din Zengi appointed Ayyub commander of his fortress. After Zengi's death, his son Nur al-Din became leader of the Zengids. Saladin, living in Damascus, was reportedly fond of the city. Saladin played a major role commanding the right wing of the Zengid army. Muslim sources claim he had orders to lure the enemy into a trap.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_08.jpg",
+        "image_prompt": "A woman cradling a newborn baby in a moving caravan., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Battle of al-Babein",
+        "line": "The Battle of al-Babein took place on the desert border of the Nile. Commander Hugh of Caesarea was captured while attacking Saladin's unit. Saladin and Shirkuh moved towards Alexandria where they were welcomed. Saladin was left to guard Alexandria during a siege in 1167. He withheld the siege for three months despite numerical inferiority. In 1168, Amalric I of Jerusalem invaded Egypt for the third time.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_09.jpg",
+        "image_prompt": "Armies clashing near a river in a sandy landscape., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Fustat Burned",
+        "line": "Fustat was burnt by Shawar to prevent wealth falling into Crusader hands. Shawar was executed shortly after Shirkuh was appointed vizier. After Shirkuh's death, many ethnic Kurds were considered for vizier. Saladin and associates were wary of Turkish influence in government. Al-Adid appointed Saladin to replace Shawar as vizier. Saladin repented wine-drinking and assumed the dress of religion.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_10.jpg",
+        "image_prompt": "Flames engulfing buildings in an ancient city., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Assassination Plot",
+        "line": "Egyptian soldiers and emirs attempted to assassinate Saladin. By August, Saladin had decisively quelled an uprising of soldiers. Saladin defeated a massive Crusader-Byzantine force near Damietta. He ordered the construction of colleges for Sunni Islam denominations. Saladin launched a campaign against the Crusaders, besieging Darum in 1170. He evaded Crusader forces and captured Gaza.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_11.jpg",
+        "image_prompt": "A hidden dagger being revealed in a crowded room., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Destroying Fortifications",
+        "line": "Saladin destroyed fortifications in Gaza built for the Knights Templar. He attacked and captured the Crusader castle of Eilat. Nur al-Din told Saladin to re-establish Abbasid suzerainty in Egypt. A religious scholar vehemently opposed Shi'a rule in the country. Al-Adid fell ill or was poisoned after Egyptian emirs were killed. Saladin refused al-Adid's request for a visit fearing treachery.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_12.jpg",
+        "image_prompt": "Men dismantling stone walls with tools., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Abbasid Khutba",
+        "line": "The Abbasid khutba was pronounced in Cairo, proclaiming al-Mustadi as caliph. Saladin left Cairo to take part in a joint attack on Kerak. He withdrew back to Cairo upon reports of internal plots. A Nubian army was reported on the Egyptian border preparing for a siege. Saladin's brother, Turan-Shah, was sent with reinforcements. The Nubians departed but returned and were again driven off.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_13.jpg",
+        "image_prompt": "A preacher delivering a sermon in a mosque., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Capturing Nubian Town",
+        "line": "Egyptian forces advanced and captured the Nubian town of Ibrim. Saladin sent Nur al-Din a gift of dinars, goods, and an elephant. While transporting goods, Saladin ravaged the Crusader countryside. He aimed to deprive the Franks of guides by driving out Bedouins. Saladin's father Ayyub was wounded in a horse-riding accident. His father Ayyub ultimately died on 9 August.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_14.jpg",
+        "image_prompt": "Soldiers raising a banner over a conquered town., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Conquering Yemen",
+        "line": "In 1174, Saladin sent Turan-Shah to conquer Yemen. Nur al-Din was mustering an army in apparent preparation against Saladin. Nur al-Din died on 15 May 1174, after falling ill. His power was handed to his eleven-year-old son as-Salih Ismail al-Malik. Nur al-Din's death left Saladin with political independence. Saladin promised as-Salih he would act as a sword against enemies.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_15.jpg",
+        "image_prompt": "An army marching towards a mountainous region., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Syrian Anarchy Fears",
+        "line": "Saladin feared anarchy in Syria could give rise to danger from Crusaders. Gumushtigin assumed guardianship over as-Salih in Aleppo. The emir of Damascus appealed to Sayf al-Din Ghazi for assistance. The Syrians requested the aid of Saladin, who complied. Saladin rode across the desert with 700 picked horsemen. He was joined by emirs, soldiers, and Bedouins.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_16.jpg",
+        "image_prompt": "A map showing a region threatened by external forces., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Arrival in Damascus",
+        "line": "Saladin arrived in Damascus amid general acclamation on November 23. The gates of the Citadel of Damascus were opened to Saladin. He installed himself in the castle and received praise. Saladin proceeded to reduce other cities that had belonged to Nur al-Din. His army conquered Hama with relative ease. Saladin avoided attacking Homs because of the strength of its citadel.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_17.jpg",
+        "image_prompt": "A procession entering a city cheered by crowds., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Besieging Aleppo",
+        "line": "Saladin moved north towards Aleppo, besieging it on December 30. Gumushtigin requested the chief da'i of the Assassins to assassinate Saladin. Thirteen Assassins gained admission into Saladin's camp but were detected. One assassin was killed and the others slain while trying to escape. Saladin's rivals waged a propaganda war, claiming he was ungrateful. Saladin claimed he was defending Islam from the Crusaders.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_18.jpg",
+        "image_prompt": "An army surrounding a large city., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Returning to Hama",
+        "line": "His army returned to Hama to engage a Crusader force. Saladin proclaimed the Crusaders' withdrawal as a victory. Soon after, Saladin entered Homs and captured its citadel.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_19.jpg",
+        "image_prompt": "An army moving back towards a fortified town., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Saladin",
+    "source_url": "https://en.wikipedia.org/wiki/Saladin"
+  },
+  "long_edward_jenner_pioneer_of_vaccines": {
+    "title": "Edward Jenner: Pioneer of Vaccines",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Birthplace",
+        "line": "Edward Jenner was born on 17 May 1749 in Berkeley, Gloucestershire, England. He was the eighth of nine children, and his father was the vicar of Berkeley. Jenner received a strong basic education, attending schools in Wotton-under-Edge and Cirencester.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_01.jpg",
+        "image_prompt": "A historical house in a rural English village., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Childhood Inoculation",
+        "line": "During his schooling, Jenner was inoculated for smallpox, which affected his health lifelong. At age 13, Jenner began a seven-year apprenticeship with surgeon Daniel Ludlow. In 1770, Jenner apprenticed in surgery and anatomy under John Hunter at St George's Hospital.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_02.jpg",
+        "image_prompt": "A physician administering a rudimentary inoculation., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Return Home",
+        "line": "Jenner returned to his native countryside and became a successful doctor by 1773. Jenner obtained his Doctor of Medicine degree from the University of St Andrews in 1792. Jenner co-founded the Fleece Medical Society, which met to discuss medical subjects.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_03.jpg",
+        "image_prompt": "A countryside doctor's home with a horse-drawn carriage., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Research Topics",
+        "line": "He contributed papers on angina pectoris, ophthalmia, and cardiac valvular disease. Jenner was elected a fellow of the Royal Society in 1788. His election followed a study on the life of the nested cuckoo.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_04.jpg",
+        "image_prompt": "Antique medical texts and anatomical drawings., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Cuckoo Behavior",
+        "line": "Jenner described how the young cuckoo pushed host eggs and chicks from the nest. He noted the baby cuckoo's back had a depression enabling it to push eggs. Jenner's findings on the cuckoo were published in Philosophical Transactions of the Royal Society.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_05.jpg",
+        "image_prompt": "A small bird pushing an egg out of a nest., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Marriage",
+        "line": "Edward Jenner married Catherine Kingscote in March 1788. They had three children: Edward Robert, Catherine Fitzhardinge, and Robert Fitzhardinge. Jenner inoculated his 11-month-old son Robert with his cowpox vaccine.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_06.jpg",
+        "image_prompt": "A couple in 18th-century attire during a wedding ceremony., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Angina Pectoris Research",
+        "line": "Jenner advanced the understanding of angina pectoris through his correspondence. He postulated that cowpox might protect against smallpox. On 14 May 1796, Jenner tested his hypothesis on James Phipps.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_07.jpg",
+        "image_prompt": "A historical medical illustration of the heart., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Inoculation Material",
+        "line": "Jenner scraped pus from cowpox blisters on milkmaid Sarah Nelmes. He inoculated Phipps's arm with cowpox pus through two small cuts. The inoculation caused a mild fever and uneasiness but no full infection.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_08.jpg",
+        "image_prompt": "A close-up of a cowpox blister on a hand., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Smallpox Challenge",
+        "line": "Later, Jenner injected Phipps with smallpox material, and no disease followed. Phipps showed no sign of infection even when challenged again with smallpox. Jenner successfully tested his hypothesis on 23 additional subjects.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_09.jpg",
+        "image_prompt": "A physician holding a vial of clear liquid., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Research Reporting",
+        "line": "Jenner reported his findings to the Royal Society, initially without publication. His revised findings on 23 cases, including his son, were eventually published. The medical establishment deliberated extensively before accepting Jenner's vaccination findings.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_10.jpg",
+        "image_prompt": "A document being presented to a formal committee., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Government Action",
+        "line": "The British government banned variolation and provided cowpox vaccination free of charge. The Balmis Expedition spread the smallpox vaccine to the Americas. Napoleon had his French troops vaccinated and awarded Jenner a medal.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_11.jpg",
+        "image_prompt": "A parliamentary building with flags., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Prisoner Release",
+        "line": "At Jenner's request, Napoleon released two English prisoners of war. Jenner was granted £10,000 for his work on vaccination in 1802. He received another £20,000 five years later after efficacy was confirmed.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_12.jpg",
+        "image_prompt": "Two men being freed from prison gates., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "American Academy",
+        "line": "Jenner became a foreign honorary member of the American Academy of Arts and Sciences. He was also elected a member of the American Philosophical Society in 1804. Jenner became president of the Jennerian Society in London promoting vaccination.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_13.jpg",
+        "image_prompt": "A historic building of a learned society., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Medical Society Membership",
+        "line": "He was a member of the Medical and Chirurgical Society from its founding. Jenner resigned his directorship of the National Vaccine Establishment due to dissatisfaction. Jenner observed smallpox cases after vaccination but noted diminished severity.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_14.jpg",
+        "image_prompt": "A group of doctors in formal attire., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Physician Extraordinary",
+        "line": "In 1821, Jenner was appointed physician extraordinary to King George IV. He was also made mayor of Berkeley and a justice of the peace. In 1823, Jenner presented his 'Observations on the Migration of Birds'.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_15.jpg",
+        "image_prompt": "A royal court with physicians in attendance., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Freemason",
+        "line": "Edward Jenner was a Freemason, holding leadership roles in his lodge. Jenner was found in a state of apoplexy on 25 January 1823. He died the next day, aged 73, from an apparent stroke.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_16.jpg",
+        "image_prompt": "A masonic lodge room with symbols., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Burial",
+        "line": "Jenner was buried in the family vault at the Church of St Mary, Berkeley. Jenner expressed wonder that people were not more grateful to God for the good conveyed. In 1980, the World Health Organization declared smallpox an eradicated disease.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_17.jpg",
+        "image_prompt": "A churchyard with gravestones., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Foundation of Immunology",
+        "line": "Jenner's vaccine laid the foundation for contemporary discoveries in immunology. He was named in the BBC's list of the 100 Greatest Britons in 2002. Jenner was featured on postage stamps in the Royal Mail's World Changers issue.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_18.jpg",
+        "image_prompt": "Microscopic view of biological cells., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Lunar Honor",
+        "line": "The lunar crater Jenner is named in his honor. Jenner's house in Berkeley, Gloucestershire, is now a small museum. A statue of Jenner was erected in Trafalgar Square and later moved.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_19.jpg",
+        "image_prompt": "A view of the moon from Earth., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Hospital Unit",
+        "line": "A section at Gloucestershire Royal Hospital is known as the Edward Jenner Unit. Jenner Road is a street in Stoke Newington, north London. The Jenner Health Centre is located in Forest Hill, London.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_20.jpg",
+        "image_prompt": "A hospital reception area., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Frieze Name",
+        "line": "Jenner's name is featured on the Frieze of the London School of Hygiene & Tropical Medicine. The minor planet 5168 Jenner is named in his honor.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_21.jpg",
+        "image_prompt": "An inscription on the facade of a building., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Edward Jenner",
+    "source_url": "https://en.wikipedia.org/wiki/Edward_Jenner"
+  },
+  "long_rosa_parks_a_life_of_courage_and_civil_rights": {
+    "title": "Rosa Parks: A Life of Courage and Civil Rights",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Early Life",
+        "line": "Rosa Louise McCauley Parks was born in Tuskegee, Alabama on February 4, 1913. Her mother Leona Edwards was a teacher and her father James McCauley was a carpenter. Her name was a portmanteau of her maternal and paternal grandmothers' names, Rose and Louisa. When she was a baby, Parks moved to live with her father's family in Abbeville.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_01.jpg",
+        "image_prompt": "A historical photo of a small Alabama town., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Relocation",
+        "line": "Her mother then moved with her to Pine Level to live with her mother's family. In Pine Level, Parks attended the African Methodist Episcopal church, a Black denomination. She was baptized at age two and remained a lifelong member of the church. While her mother taught, Parks lived with her grandparents on their family farm.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_02.jpg",
+        "image_prompt": "A modest farmhouse with a porch and rocking chairs., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Farm Work",
+        "line": "They raised chickens and cows and grew fruit, pecan, and walnut trees. At age six or seven, she began working on a plantation picking cotton. Parks learned quilting and sewing from her mother, making her first quilt at 10. She completed her first dress at the age of 11.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_03.jpg",
+        "image_prompt": "A basket overflowing with fresh walnuts and pecans., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Jim Crow South",
+        "line": "Parks grew up in Alabama under Jim Crow segregation and widespread racial violence. Alabama codified Jim Crow segregation into law during a 1901 state convention. The Ku Klux Klan intensified its activity across the United States after World War I. Parks recalled hearing of many Black people found dead under mysterious circumstances.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_04.jpg",
+        "image_prompt": "A sign indicating separate facilities for different races., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "First Schooling",
+        "line": "Parks initially attended a one-room schoolhouse at the Mount Zion AME Zion church. She began attending the Montgomery Industrial School for Girls for vocational training at eleven. After the school closed, she transferred to Booker T. Washington Junior High School. Parks dropped out to care for her ailing grandmother and mother.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_05.jpg",
+        "image_prompt": "A simple wooden schoolhouse with a single window., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Domestic Work",
+        "line": "After leaving school, she worked as a domestic worker in white households. Parks wrote of an incident where a white man named 'Mr. Charlie' tried to assault her. In her account, she claims she verbally resisted Mr. Charlie's racist advances. In 1931, Parks was introduced to her future husband, Raymond Parks, by a friend.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_06.jpg",
+        "image_prompt": "A woman dusting furniture in an ornate living room., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Activist Husband",
+        "line": "She described Raymond as the 'first real activist' she had met. Rosa and Raymond married on December 18, 1932, at Rosa's mother's house. The couple became involved in the Scottsboro Boys case concerning nine Black youths. Rosa and Raymond hosted fundraising meetings for the defense of the accused youths.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_07.jpg",
+        "image_prompt": "People holding signs at a civil rights demonstration., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "High School Diploma",
+        "line": "Parks completed her high school education in 1933 with Raymond's encouragement. Subsequently, she worked as a nurse's aide at St. Margaret's Hospital. In 1941, she began working at Maxwell Air Force Base which was integrated. The base provided an alternative reality to the ugly racial policies of Jim Crow.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_08.jpg",
+        "image_prompt": "A woman receiving a high school diploma., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "NAACP Secretary",
+        "line": "Parks began attending meetings of the Montgomery NAACP chapter in 1943. In December 1943, she was elected secretary of the chapter. She and Raymond were members of the Voter's League focused on registration. Obstacles like poll taxes and literacy tests prevented Black people from registering to vote.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_09.jpg",
+        "image_prompt": "A meeting room with people around a table., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Successful Registration",
+        "line": "Parks attempted to register three times, finally succeeding in 1945. Parks investigated the gang rape of Recy Taylor, a Black woman from Abbeville. She organized 'The Committee for Equal Justice for Mrs. Recy Taylor'. Parks also organized support for Jeremiah Reeves, accused of raping a white woman.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_10.jpg",
+        "image_prompt": "A person looking at a voter registration card., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Seamstress Work",
+        "line": "Beginning in 1954, Parks worked as a seamstress for Clifford and Virginia Durr. The Durrs helped sponsor Parks to attend the Highlander Folk School in 1955. At Highlander, Parks felt no racial hostility and envisioned a unified society. In August 1955, she attended a Montgomery meeting concerning the lynching of Emmett Till.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_11.jpg",
+        "image_prompt": "A woman sewing fabric with a sewing machine., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Bus Ordinance",
+        "line": "Montgomery passed an ordinance segregating streetcar passengers by race in 1900. Black residents conducted boycotts against segregated streetcars between 1900 and 1902. Bus drivers had discretion to enforce racial divisions in the middle rows. In 1943, bus driver James F. Blake confronted Parks about her seating.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_12.jpg",
+        "image_prompt": "An old city ordinance document., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Previous Arrests",
+        "line": "Before 1955, several people were arrested for refusing to give up bus seats. Fifteen-year-old Claudette Colvin was arrested in March 1955 for a similar refusal. Activists considered Colvin and Smith as test cases for a community bus boycott. On December 1, 1955, Parks left work and boarded a bus around 5:30 p.m.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_13.jpg",
+        "image_prompt": "A police officer talking to a person on a bus., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Bus Driver Recognized",
+        "line": "Lost in thought, Parks did not notice that James F. Blake was the driver. She sat in the middle section of the bus, next to a Black man. As the bus traveled, all the white-only seats filled up with white passengers. Blake demanded that Black passengers in the middle row yield their seats.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_14.jpg",
+        "image_prompt": "A bus driver visible through the front windshield., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Parks Remained Seated",
+        "line": "Those seated near Parks complied, but Parks remained seated. When Blake asked if she intended to stand, Parks refused. Blake threatened her with arrest, to which Parks responded, 'You may do that.' She considered physically resisting but decided against it, lacking a way to fight back.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_15.jpg",
+        "image_prompt": "A woman sitting calmly in a bus seat., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Police Called",
+        "line": "Blake left the bus and called his supervisor, who advised him to call the police. Two officers arrived and arrested Parks for violating the Montgomery municipal code. Parks's refusal to move was not premeditated, according to biographer Douglas G. Brinkley. Parks stated, 'The only tired I was, was tired of giving in.'",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_16.jpg",
+        "image_prompt": "A bus driver using a payphone outside., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Taken to Jail",
+        "line": "After her arrest, Parks was taken to Montgomery city hall and then the city jail. She was fingerprinted and photographed after being taken to the city jail. She was granted permission to call home, notifying her mother of her arrest. E. D. Nixon drove to the jail with Clifford and Virginia Durr and paid Parks's bail.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_17.jpg",
+        "image_prompt": "The exterior of a city hall building., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Test Case",
+        "line": "Nixon conferred with Clifford Durr about adopting Parks's arrest as a test case. They favored Parks due to her high standing and firm quiet spirit. Despite concerns about retaliation, Parks ultimately agreed to be a test case. Attorney Fred Gray agreed to represent Parks in court.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_18.jpg",
+        "image_prompt": "Two men in discussion, looking serious., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Boycott Planning",
+        "line": "The Women's Political Council began planning a one-day boycott of Montgomery buses for December 5. Leaflets announcing the boycott were produced using a mimeograph machine. On December 5, 1955, the day of Parks's trial, the boycott began widespread. After Parks was found guilty, the boycott was extended indefinitely.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_19.jpg",
+        "image_prompt": "A group of women planning on a large sheet of paper., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Boycott Sustained",
+        "line": "The Montgomery Improvement Association organized a community transportation network to sustain the boycott. Parks and other boycott leaders faced harassment, ostracization, and legal obstacles. The boycott lasted for 381 days, ending after segregation on buses was deemed unconstitutional. In 1957, Parks relocated to Detroit, Michigan, experiencing hardship and health problems.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_20.jpg",
+        "image_prompt": "Cars and vans forming a line to transport people., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Continued Advocacy",
+        "line": "She continued to advocate for civil rights, supporting various activists. She was an anti-apartheid activist, participating in protests and conferences. In 1987, she co-founded the Rosa and Raymond Parks Institute for Self Development. After her death in 2005, she received public viewings and memorial services.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_21.jpg",
+        "image_prompt": "People shaking hands after a political rally., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Capitol Laying",
+        "line": "She lay in state at the United States Capitol rotunda in Washington, D.C. Rosa Parks was ultimately interred at Woodlawn Cemetery in Detroit. Parks received the Presidential Medal of Freedom and a Congressional Gold Medal. She was the first Black American to be memorialized in the National Statuary Hall.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_22.jpg",
+        "image_prompt": "The rotunda of the U.S. Capitol building., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Rosa Parks",
+    "source_url": "https://en.wikipedia.org/wiki/Rosa_Parks"
+  }
+}

@@ -1,0 +1,386 @@
+{
+  "the_moon_s_missing_button": {
+    "title": "The Moon's Missing Button",
+    "category": "Bedtime Stories",
+    "intro": "Hello, dear dreamers. Tonight, as the world settles into its quietest moments, we'll journey to a place where the moon has a special secret, and a tiny button holds the key to the night's magic. Find your coziest spot, tuck yourselves in, and let your imagination take flight.",
+    "outro": "And so, the moon smiles upon us, dear ones, knowing its special button is safe. May your dreams be as peaceful and luminous as the moonlit night. Close your eyes, let your worries drift away, and sleep deeply until the morning light. Goodnight.",
+    "scenes": [
+      {
+        "label": "Silvery Moon",
+        "line": "High above, the gentle moon shone, a comforting light in the vast, velvet sky.",
+        "speech": "",
+        "image": "assets/generated/the_moon_s_missing_button_01.jpg",
+        "image_prompt": "A full, soft silver moon gently glowing against a deep navy night sky, with a few twinkling stars., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "A Tiny Glint",
+        "line": "But tonight, a tiny, pearly button had slipped from its soft, glowing surface, tumbling earthward.",
+        "speech": "",
+        "image": "assets/generated/the_moon_s_missing_button_02.jpg",
+        "image_prompt": "A small, iridescent button falling slowly from the bottom edge of the moon towards the Earth, leaving a faint shimmery trail., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Forest Bed",
+        "line": "It landed softly in a patch of moss beneath an ancient oak, nestled like a tiny pearl.",
+        "speech": "",
+        "image": "assets/generated/the_moon_s_missing_button_03.jpg",
+        "image_prompt": "A close-up view of a small, shimmering button resting gently on a soft, green moss bed at the base of a large, gnarled oak tree., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Curious Firefly",
+        "line": "A curious firefly, its tiny lantern blinking, discovered the moon's precious little button.",
+        "speech": "",
+        "image": "assets/generated/the_moon_s_missing_button_04.jpg",
+        "image_prompt": "A soft glowing firefly hovering close to the iridescent button on the moss, its light gently illuminating the button., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Whispering Wind",
+        "line": "The wind, a gentle storyteller, whispered to the firefly that the moon might miss its lost glimmer.",
+        "speech": "",
+        "image": "assets/generated/the_moon_s_missing_button_05.jpg",
+        "image_prompt": "Gentle breezes subtly rustling leaves around the firefly and button, creating a soft, ethereal movement., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Back to Sky",
+        "line": "So, the brave little firefly, carrying the button carefully, began its slow, upward journey home.",
+        "speech": "",
+        "image": "assets/generated/the_moon_s_missing_button_06.jpg",
+        "image_prompt": "The firefly, with the tiny button held safely, slowly ascending from the forest floor towards the night sky., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Moon's Smile",
+        "line": "As the firefly delivered the button, the moon seemed to glow a little brighter, a soft, happy sigh filling the night.",
+        "speech": "",
+        "image": "assets/generated/the_moon_s_missing_button_07.jpg",
+        "image_prompt": "The firefly reaching the moon, placing the button back. The moon's glow visibly brightens and softens, as if relieved., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Sweet Dreams",
+        "line": "And with its button safely back in place, the moon watches over us, inviting sweet dreams until morning light.",
+        "speech": "",
+        "image": "assets/generated/the_moon_s_missing_button_08.jpg",
+        "image_prompt": "A peaceful, brightly glowing moon in the night sky, casting a gentle, comforting light over a sleeping world (distant silhouette of houses/trees)., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      }
+    ]
+  },
+  "whispers_of_the_stardust_bloom": {
+    "title": "Whispers of the Stardust Bloom",
+    "category": "Bedtime Stories",
+    "intro": "Hello little dreamers, and welcome back to our cozy corner of the universe. Tonight, we're going on a journey to find something truly magical, something that only blooms when the world is fast asleep. Let's snuggle in and listen to the whispers of the stardust bloom.",
+    "outro": "And so, the stardust bloom closed its petals, its gentle light fading back into the slumbering garden. May its quiet glow fill your dreams tonight. Sleep soundly, little ones.",
+    "scenes": [
+      {
+        "label": "Night Garden",
+        "line": "Deep in a garden where moonlight dripped like honey, lived a tiny seed named Flicker.",
+        "speech": "",
+        "image": "assets/generated/whispers_of_the_stardust_bloom_01.jpg",
+        "image_prompt": "A miniature seed with a faint glow, nestled in soft, dark soil under a luminous moon., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Moonbeam Shower",
+        "line": "Flicker dreamed of growing, of unfurling into something as beautiful as the stars above.",
+        "speech": "",
+        "image": "assets/generated/whispers_of_the_stardust_bloom_02.jpg",
+        "image_prompt": "The seed surrounded by shimmering moonbeams descending from the night sky., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Dewdrop Tears",
+        "line": "But Flicker was shy, and only the softest whispers of night could encourage it to sprout.",
+        "speech": "",
+        "image": "assets/generated/whispers_of_the_stardust_bloom_03.jpg",
+        "image_prompt": "A single, perfect dewdrop resting on the seed's surface, reflecting the moonlight., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Tiny Sprout",
+        "line": "One night, a gentle breeze carried a melody, and a tiny, green sprout pushed through the earth.",
+        "speech": "",
+        "image": "assets/generated/whispers_of_the_stardust_bloom_04.jpg",
+        "image_prompt": "A small, delicate green sprout emerging from the soil, reaching towards the sky., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Unfurling Petals",
+        "line": "The sprout trembled, then slowly, softly, began to unfurl tiny, luminous petals.",
+        "speech": "",
+        "image": "assets/generated/whispers_of_the_stardust_bloom_05.jpg",
+        "image_prompt": "The sprout's petals gently opening, revealing a soft, internal glow., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Stardust Magic",
+        "line": "As the petals opened, they shimmered with captured stardust, each one a tiny galaxy.",
+        "speech": "",
+        "image": "assets/generated/whispers_of_the_stardust_bloom_06.jpg",
+        "image_prompt": "The fully bloomed flower glowing with an internal light, flecked with tiny, sparkling points of light., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Silent Bloom",
+        "line": "The stardust bloom glowed with a silent, peaceful light, a secret shared with the sleeping world.",
+        "speech": "",
+        "image": "assets/generated/whispers_of_the_stardust_bloom_07.jpg",
+        "image_prompt": "The stardust bloom emitting a soft, calming luminescence that casts gentle shadows on the garden floor., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Dreamy Glow",
+        "line": "Its light was a lullaby, a gentle invitation to drift into sweet, starlit dreams.",
+        "speech": "",
+        "image": "assets/generated/whispers_of_the_stardust_bloom_08.jpg",
+        "image_prompt": "The stardust bloom's light softly illuminating a sleeping child's face, a serene expression., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      }
+    ]
+  },
+  "the_sleepy_river_s_secret_song": {
+    "title": "The Sleepy River's Secret Song",
+    "category": "Bedtime Stories",
+    "intro": "Hello little dreamers, and welcome back to our cozy corner. Tonight, we're going on a gentle journey to a place where the water sings lullabies and the pebbles glimmer like tiny stars. Close your eyes, snuggle in, and let's discover the Sleepy River's Secret Song.",
+    "outro": "And as the Sleepy River flows on, its gentle song becomes a whisper in your dreams. Sleep soundly, little ones, until the morning light. Goodnight.",
+    "scenes": [
+      {
+        "label": "Moonlit Meadow",
+        "line": "Far away, nestled between rolling hills, lies a meadow bathed in the soft glow of the moon.",
+        "speech": "",
+        "image": "assets/generated/the_sleepy_river_s_secret_song_01.jpg",
+        "image_prompt": "A wide, grassy meadow under a full moon, with gentle, rounded hills in the background., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "River Winding",
+        "line": "Through this meadow winds a river, not a boisterous one, but a quiet, sleepy river.",
+        "speech": "",
+        "image": "assets/generated/the_sleepy_river_s_secret_song_02.jpg",
+        "image_prompt": "A gentle, slow-moving river snaking through the moonlit meadow., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Pebbles Gleaming",
+        "line": "Its water is so clear that you can see the smooth, colorful pebbles resting on its bed, each one faintly shimmering.",
+        "speech": "",
+        "image": "assets/generated/the_sleepy_river_s_secret_song_03.jpg",
+        "image_prompt": "Close-up view of the riverbed, showing smooth, colorful pebbles with a soft, internal glow., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Water Whispering",
+        "line": "As the water flows, it doesn't rush or roar; instead, it hums a soft, soothing melody.",
+        "speech": "",
+        "image": "assets/generated/the_sleepy_river_s_secret_song_04.jpg",
+        "image_prompt": "The surface of the river with gentle ripples, suggesting a soft, humming sound., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Firefly Lanterns",
+        "line": "Tiny fireflies, like miniature lanterns, blink on and off along the riverbanks, adding to the magical ambiance.",
+        "speech": "",
+        "image": "assets/generated/the_sleepy_river_s_secret_song_05.jpg",
+        "image_prompt": "Dark riverbanks dotted with numerous blinking fireflies, casting small pools of light., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Dreamy Bubbles",
+        "line": "Occasionally, a tiny bubble would rise from the riverbed, carrying a secret whispered by the water.",
+        "speech": "",
+        "image": "assets/generated/the_sleepy_river_s_secret_song_06.jpg",
+        "image_prompt": "A single, small bubble slowly rising from the riverbed towards the surface., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "River's Lullaby",
+        "line": "This gentle, secret song of the river is a lullaby, meant to tuck the whole world into a peaceful slumber.",
+        "speech": "",
+        "image": "assets/generated/the_sleepy_river_s_secret_song_07.jpg",
+        "image_prompt": "A wider shot of the sleepy river, with the moon and fireflies creating a serene, sleepy atmosphere., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Drifting Away",
+        "line": "And if you listen very closely, you can hear its song calling you, inviting you to drift into the sweetest dreams.",
+        "speech": "",
+        "image": "assets/generated/the_sleepy_river_s_secret_song_08.jpg",
+        "image_prompt": "A view from above, looking down at the winding river flowing towards the horizon under the night sky., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      }
+    ]
+  },
+  "barnaby_bear_and_the_glimmering_garden_path": {
+    "title": "Barnaby Bear and the Glimmering Garden Path",
+    "category": "Bedtime Stories",
+    "intro": "Hello little dreamers, and welcome back to our cozy corner of the internet. Tonight, we're going on a gentle adventure with a very special bear. Get tucked in, close your eyes, and let's discover the Glimmering Garden Path.",
+    "outro": "And with that, Barnaby Bear was fast asleep, dreaming of the soft glow of fireflies. Now it's time for you to drift off too. Sleep tight, sweet dreams, and we'll see you next time.",
+    "scenes": [
+      {
+        "label": "Barnaby's Cozy Den",
+        "line": "Barnaby Bear lived in a snug, warm den nestled at the edge of the Whispering Woods.",
+        "speech": "",
+        "image": "assets/generated/barnaby_bear_and_the_glimmering_garden_path_01.jpg",
+        "image_prompt": "A small, cozy bear den with a soft bed, a little window showing a starry night sky., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "A Gentle Breeze",
+        "line": "One evening, a soft breeze rustled the leaves outside his window, carrying the scent of moon-blossoms.",
+        "speech": "",
+        "image": "assets/generated/barnaby_bear_and_the_glimmering_garden_path_02.jpg",
+        "image_prompt": "Close-up of delicate, glowing white flowers with soft moonlight illuminating them., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "The Curious Bear",
+        "line": "Barnaby peeked out, his curiosity tickled by a faint, shimmering light in the distance.",
+        "speech": "",
+        "image": "assets/generated/barnaby_bear_and_the_glimmering_garden_path_03.jpg",
+        "image_prompt": "A brown bear with big, curious eyes looking out of a small den window., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Stepping Out",
+        "line": "He tiptoed out of his den, his paws making no sound on the soft moss.",
+        "speech": "",
+        "image": "assets/generated/barnaby_bear_and_the_glimmering_garden_path_04.jpg",
+        "image_prompt": "Barnaby Bear stepping cautiously out of his den onto a mossy forest floor., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "The Glimmering Path",
+        "line": "He followed the light, which led him to a path paved with tiny, glowing pebbles.",
+        "speech": "",
+        "image": "assets/generated/barnaby_bear_and_the_glimmering_garden_path_05.jpg",
+        "image_prompt": "A winding forest path illuminated by small, softly glowing pebbles embedded in the ground., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Firefly Lanterns",
+        "line": "The path was lit by dozens of friendly fireflies, blinking their gentle lights like tiny lanterns.",
+        "speech": "",
+        "image": "assets/generated/barnaby_bear_and_the_glimmering_garden_path_06.jpg",
+        "image_prompt": "A forest path with fireflies hovering and blinking, casting a soft glow., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "A Sleepy Journey",
+        "line": "Barnaby walked along the Glimmering Garden Path, each step feeling softer and sleepier than the last.",
+        "speech": "",
+        "image": "assets/generated/barnaby_bear_and_the_glimmering_garden_path_07.jpg",
+        "image_prompt": "Barnaby Bear walking peacefully along the glowing pebble path, looking sleepy., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Back to Bed",
+        "line": "He soon found himself back at his den, feeling warm, safe, and ready for the sweetest dreams.",
+        "speech": "",
+        "image": "assets/generated/barnaby_bear_and_the_glimmering_garden_path_08.jpg",
+        "image_prompt": "Barnaby Bear curled up peacefully in his cozy den bed, with a gentle smile on his face., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      }
+    ]
+  },
+  "the_cloud_shepherd_s_rainbow_sheep": {
+    "title": "The Cloud Shepherd's Rainbow Sheep",
+    "category": "Bedtime Stories",
+    "intro": "Hello little dreamers, and welcome back to our sleepy time adventures. Tonight, we have a very special story about a gentle soul who tends to the most wonderful flock imaginable. Snuggle in close, close your eyes, and let's drift away together.",
+    "outro": "And so, the Cloud Shepherd watched over his flock, their gentle bleating a lullaby for the sleeping world. Now it's time for you to rest, little ones. May your dreams be as colorful and peaceful as a field of rainbow sheep. Sleep tight.",
+    "scenes": [
+      {
+        "label": "Night sky",
+        "line": "High above the world, where the stars twinkle like scattered diamonds, lived a kind Cloud Shepherd named Nimbus.",
+        "speech": "",
+        "image": "assets/generated/the_cloud_shepherd_s_rainbow_sheep_01.jpg",
+        "image_prompt": "A vast, dark night sky filled with countless twinkling stars. A faint, gentle crescent moon is visible., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Cloud fields",
+        "line": "Nimbus didn't herd fluffy white sheep; oh no, his flock was much more magical – they were made of pure, shimmering rainbows.",
+        "speech": "",
+        "image": "assets/generated/the_cloud_shepherd_s_rainbow_sheep_02.jpg",
+        "image_prompt": "Soft, billowing clouds that glow through a spectrum of pastel rainbow colors. Wisps of rainbow light drift from them., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Shepherd's crook",
+        "line": "He carried a staff made of moonbeams, and with a gentle wave, he would guide his colorful flock across the sky.",
+        "speech": "",
+        "image": "assets/generated/the_cloud_shepherd_s_rainbow_sheep_03.jpg",
+        "image_prompt": "A silhouette of a serene figure holding a staff that emits a soft, silver light against the rainbow clouds., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Grazing sheep",
+        "line": "His rainbow sheep grazed peacefully on fields of starlight, their wool shimmering with every color you could imagine.",
+        "speech": "",
+        "image": "assets/generated/the_cloud_shepherd_s_rainbow_sheep_04.jpg",
+        "image_prompt": "Several sheep-shaped forms made of bright, flowing rainbow light nibbling on glowing stardust., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Soft bleating",
+        "line": "When they bleated, it sounded like tiny, tinkling bells, a soft melody that floated down to the sleeping world below.",
+        "speech": "",
+        "image": "assets/generated/the_cloud_shepherd_s_rainbow_sheep_05.jpg",
+        "image_prompt": "Abstract visual representation of sound waves emanating from the rainbow sheep, depicted as delicate, shimmering musical notes., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Tucking in",
+        "line": "As bedtime approached, Nimbus would gently gather his flock, tucking them into cozy beds of twilight mist.",
+        "speech": "",
+        "image": "assets/generated/the_cloud_shepherd_s_rainbow_sheep_06.jpg",
+        "image_prompt": "The Cloud Shepherd is seen gently herding the rainbow sheep towards soft, misty clouds tinged with deep purple and pink., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Dreaming sheep",
+        "line": "Each rainbow sheep dreamt of painting the sunrise, their colors ready to greet the new day.",
+        "speech": "",
+        "image": "assets/generated/the_cloud_shepherd_s_rainbow_sheep_07.jpg",
+        "image_prompt": "Close-up on a few rainbow sheep nestled in the twilight mist, their forms glowing softly, with hints of dawn colors subtly appearing around them., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Night lullaby",
+        "line": "And their gentle, colorful presence brought the sweetest dreams to all who slept soundly below.",
+        "speech": "",
+        "image": "assets/generated/the_cloud_shepherd_s_rainbow_sheep_08.jpg",
+        "image_prompt": "A serene view from above, showing the rainbow sheep glowing gently amidst the dark night sky, casting a soft, colorful light downwards., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      }
+    ]
+  },
+  "the_starry_seed_s_silent_wish": {
+    "title": "The Starry Seed's Silent Wish",
+    "category": "Bedtime Stories",
+    "intro": "Hello, little dreamers, and welcome back to our cozy corner of the night. Tonight, we have a very special story about a tiny seed with a giant dream, tucked away in the velvet folds of the universe. Let's close our eyes and drift into its tale.",
+    "outro": "And so, the Starry Seed learned that even the smallest wishes, when whispered to the quiet darkness, can bloom into the most beautiful realities. Now, let your own wishes rest gently in your heart as you drift into a peaceful sleep. Goodnight, little ones.",
+    "scenes": [
+      {
+        "label": "Cosmic Nursery",
+        "line": "In the vast, inky expanse of the cosmos, nestled between nebulae that swirled like sleepy cotton candy, there lay a tiny, shimmering seed.",
+        "speech": "",
+        "image": "assets/generated/the_starry_seed_s_silent_wish_01.jpg",
+        "image_prompt": "A minuscule, iridescent seed floating in the darkness of space, surrounded by soft, pastel-colored nebulae., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Whispers of Space",
+        "line": "This was no ordinary seed; it was a Starry Seed, and it held a secret wish, a silent hum that vibrated with longing.",
+        "speech": "",
+        "image": "assets/generated/the_starry_seed_s_silent_wish_02.jpg",
+        "image_prompt": "Close-up of the Starry Seed, its surface subtly glowing, with faint sound waves radiating from it., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Dreaming of Light",
+        "line": "It dreamed of light, not the harsh glare of a distant sun, but a gentle, comforting glow that could warm sleepy planets.",
+        "speech": "",
+        "image": "assets/generated/the_starry_seed_s_silent_wish_03.jpg",
+        "image_prompt": "The Starry Seed with soft, ethereal light beams emanating from it, reaching out towards a silhouette of a small, quiet planet., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Cosmic Gardener",
+        "line": "A benevolent Cosmic Gardener, with hands woven from moonlight, noticed the seed's quiet yearning.",
+        "speech": "",
+        "image": "assets/generated/the_starry_seed_s_silent_wish_04.jpg",
+        "image_prompt": "A gentle, silhouetted figure with hands that appear to be made of soft, flowing moonlight, reaching towards the Starry Seed., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "A Nurturing Touch",
+        "line": "With a touch as soft as stardust, the Gardener gently planted the Starry Seed in a patch of twilight soil.",
+        "speech": "",
+        "image": "assets/generated/the_starry_seed_s_silent_wish_05.jpg",
+        "image_prompt": "The moonlight hands carefully placing the Starry Seed into a dark, soft-looking patch of cosmic soil., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "Slow Awakening",
+        "line": "Slowly, over eons that felt like a single, peaceful breath, the seed began to stir and unfurl its tiny, luminous roots.",
+        "speech": "",
+        "image": "assets/generated/the_starry_seed_s_silent_wish_06.jpg",
+        "image_prompt": "The Starry Seed showing faint signs of sprouting, with delicate, glowing root tendrils reaching into the soil., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "First Glow",
+        "line": "Then, a single, tender sprout pushed its way upwards, emitting a soft, pulsating glow that lit up the immediate darkness.",
+        "speech": "",
+        "image": "assets/generated/the_starry_seed_s_silent_wish_07.jpg",
+        "image_prompt": "A small, luminous sprout emerging from the soil, emitting a gentle, rhythmic light., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      },
+      {
+        "label": "A Tiny Star",
+        "line": "It wasn't a blazing sun, but a gentle, comforting shimmer, a tiny star born from a silent wish, ready to watch over sleeping worlds.",
+        "speech": "",
+        "image": "assets/generated/the_starry_seed_s_silent_wish_08.jpg",
+        "image_prompt": "The small, glowing sprout now looking more like a tiny, soft star, casting a warm, peaceful light on the surrounding space., Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting"
+      }
+    ]
+  }
+}

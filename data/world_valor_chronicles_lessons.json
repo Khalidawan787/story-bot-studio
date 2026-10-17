@@ -1,0 +1,651 @@
+{
+  "frederick_douglass_the_true_story": {
+    "title": "Frederick Douglass: The True Story",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Early Life",
+        "line": "Frederick Augustus Washington Bailey was born into slavery on the Eastern Shore of the Chesapeake Bay in Maryland.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_01.jpg",
+        "image_prompt": "A rural landscape showing a distant plantation and wooden fence under an open sky., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Motherly Bond",
+        "line": "His mother would lie down with him at night to get him to sleep before leaving.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_02.jpg",
+        "image_prompt": "A dark wooden cabin interior lit by a single faint light source., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Learning Letters",
+        "line": "When Douglass was about 12 years old, Sophia Auld began teaching him the alphabet in Baltimore.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_03.jpg",
+        "image_prompt": "An interior room of a city home with a wooden table and chair., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Secret Knowledge",
+        "line": "Douglass continued, secretly, to teach himself to read and write using newspapers and books.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_04.jpg",
+        "image_prompt": "A worn book resting on a wooden floorboards near a window., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Escape to Freedom",
+        "line": "After escaping from slavery in Maryland in 1838, Douglass became a national leader of the abolitionist movement.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_05.jpg",
+        "image_prompt": "A city street in the North with brick buildings and cobblestone pavement., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Writing Autobiographies",
+        "line": "Douglass wrote three autobiographies, describing his experiences as an enslaved person in America.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_06.jpg",
+        "image_prompt": "An inkwell and a quill pen sitting on a wooden desk., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Shipyard Work",
+        "line": "In 1835, Hugh Auld hired Douglass out to William Gardiner to be a ship caulker in his shipyard.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_07.jpg",
+        "image_prompt": "Wooden sailing ships under construction at a busy historic dockyard., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Frederick Douglass",
+    "source_url": "https://en.wikipedia.org/wiki/Frederick_Douglass"
+  },
+  "frederick_douglass_the_true_story_2": {
+    "title": "Frederick Douglass: The True Story",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Early Life",
+        "line": "Frederick Augustus Washington Bailey was born into slavery on the Eastern Shore of the Chesapeake Bay in Talbot County, Maryland.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_01.jpg",
+        "image_prompt": "A rural landscape featuring a wooden cabin nestled near a quiet creek., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Motherly Bond",
+        "line": "His mother Harriet Bailey gave him his name and would lie down with him at night before leaving.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_02.jpg",
+        "image_prompt": "A dimly lit wooden interior of a small cabin at night., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "City Life",
+        "line": "Douglass felt that he was lucky to be in the city, where enslaved people were almost freemen.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_03.jpg",
+        "image_prompt": "An old cobblestone street in a historic harbor town., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Learning to Read",
+        "line": "When Douglass was about 12 years old, Sophia Auld began teaching him the alphabet.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_04.jpg",
+        "image_prompt": "An open book resting on a wooden table near a window., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Secret Study",
+        "line": "Douglass continued, secretly, to teach himself to read and write using newspapers and books.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_05.jpg",
+        "image_prompt": "Scattered newspapers and handwritten notes on a rustic wooden desk., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Cruel Trials",
+        "line": "Thomas sent Douglass to the Mount Misery plantation, where Edward Covey tried to break his spirit.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_06.jpg",
+        "image_prompt": "A solitary farmhouse standing in the middle of an isolated field., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Rebellion",
+        "line": "The 16-year-old Douglass finally rebelled against the beatings, however, and fought back.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_07.jpg",
+        "image_prompt": "A dusty dirt path outside a rural agricultural barn., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Shipyard Work",
+        "line": "In 1835, Hugh Auld hired Douglass out to William Gardiner to be a ship caulker in his shipyard.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_the_true_story_08.jpg",
+        "image_prompt": "Wooden wooden ship hulls under construction at an old dockyard., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Frederick Douglass",
+    "source_url": "https://en.wikipedia.org/wiki/Frederick_Douglass"
+  },
+  "norman_ernest_borlaug_contributions_to_agricultural_production": {
+    "title": "Norman Ernest Borlaug: Contributions to Agricultural Production",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Agronomist's Work",
+        "line": "Norman Ernest Borlaug led initiatives that greatly increased agricultural production worldwide.",
+        "speech": "",
+        "image": "assets/generated/norman_ernest_borlaug_contributions_to_agricultural_production_01.jpg",
+        "image_prompt": "Fields of grain stretching to the horizon., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Honors Received",
+        "line": "He received prestigious awards, including the Nobel Peace Prize and Presidential Medal of Freedom.",
+        "speech": "",
+        "image": "assets/generated/norman_ernest_borlaug_contributions_to_agricultural_production_02.jpg",
+        "image_prompt": "A collection of medals and certificates on display., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mexican Research",
+        "line": "In Mexico, he developed semi-dwarf, high-yield, disease-resistant wheat varieties.",
+        "speech": "",
+        "image": "assets/generated/norman_ernest_borlaug_contributions_to_agricultural_production_03.jpg",
+        "image_prompt": "Scientists examining wheat stalks in a research field., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Global Introduction",
+        "line": "He introduced these high-yielding varieties with modern techniques to several nations.",
+        "speech": "",
+        "image": "assets/generated/norman_ernest_borlaug_contributions_to_agricultural_production_04.jpg",
+        "image_prompt": "Farmers working in a field with advanced agricultural machinery., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Food Security",
+        "line": "Wheat yields significantly improved in Pakistan and India, boosting food security.",
+        "speech": "",
+        "image": "assets/generated/norman_ernest_borlaug_contributions_to_agricultural_production_05.jpg",
+        "image_prompt": "Baskets overflowing with harvested wheat grains., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Saving Lives",
+        "line": "His efforts are credited with saving over a billion people from starvation.",
+        "speech": "",
+        "image": "assets/generated/norman_ernest_borlaug_contributions_to_agricultural_production_06.jpg",
+        "image_prompt": "A diverse group of people sharing a meal together., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Further Application",
+        "line": "Later in his life, he applied methods to increase food production in Asia and Africa.",
+        "speech": "",
+        "image": "assets/generated/norman_ernest_borlaug_contributions_to_agricultural_production_07.jpg",
+        "image_prompt": "Aerial view of agricultural land in a developing country., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Wrestling Pioneer",
+        "line": "He was also an accomplished wrestler and a pioneer in the sport.",
+        "speech": "",
+        "image": "assets/generated/norman_ernest_borlaug_contributions_to_agricultural_production_08.jpg",
+        "image_prompt": "Two athletes engaged in a wrestling match on a mat., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Norman Borlaug",
+    "source_url": "https://en.wikipedia.org/wiki/Norman_Borlaug"
+  },
+  "norman_borlaug_the_man_who_fed_the_world": {
+    "title": "Norman Borlaug: The Man Who Fed the World",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Agronomist's Work",
+        "line": "Norman Ernest Borlaug was an American agronomist who led initiatives worldwide for agricultural production increases.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_the_man_who_fed_the_world_01.jpg",
+        "image_prompt": "A field of healthy wheat under a bright sun., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Awarded Honors",
+        "line": "He received multiple honors, including the Nobel Peace Prize, Presidential Medal of Freedom, and Congressional Gold Medal.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_the_man_who_fed_the_world_02.jpg",
+        "image_prompt": "A collection of prestigious medals laid out on a table., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Developing Wheat",
+        "line": "In Mexico, he developed semi-dwarf, high-yield, disease-resistant wheat varieties for agricultural research.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_the_man_who_fed_the_world_03.jpg",
+        "image_prompt": "Scientists examining wheat stalks in a laboratory setting., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Global Introduction",
+        "line": "High-yielding varieties and modern techniques were introduced to Mexico, Pakistan, and India.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_the_man_who_fed_the_world_04.jpg",
+        "image_prompt": "Farmers working in a vast agricultural landscape., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Wheat Yields",
+        "line": "Wheat yields nearly doubled in Pakistan and India between 1965 and 1970.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_the_man_who_fed_the_world_05.jpg",
+        "image_prompt": "Two farmers comparing healthy and unhealthy wheat plants., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Saving Lives",
+        "line": "He is credited with saving over a billion people worldwide from starvation.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_the_man_who_fed_the_world_06.jpg",
+        "image_prompt": "A symbolic image of hands offering grain to many people., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Further Efforts",
+        "line": "Later in his life, he helped apply these food production methods in Asia and Africa.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_the_man_who_fed_the_world_07.jpg",
+        "image_prompt": "Aerial view of agricultural fields in a developing country., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "College Wrestling",
+        "line": "He was also an accomplished wrestler in college and a pioneer of wrestling in the United States.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_the_man_who_fed_the_world_08.jpg",
+        "image_prompt": "Two young men engaged in a collegiate wrestling match., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Norman Borlaug",
+    "source_url": "https://en.wikipedia.org/wiki/Norman_Borlaug"
+  },
+  "ignaz_semmelweis_saviour_of_mothers": {
+    "title": "Ignaz Semmelweis: Saviour of Mothers",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Doctor's portrait",
+        "line": "Ignaz Philipp Semmelweis was a Hungarian medical doctor and scientist known as the saviour of mothers.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_01.jpg",
+        "image_prompt": "An old medical text open to a page with historical medical illustrations., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Hospital ward",
+        "line": "Postpartum infection was common and often fatal for women in obstetrical clinics during the 19th century.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_02.jpg",
+        "image_prompt": "A dimly lit, old-fashioned hospital ward with beds., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Hand washing",
+        "line": "He demonstrated infection incidence could be drastically reduced by requiring healthcare workers to disinfect their hands.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_03.jpg",
+        "image_prompt": "A basin with water and a bar of soap on a stand., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Clinic statistics",
+        "line": "Hand washing with chlorinated lime solutions reduced mortality from 18% to less than 2% at one clinic.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_04.jpg",
+        "image_prompt": "A simple bar chart showing declining mortality rates., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Medical disagreement",
+        "line": "His ideas were rejected by the medical community because they conflicted with established scientific views.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_05.jpg",
+        "image_prompt": "A group of distinguished-looking men in old-fashioned suits in discussion., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Patient desperation",
+        "line": "Women begged to be admitted to less dangerous clinics, some even giving birth in the streets.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_06.jpg",
+        "image_prompt": "A quiet street scene outside a large building., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Scientific breakthrough",
+        "line": "A breakthrough occurred after a colleague's death, prompting a connection between cadaver contamination and fever.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_07.jpg",
+        "image_prompt": "A table with medical instruments and a microscope., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Lasting legacy",
+        "line": "Semmelweis's findings gained widespread acceptance years after his death when germ theory was confirmed.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_08.jpg",
+        "image_prompt": "A vintage illustration of microscopic organisms., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Ignaz Semmelweis",
+    "source_url": "https://en.wikipedia.org/wiki/Ignaz_Semmelweis"
+  },
+  "ignaz_semmelweis_saviour_of_mothers_6": {
+    "title": "Ignaz Semmelweis: Saviour of Mothers",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Birthplace",
+        "line": "Ignaz Philipp Semmelweis was born in the Tabán neighbourhood of Buda, Kingdom of Hungary.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_01.jpg",
+        "image_prompt": "Old European city street with historic buildings., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Medical Study",
+        "line": "He began studying law at the University of Vienna, but later switched his focus to medicine.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_02.jpg",
+        "image_prompt": "University lecture hall with students listening., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Hospital Appointment",
+        "line": "Semmelweis was appointed assistant in the First Obstetrical Clinic of the Vienna General Hospital.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_03.jpg",
+        "image_prompt": "Exterior of a large, old hospital building., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mortality Discrepancy",
+        "line": "The First Clinic had a significantly higher maternal mortality rate than the Second Clinic.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_04.jpg",
+        "image_prompt": "View of two separate hospital wings., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Friend's Death",
+        "line": "Following his friend's death during an autopsy, Semmelweis proposed a connection to disease.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_05.jpg",
+        "image_prompt": "Medical instruments laid out on a table., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Hand Washing Policy",
+        "line": "He instituted a policy of washing hands with chlorinated lime solutions between tasks.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_06.jpg",
+        "image_prompt": "Hands holding a sponge over a basin of liquid., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Drastic Decline",
+        "line": "The maternal mortality rate in the First Clinic subsequently declined dramatically to less than 2%.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_07.jpg",
+        "image_prompt": "Graph showing a steep downward trend., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Delayed Acceptance",
+        "line": "Semmelweis's groundbreaking findings gained widespread acceptance only years after his death.",
+        "speech": "",
+        "image": "assets/generated/ignaz_semmelweis_saviour_of_mothers_08.jpg",
+        "image_prompt": "Stack of old medical textbooks on a shelf., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Ignaz Semmelweis",
+    "source_url": "https://en.wikipedia.org/wiki/Ignaz_Semmelweis"
+  },
+  "edward_jenner_pioneer_of_vaccines": {
+    "title": "Edward Jenner: Pioneer of Vaccines",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Physician",
+        "line": "Edward Jenner was an English physician and scientist who pioneered the concept of vaccines.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_01.jpg",
+        "image_prompt": "A doctor examining medical notes in an old study., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Smallpox Vaccine",
+        "line": "He created the world's first vaccine, the highly effective smallpox vaccine.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_02.jpg",
+        "image_prompt": "A glass vial with a clear liquid inside., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Cowpox Term",
+        "line": "The terms vaccine and vaccination are derived from Variolae vaccinae, meaning pustules of the cow.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_03.jpg",
+        "image_prompt": "Close-up of a cow's udder with a small blister., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Scientific Inquiry",
+        "line": "Jenner described cowpox's protective effect against smallpox in his 1798 publication.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_04.jpg",
+        "image_prompt": "An open, aged book with handwritten notes in the margins., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Father of Immunology",
+        "line": "Edward Jenner is often called the father of immunology for his groundbreaking work.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_05.jpg",
+        "image_prompt": "A microscope placed on a wooden desk., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Saving Lives",
+        "line": "His medical contributions are said to have saved more lives than any other man.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_06.jpg",
+        "image_prompt": "Silhouettes of people standing together, looking towards the horizon., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Royal Appointment",
+        "line": "In 1821, he was appointed physician to King George IV.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_07.jpg",
+        "image_prompt": "A historic royal carriage being pulled by horses., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Zoology Study",
+        "line": "Jenner described the brood parasitism of the cuckoo bird in zoological studies.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_08.jpg",
+        "image_prompt": "A bird's nest containing eggs and a single chick., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Edward Jenner",
+    "source_url": "https://en.wikipedia.org/wiki/Edward_Jenner"
+  },
+  "edward_jenner_and_the_smallpox_vaccine": {
+    "title": "Edward Jenner and the Smallpox Vaccine",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Physician's Study",
+        "line": "Edward Jenner, an English physician, pioneered the concept of vaccines and created the world's first smallpox vaccine.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_and_the_smallpox_vaccine_01.jpg",
+        "image_prompt": "A desk with medical books and instruments., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Farmyard Scene",
+        "line": "Jenner derived the terms vaccine and vaccination from 'pustules of the cow,' the term he devised for cowpox.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_and_the_smallpox_vaccine_02.jpg",
+        "image_prompt": "A cow in a rural pasture., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Scientific Publication",
+        "line": "He described cowpox's protective effect against smallpox in his 1798 publication, the Inquiry into the Variolae vaccinae.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_and_the_smallpox_vaccine_03.jpg",
+        "image_prompt": "An old, leather-bound book on a wooden table., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Crowded City",
+        "line": "In Jenner's time, smallpox killed about 10% of the global population, and up to 20% in towns.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_and_the_smallpox_vaccine_04.jpg",
+        "image_prompt": "A bustling 18th-century city street with many people., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Zoological Research",
+        "line": "Jenner also studied the brood parasitism of the cuckoo, a behavior noted by Aristotle centuries earlier.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_and_the_smallpox_vaccine_05.jpg",
+        "image_prompt": "A bird's nest with eggs inside a tree., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Medical Society Meeting",
+        "line": "Jenner and others formed a medical society that met to discuss medical subjects and read papers.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_and_the_smallpox_vaccine_06.jpg",
+        "image_prompt": "Gentlemen gathered around a table in a dimly lit room., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Boy and Physician",
+        "line": "Jenner tested his hypothesis by inoculating a young boy with pus from cowpox blisters.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_and_the_smallpox_vaccine_07.jpg",
+        "image_prompt": "A physician examining a child's arm., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Arm After Procedure",
+        "line": "The boy experienced a mild fever but no full-blown infection after the inoculation with cowpox pus.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_and_the_smallpox_vaccine_08.jpg",
+        "image_prompt": "Close-up of a person's arm with a small bandage., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Edward Jenner",
+    "source_url": "https://en.wikipedia.org/wiki/Edward_Jenner"
+  },
+  "audie_leon_murphy_american_soldier_and_actor": {
+    "title": "Audie Leon Murphy: American Soldier and Actor",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Soldier, Actor",
+        "line": "Audie Leon Murphy was an American soldier, an actor, and a songwriter.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_american_soldier_and_actor_01.jpg",
+        "image_prompt": "A group of soldiers standing together in uniform., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Combat Soldier",
+        "line": "He was widely celebrated as the most decorated American combat soldier of World War II.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_american_soldier_and_actor_02.jpg",
+        "image_prompt": "A battlefield scene with smoke in the distance., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Valor Awarded",
+        "line": "He received every military combat award for valor available from the United States Army.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_american_soldier_and_actor_03.jpg",
+        "image_prompt": "A hand holding up multiple military medals., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Holding Position",
+        "line": "Murphy received the Medal of Honor for valor demonstrated at age 19.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_american_soldier_and_actor_04.jpg",
+        "image_prompt": "A soldier on watch overlooking a landscape., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Enemy Soldiers",
+        "line": "He single-handedly held off a company of German soldiers for an hour.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_american_soldier_and_actor_05.jpg",
+        "image_prompt": "A distant view of soldiers in a defensive position., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Leading Counterattack",
+        "line": "He then led a successful counterattack while wounded in combat.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_american_soldier_and_actor_06.jpg",
+        "image_prompt": "Soldiers advancing across a field under supervision., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Acting Career",
+        "line": "After the war, Audie Leon Murphy embarked on an acting career.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_american_soldier_and_actor_07.jpg",
+        "image_prompt": "A film set with cameras and lighting equipment., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Audie Murphy",
+    "source_url": "https://en.wikipedia.org/wiki/Audie_Murphy"
+  },
+  "audie_leon_murphy_valor_and_resilience": {
+    "title": "Audie Leon Murphy: Valor and Resilience",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Soldier's Beginnings",
+        "line": "Audie Leon Murphy was an American soldier widely celebrated for his combat achievements.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_valor_and_resilience_01.jpg",
+        "image_prompt": "A weathered American flag stands against a cloudy sky., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Decorated Hero",
+        "line": "He received every military combat award for valor available from the United States Army.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_valor_and_resilience_02.jpg",
+        "image_prompt": "A close-up of multiple military medals with ribbons., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Holding the Line",
+        "line": "Murphy single-handedly held off German soldiers for an hour at the Colmar Pocket.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_valor_and_resilience_03.jpg",
+        "image_prompt": "A muddy trench with soldiers taking cover., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Wounded Counterattack",
+        "line": "He then led a successful counterattack while wounded, demonstrating incredible bravery.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_valor_and_resilience_04.jpg",
+        "image_prompt": "Soldiers advancing across a field under smoke., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Early Hardships",
+        "line": "Born to sharecroppers, Murphy left school to help support his struggling family.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_valor_and_resilience_05.jpg",
+        "image_prompt": "A simple, rural farmhouse with a dirt road., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Military Service",
+        "line": "Murphy first saw combat during the Allied invasion of Sicily in 1943.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_valor_and_resilience_06.jpg",
+        "image_prompt": "Landing craft approaching a Mediterranean coastline., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Post-War Life",
+        "line": "After his military service, Audie Murphy embarked on a successful acting career.",
+        "speech": "",
+        "image": "assets/generated/audie_leon_murphy_valor_and_resilience_07.jpg",
+        "image_prompt": "A classic Hollywood movie poster for a Western., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Audie Murphy",
+    "source_url": "https://en.wikipedia.org/wiki/Audie_Murphy"
+  }
+}
