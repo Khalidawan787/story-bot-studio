@@ -165,6 +165,18 @@ def verify_facebook(channel_id: str) -> str:
                 "Paste the Graph API Explorer token into the 'Fast way' box instead; it finds the "
                 "right Page ID and Page token by itself."
             )
+        # A person's own token with their own user ID also passes the check
+        # above, and then every post fails. Only a PAGE token can post.
+        debug = _request_json(
+            f"https://graph.facebook.com/{FB_API_VERSION}/debug_token?"
+            + urlencode({"input_token": token, "access_token": token})
+        ).get("data") or {}
+        if str(debug.get("type", "")).upper() != "PAGE":
+            raise RuntimeError(
+                f"This is the personal account '{data.get('name', '')}', not a Page: its USER token "
+                "and user ID were saved. Paste that same token into the 'Fast way' box below; it "
+                "finds the Page and saves the Page's own ID and token."
+            )
     except Exception:
         mark_verified(channel_id, "facebook", "")
         raise
