@@ -141,7 +141,19 @@ def publish() -> None:
         "--notes", "Story Bot Studio, Windows app. Program only: no .env, tokens, "
                    "OAuth clients or database.",
     ], cwd=ROOT, check=True)
+    # Only the newest build is kept (the admin asked for that on 20 Oct 2026).
+    # Older releases go only after the new one is safely up.
+    listing = subprocess.run(
+        ["gh", "release", "list", "--repo", RELEASE_REPO, "--limit", "100", "--json", "tagName", "-q", ".[].tagName"],
+        cwd=ROOT, capture_output=True, text=True, check=True,
+    ).stdout.split()
+    for old in listing:
+        if old != tag:
+            subprocess.run(["gh", "release", "delete", old, "--repo", RELEASE_REPO, "--cleanup-tag", "-y"],
+                           cwd=ROOT, check=False)
+            print(f"Removed older build {old}")
     print(f"Published (private, admin only): https://github.com/{RELEASE_REPO}/releases/tag/{tag}")
+    print(f"Download: https://github.com/{RELEASE_REPO}/releases/download/{tag}/{dated.name}")
 
 
 if __name__ == "__main__":
