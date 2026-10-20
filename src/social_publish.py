@@ -7,6 +7,7 @@ import mimetypes
 import secrets
 import time
 import uuid
+from datetime import timedelta, timezone
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.parse import urlencode
@@ -538,10 +539,71 @@ def tiktok_caption(row) -> str:
     return f"{row['title']}\n\n{tags}".strip()[:2200]
 
 
-def upload_tiktok_zernio(channel_id: str, video: Path, caption: str) -> tuple[str, str | None]:
-    """Publish publicly on TikTok through Zernio: presign, upload, post now."""
+def _entry_account_id(entry: dict) -> str:
+    """Zernio lists the account as an object; posts may also carry the bare id."""
+    account_ref = entry.get("accountId")
+    return str(account_ref.get("_id", "")) if isinstance(account_ref, dict) else str(account_ref or "")
+
+
+def _parse_time(value) -> "datetime | None":
+    from datetime import datetime, timezone
+
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+def tiktok_slot(channel_id: str, account_id: str, youtube_time=None) -> "datetime":
+    """When this video should go live on TikTok.
+
+    Same moment as its scheduled YouTube release when there is one, so both
+    platforms drip out together. Otherwise the next free slot: at least the
+    YouTube gap (3 h) after the latest TikTok post of this account, already
+    published or still waiting, and never in the past. Zernio drops uploaded
+    media after 7 days, so a slot is never more than 6 days ahead.
+    """
+    from datetime import datetime, timedelta, timezone
+
+    from .config import settings
+
+    now = datetime.now(timezone.utc)
+    latest_allowed = now + timedelta(days=6)
+    wanted = _parse_time(youtube_time)
+    if wanted and wanted > now:
+        return min(wanted, latest_allowed)
+    gap = timedelta(hours=settings.youtube_schedule_interval_hours)
+    latest = None
+    data = _request_json(f"{ZERNIO_API}/posts?limit=50", headers=_zernio_headers(channel_id))
+    for post in data.get("posts", []):
+        mine = [e for e in post.get("platforms", []) or []
+                if e.get("platform") == "tiktok" and _entry_account_id(e) == account_id]
+        if not mine:
+            continue
+        if any(e.get("status") == "failed" for e in mine):
+            continue
+        when = _parse_time(mine[0].get("publishedAt") or mine[0].get("scheduledFor") or post.get("scheduledFor"))
+        if when and (latest is None or when > latest):
+            latest = when
+    slot = now + timedelta(minutes=2)
+    if latest and latest + gap > slot:
+        slot = latest + gap
+    return min(slot, latest_allowed)
+
+
+def upload_tiktok_zernio(channel_id: str, video: Path, caption: str,
+                         youtube_time=None) -> tuple[str, str | None, "datetime"]:
+    """Put the video on TikTok publicly through Zernio, at its own time slot.
+
+    Videos made in one run used to go live together; each now waits for its
+    slot (see tiktok_slot), so the account posts one at a time through the day.
+    """
     headers = _zernio_headers(channel_id)
     account_id, _ = _zernio_tiktok_account(channel_id)
+    slot = tiktok_slot(channel_id, account_id, youtube_time)
     presign = _request_json(f"{ZERNIO_API}/media/presign", method="POST", headers=headers, payload={
         "filename": video.name, "contentType": "video/mp4", "size": video.stat().st_size,
     })
@@ -563,7 +625,7 @@ def upload_tiktok_zernio(channel_id: str, video: Path, caption: str) -> tuple[st
             "draft": False,
             "content_preview_confirmed": True, "express_consent_given": True,
         },
-        "publishNow": True,
+        "scheduledFor": slot.strftime("%Y-%m-%dT%H:%M:%SZ"),
     })
     post = result.get("post", result)
     post_id = str(post.get("_id") or post.get("id") or "")
@@ -573,7 +635,7 @@ def upload_tiktok_zernio(channel_id: str, video: Path, caption: str) -> tuple[st
             url = entry.get("platformPostUrl") or url
             if entry.get("status") == "failed":
                 raise RuntimeError(f"Zernio: TikTok rejected the post: {entry.get('errorMessage') or entry}")
-    return post_id, url
+    return post_id, url, slot
 
 
 
@@ -594,7 +656,8 @@ def recent_zernio_posts(channel_id: str, limit: int = 8) -> list[dict]:
                 "status": entry.get("status") or post.get("status") or "?",
                 "url": entry.get("platformPostUrl") or "",
                 "error": entry.get("errorMessage") or "",
-                "time": entry.get("publishedAt") or post.get("createdAt") or "",
+                # A waiting post shows when it will go live.
+                "time": entry.get("publishedAt") or entry.get("scheduledFor") or post.get("scheduledFor") or post.get("createdAt") or "",
             })
     return rows
 
@@ -635,8 +698,11 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
             )
             message = f"Facebook upload complete: {post_url}"
         elif platform == "tiktok" and (force_tiktok_mode or account(row["channel"], "tiktok").get("mode")) == "zernio":
-            remote_id, post_url = upload_tiktok_zernio(row["channel"], path, tiktok_caption(row))
-            message = f"TikTok public post via Zernio: {post_url or 'publishing'}"
+            remote_id, post_url, slot = upload_tiktok_zernio(
+                row["channel"], path, tiktok_caption(row), row["publish_at"],
+            )
+            pkt = slot.astimezone(timezone(timedelta(hours=5))).strftime("%d %b %I:%M %p PKT")
+            message = f"TikTok public post via Zernio, goes live {pkt}"
         elif platform == "tiktok":
             mode = force_tiktok_mode or account(row["channel"], "tiktok").get("mode", "draft")
             try:

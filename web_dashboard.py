@@ -2137,7 +2137,7 @@ PAGE = r"""
           var t=document.createElement('table'); t.style.width='100%'; t.style.fontSize='13px';
           d.posts.forEach(function(p){
             var tr=t.insertRow(), a=tr.insertCell(), b=tr.insertCell(), c=tr.insertCell();
-            a.textContent=(p.time||'').replace('T',' ').slice(0,16);
+            a.textContent=p.time?new Date(p.time).toLocaleString([], {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
             b.textContent=p.status; b.style.color=p.status==='published'?'#5be39a':(p.status==='failed'?'#ff8a8a':'#f5c56b');
             if(p.url){var l=document.createElement('a'); l.href=p.url; l.target='_blank'; l.textContent=p.title; c.appendChild(l);} else {c.textContent=p.title;}
             if(p.error){var e=document.createElement('div'); e.style.color='#ff8a8a'; e.textContent=p.error; c.appendChild(e);}
@@ -2207,7 +2207,7 @@ Content Posting API (video.upload): the tool sends my finished videos to my TikT
 
         <h4>H. Roz kya hota hai (Zernio mode)</h4><ol>
         <li>GitHub din mein 4 dafa chalta hai (subah ~7:30, dopahar ~1:30, shaam ~7:30, raat ~1:30 Pakistan time). Har run mein channel ki video banti hai.</li>
-        <li>Video bante hi, quality check pass ho to, <strong>TikTok par foran public</strong> post hoti hai, YouTube se alag. YouTube ka quota ya schedule TikTok ko nahi rokta.</li>
+        <li>Video bante hi, quality check pass ho to, TikTok par <strong>schedule</strong> ho jati hai: agar YouTube par us ka public hone ka waqt tay hai to TikTok bhi <strong>usi waqt</strong>; warna pichhli TikTok post ke 3 ghante baad. Ek run ki kai videos ek saath public nahi hotin. YouTube ka quota TikTok ko nahi rokta.</li>
         <li>Caption: video ka title + channel ke hashtags. TikTok par "AI-generated" label khud lagta hai. Long (5 minute) videos bhi TikTok par jaati hain.</li>
         <li>Haal dekhne ke liye upar <strong>TikTok ki aakhri posts check karein</strong>: <span style="color:#5be39a">published</span> = live (title par click se TikTok khulega), <span style="color:#f5c56b">pending/publishing</span> = chal rahi hai, <span style="color:#ff8a8a">failed</span> = neeche wali list dekhein.</li>
         </ol>
