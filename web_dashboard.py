@@ -756,7 +756,31 @@ def social_settings_route():
         flash("Unknown social platform.", "error")
         return redirect(url_for("home", channel=ch.id))
     social_accounts.save_account(ch.id, platform, values)
-    flash(f"{platform.title()} settings saved for {ch.name}. Use Verify Connection next.", "ok")
+    label = "Facebook Page" if platform == "facebook" else "TikTok"
+    saved = social_accounts.account(ch.id, platform)
+    # Save & Connect: check the connection at once, so one button is enough.
+    if platform == "facebook" and not (saved.get("page_id") and saved.get("page_access_token")):
+        flash(f"Saved for {ch.name}. Abhi Page ID aur Page Access Token dono chahiye, ya neeche 'Fast way' mein user token paste karein.", "error")
+        return redirect(url_for("home", channel=ch.id))
+    if platform == "tiktok" and saved.get("mode") != "zernio" and not saved.get("access_token"):
+        flash(f"Saved for {ch.name}. Ab 'Login with TikTok' dabayein.", "ok")
+        return redirect(url_for("home", channel=ch.id))
+    try:
+        if platform == "facebook":
+            name = social_publish.verify_facebook(ch.id)
+        elif saved.get("mode") == "zernio":
+            name = social_publish.verify_zernio(ch.id)
+        else:
+            name = social_publish.verify_tiktok(ch.id)
+        social_accounts.mark_verified(ch.id, platform, name)
+        flash(f"✅ {label} connected: {name} ({ch.name}). Ab Overview mein Send to GitHub dabayein.", "ok")
+    except Exception as exc:
+        social_accounts.mark_verified(ch.id, platform, "")
+        hint = ""
+        if platform == "facebook" and ("does not exist" in str(exc) or "(#100)" in str(exc) or ": 100:" in str(exc)):
+            hint = (" | Yeh Page ID ghalat lagti hai: page ke link wala 615... number profile ID hota hai, Page ID nahi."
+                    " Neeche 'Fast way' mein Graph API Explorer ka user token paste karein; bot sahi Page ID aur token khud dhoond lega.")
+        flash(f"Saved, lekin {label} abhi connect NAHI hua: {str(exc)[:260]}{hint}", "error")
     return redirect(url_for("home", channel=ch.id))
 
 
@@ -1740,7 +1764,7 @@ PAGE = r"""
       <div class="conn-top"><span class="conn-name">YouTube</span><span class="conn-pill">{{ '✅ Connected' if setup.youtube else '❌ Setup required' }}</span></div>
       <div class="conn-who">{% if setup.youtube %}{% set live = accounts|selectattr('connected')|list %}{{ live|length }} channel{{ '' if live|length == 1 else 's' }}: {{ live|map(attribute='name')|join(', ') }}{% else %}Koi YouTube channel connect nahi{% endif %}</div>
       <div class="conn-auto">Google OAuth: {{ '✅ apna project' if setup.project else '⚠️ project shared/missing' }} &middot; {% if setup.youtube %}har nayi video khud upload{% else %}upload band{% endif %}</div>
-      {% if setup.youtube and setup.project %}<button type="button" class="ghost sm" onclick="openPlatform('youtube')">Details</button>{% else %}<button type="button" class="green sm" onclick="openSetup()">Setup required &rarr;</button>{% endif %}
+      {% if setup.youtube and setup.project %}<button type="button" class="ghost sm" onclick="openPlatform('youtube')">Details</button>{% else %}<button type="button" class="green sm" onclick="openSetup()">Setup required →</button>{% endif %}
     </div>
     {# Facebook #}
     {% set fb_ok = social.facebook.configured and social.facebook.verified_name %}
@@ -1748,7 +1772,7 @@ PAGE = r"""
       <div class="conn-top"><span class="conn-name">Facebook Page</span><span class="conn-pill">{{ '✅ Connected' if fb_ok else ('⚠️ Verify karein' if social.facebook.configured else '❌ Not connected') }}</span></div>
       <div class="conn-who">{{ social.facebook.verified_name if fb_ok else ('Page ID saved, abhi verify nahi hua' if social.facebook.configured else 'Optional') }}</div>
       <div class="conn-auto">{% if fb_ok and social.facebook.auto_upload %}Auto post ON &middot; chalta hai: {{ social.facebook_places.get(social.facebook_place, social.facebook_place) }}{% elif fb_ok %}Auto post OFF (sirf button se){% else %}Kuch post nahi hota{% endif %}</div>
-      <button type="button" class="{{ 'ghost' if fb_ok else 'green' }} sm" onclick="openPlatform('facebook')">{{ 'Settings' if fb_ok else 'Setup required &rarr;' }}</button>
+      <button type="button" class="{{ 'ghost' if fb_ok else 'green' }} sm" onclick="openPlatform('facebook')">{{ 'Settings' if fb_ok else 'Setup required →' }}</button>
     </div>
     {# TikTok #}
     {% set tt = social.tiktok %}
@@ -1757,7 +1781,7 @@ PAGE = r"""
       <div class="conn-top"><span class="conn-name">TikTok</span><span class="conn-pill">{{ '✅ Connected' if tt_ok else ('⚠️ Verify karein' if tt.configured else '❌ Not connected') }}</span></div>
       <div class="conn-who">{{ tt.verified_name if tt_ok else ('Saved, abhi verify nahi hua' if tt.configured else 'Optional') }}</div>
       <div class="conn-auto">{% if not tt_ok %}Kuch post nahi hota{% elif not tt.auto_upload %}Auto post OFF (sirf button se){% elif tt.mode == 'zernio' %}Auto PUBLIC post ON (Zernio){% elif tt.mode == 'private' %}Auto: private post (aap public karein){% else %}Auto: TikTok drafts mein{% endif %}</div>
-      <button type="button" class="{{ 'ghost' if tt_ok else 'green' }} sm" onclick="openPlatform('tiktok')">{{ 'Settings' if tt_ok else 'Setup required &rarr;' }}</button>
+      <button type="button" class="{{ 'ghost' if tt_ok else 'green' }} sm" onclick="openPlatform('tiktok')">{{ 'Settings' if tt_ok else 'Setup required →' }}</button>
     </div>
   </div>
   {% endmacro %}
@@ -1992,13 +2016,13 @@ PAGE = r"""
         {% else %}<div class="hint">Koi channel nahi.</div>{% endfor %}
       </div>
       <div class="row" style="margin-top:12px">
-        <button type="button" class="{{ 'ghost' if setup.youtube and setup.project else 'green' }} sm" onclick="openSetup()">{{ 'Channels / login manage karein' if setup.youtube else 'Setup required &rarr;' }}</button>
+        <button type="button" class="{{ 'ghost' if setup.youtube and setup.project else 'green' }} sm" onclick="openSetup()">{{ 'Channels / login manage karein' if setup.youtube else 'Setup required →' }}</button>
         <a href="{{social.guides.youtube}}" target="_blank"><button class="ghost sm" type="button">YouTube API guide</button></a>
       </div>
     </div>
 
     <div class="platform-panel" id="platform-facebook">
-      <div class="row" style="justify-content:space-between"><div><strong>Facebook Page</strong> {% if social.facebook.configured and social.facebook.verified_name %}<span class="chip" style="background:rgba(61,220,151,.18);color:var(--ok);border-color:rgba(61,220,151,.5)">✅ Connected: {{social.facebook.verified_name}}</span>{% if social.facebook.auto_upload %} <span class="chip" style="color:var(--ok)">auto-publish ON</span>{% else %} <span class="chip">auto-publish off</span>{% endif %}{% elif social.facebook.configured %}<span class="chip" style="color:var(--warn)">⚠ Saved — press Connect &amp; Verify</span>{% else %}<span class="chip">setup required</span>{% endif %}<div class="hint">Shorts publish as Page Reels; long videos publish as Page videos.</div></div><a href="{{social.guides.facebook_app}}" target="_blank"><button class="ghost sm" type="button">Create Meta App</button></a></div>
+      <div class="row" style="justify-content:space-between"><div><strong>Facebook Page</strong> {% if social.facebook.configured and social.facebook.verified_name %}<span class="chip" style="background:rgba(61,220,151,.18);color:var(--ok);border-color:rgba(61,220,151,.5)">✅ Connected: {{social.facebook.verified_name}}</span>{% if social.facebook.auto_upload %} <span class="chip" style="color:var(--ok)">auto-publish ON</span>{% else %} <span class="chip">auto-publish off</span>{% endif %}{% elif social.facebook.configured %}<span class="chip" style="color:var(--warn)">⚠ Saved, abhi connect nahi: Save &amp; Connect dabayein</span>{% else %}<span class="chip">setup required</span>{% endif %}<div class="hint">Shorts publish as Page Reels; long videos publish as Page videos.</div></div><a href="{{social.guides.facebook_app}}" target="_blank"><button class="ghost sm" type="button">Create Meta App</button></a></div>
       <form method="post" action="/social-settings" style="margin-top:14px">
         <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="facebook">
         <div class="platform-grid">
@@ -2006,9 +2030,8 @@ PAGE = r"""
           <label class="field">Page Access Token<input type="password" name="page_access_token" autocomplete="new-password" placeholder="{{'Saved - leave blank to keep it' if social.facebook.configured else 'Paste Page Access Token'}}"></label>
         </div>
         <div class="row" style="margin-top:12px"><label class="field" style="flex:0 1 300px">Facebook video language<select name="fb_language"><option value="same" {{'selected' if social.facebook.language == 'same' else ''}}>Same as YouTube</option><option value="ur" {{'selected' if social.facebook.language == 'ur' else ''}}>Urdu (Roman Urdu, Urdu voice)</option><option value="en" {{'selected' if social.facebook.language == 'en' else ''}}>English</option></select><span class="hint">Different from YouTube: the bot also renders a copy in this language, over the same pictures, and posts that one.</span></label>
-          <label class="field" style="flex:0 1 300px">Facebook posting runs from<select name="fb_place">{% for value, label in social.facebook_places.items() %}<option value="{{value}}" {{'selected' if social.facebook_place == value else ''}}>{{label}}</option>{% endfor %}</select><span class="hint">One place only, for every Page: posting from both made Facebook lock the account. After changing it, press Send to GitHub so the daily run knows.</span></label><label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.facebook.auto_upload else ''}}> Automatically publish new videos</label><label class="chk"><input type="checkbox" name="daily_post" {{'checked' if social.facebook.daily_post else ''}}> Also post one picture a day</label><button class="green sm" type="submit">Save Facebook Settings</button></div>
+          <label class="field" style="flex:0 1 300px">Facebook posting runs from<select name="fb_place">{% for value, label in social.facebook_places.items() %}<option value="{{value}}" {{'selected' if social.facebook_place == value else ''}}>{{label}}</option>{% endfor %}</select><span class="hint">One place only, for every Page: posting from both made Facebook lock the account. After changing it, press Send to GitHub so the daily run knows.</span></label><label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.facebook.auto_upload else ''}}> Automatically publish new videos</label><label class="chk"><input type="checkbox" name="daily_post" {{'checked' if social.facebook.daily_post else ''}}> Also post one picture a day</label><button class="green sm" type="submit">Save &amp; Connect</button></div>
       </form>
-      <form method="post" action="/social-verify" style="margin-top:10px"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="facebook"><button class="ghost sm" type="submit">Connect &amp; Verify Facebook Page</button></form>
       <form method="post" action="/facebook-user-token" class="row" style="margin-top:12px;align-items:flex-end;gap:10px;padding:12px;border:1px dashed var(--line);border-radius:10px">
         <input type="hidden" name="channel" value="{{ch.id}}">
         <input type="hidden" name="page_id" value="{{social.facebook.page_id}}">
@@ -2045,7 +2068,7 @@ PAGE = r"""
     </div>
 
     <div class="platform-panel" id="platform-tiktok">
-      <div><strong>TikTok</strong> {% if social.tiktok.verified_name %}<span class="chip" style="background:rgba(61,220,151,.18);color:var(--ok)">Connected: {{social.tiktok.verified_name}}</span>{% elif social.tiktok.configured %}<span class="chip" style="color:var(--warn)">Saved: Verify dabayein</span>{% else %}<span class="chip">Not set up</span>{% endif %}
+      <div><strong>TikTok</strong> {% if social.tiktok.verified_name %}<span class="chip" style="background:rgba(61,220,151,.18);color:var(--ok)">Connected: {{social.tiktok.verified_name}}</span>{% elif social.tiktok.configured %}<span class="chip" style="color:var(--warn)">Saved, abhi connect nahi</span>{% else %}<span class="chip">Not set up</span>{% endif %}
         <div class="hint">Pehle tareeqa chunein. Neeche sirf usi tareeqe ki settings nazar aayengi.</div></div>
       <form method="post" action="/social-settings" style="margin-top:6px">
         <input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="tiktok">
@@ -2079,11 +2102,10 @@ PAGE = r"""
           </details>
         </div>
 
-        <div class="row" style="margin-top:12px"><label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.tiktok.auto_upload else ''}}> Har nayi video khud TikTok par bhejo</label><button class="green sm" type="submit">Save TikTok Settings</button></div>
+        <div class="row" style="margin-top:12px"><label class="chk"><input type="checkbox" name="auto_upload" {{'checked' if social.tiktok.auto_upload else ''}}> Har nayi video khud TikTok par bhejo</label><button class="green sm" type="submit">Save &amp; Connect</button></div>
       </form>
       <div class="row" style="margin-top:10px">
         <form method="post" action="/tiktok-login" data-tt-for="draft private"><input type="hidden" name="channel" value="{{ch.id}}"><button class="green sm" type="submit">Login with TikTok</button></form>
-        <form method="post" action="/social-verify"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="platform" value="tiktok"><button class="ghost sm" type="submit">Verify TikTok</button></form>
       </div>
       <script>
       (function(){
