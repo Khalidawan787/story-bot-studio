@@ -22,6 +22,40 @@ if "speech.platform.bing.com" in edge_tts.communicate.WSS_URL:
     )
 
 
+# Microsoft answers "429 Too Many Requests" (and now and then 503) when one
+# address asks for speech too fast. GitHub runners share addresses, so a whole
+# video used to fail on the first refusal. Requests are now spaced out, and a
+# refusal is retried after a growing pause before the video is given up.
+_MIN_GAP_SECONDS = 1.0
+_RETRY_WAITS = (5, 15, 30, 60, 90, 120)
+_last_request = 0.0
+
+
+def _busy_error(exc: Exception) -> bool:
+    text = str(exc).lower()
+    return any(code in text for code in ("429", "503", "502", "504", "too many", "timed out", "timeout"))
+
+
+def _with_retries(action, label: str):
+    import random
+    import time
+
+    global _last_request
+    for attempt in range(len(_RETRY_WAITS) + 1):
+        wait = _MIN_GAP_SECONDS - (time.monotonic() - _last_request)
+        if wait > 0:
+            time.sleep(wait)
+        _last_request = time.monotonic()
+        try:
+            return action()
+        except Exception as exc:
+            if attempt == len(_RETRY_WAITS) or not _busy_error(exc):
+                raise
+            pause = _RETRY_WAITS[attempt] + random.uniform(0, 3)
+            print(f"[tts] {label}: speech service busy ({str(exc)[:60]}); retry {attempt + 1} in {pause:.0f}s")
+            time.sleep(pause)
+
+
 async def _speak(text: str, output_path: Path, voice: str) -> None:
     communicate = edge_tts.Communicate(
         text=text,
@@ -34,7 +68,7 @@ async def _speak(text: str, output_path: Path, voice: str) -> None:
 
 def generate_voice(text: str, output_path: Path, voice: str | None = None) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    asyncio.run(_speak(text, output_path, voice or settings.edge_voice))
+    _with_retries(lambda: asyncio.run(_speak(text, output_path, voice or settings.edge_voice)), output_path.name)
     return output_path
 
 
@@ -97,7 +131,10 @@ def generate_voice_with_marks(
     """
     output_path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        marks = asyncio.run(_speak_with_marks(text, output_path, voice or settings.edge_voice))
+        marks = _with_retries(
+            lambda: asyncio.run(_speak_with_marks(text, output_path, voice or settings.edge_voice)),
+            output_path.name,
+        )
     except Exception:
         # Never let caption timing break audio generation — fall back to a plain save.
         generate_voice(text, output_path, voice)

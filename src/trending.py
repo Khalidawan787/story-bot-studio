@@ -317,6 +317,9 @@ def pick_fresh_trends(channel: Channel, count: int) -> list[Trend]:
     picked: list[Trend] = []
     for trend in fetch_world_trends(limit=40):
         signature = trend.key
+        if len(re.findall(r"[^\W\d_]", trend.title)) < 5 or not re.search(r"[^\W\d_]{3,}", trend.title):
+            # A stub search term such as "vz s": nothing a viewer would recognise.
+            continue
         if not trend.headlines:
             # A bare search term with no reporting behind it gives the script
             # writer nothing factual to stand on, so it would invent the story.
