@@ -128,15 +128,16 @@ def publish() -> None:
     zip named StoryBotStudio_YYYY-MM-DD_HHMM.zip, so any older version can still
     be downloaded and the newest is always at the top of the Releases page.
     """
-    from datetime import datetime
+    from datetime import datetime, timedelta, timezone
 
-    now = datetime.now()
+    # Pakistan time, whatever the PC clock is set to (this one runs on US time).
+    now = datetime.now(timezone(timedelta(hours=5)))
     dated = ZIP_PATH.with_name(f"StoryBotStudio_{now:%Y-%m-%d_%H%M}.zip")
     shutil.copy2(ZIP_PATH, dated)
     tag = f"StoryBotStudio-{now:%Y-%m-%d-%H%M}"
     subprocess.run([
         "gh", "release", "create", tag, str(dated), "--repo", RELEASE_REPO,
-        "--title", f"StoryBotStudio {now:%d %b %Y, %I:%M %p}",
+        "--title", f"StoryBotStudio {now:%d %b %Y, %I:%M %p} PKT",
         "--notes", "Story Bot Studio, Windows app. Program only: no .env, tokens, "
                    "OAuth clients or database.",
     ], cwd=ROOT, check=True)
