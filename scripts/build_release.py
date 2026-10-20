@@ -11,11 +11,12 @@ and full access to the YouTube channels. The zip now ships only the program and
 its lesson banks; each machine adds its own keys once, following
 START_HERE_NEW_PC.md.
 
-Add --publish to also replace the zip on the "StoryBotStudio" release of the
-PRIVATE repository Khalidawan787/StoryBotStudio, so only the admin can download
-it. Not the bot's own repository: that one is public (GitHub Pages hosts the
-status page and the privacy/terms links), the zip is close to GitHub's 100 MB
-file limit, and every daily run would have to download it.
+Add --publish to also upload the zip, named with today's date and time, as a
+new release of the PRIVATE repository Khalidawan787/StoryBotStudio, so only the
+admin can download it. Older builds stay there; nothing is deleted. Not the
+bot's own repository: that one is public (GitHub Pages hosts the status page
+and the privacy/terms links), the zip is close to GitHub's 100 MB file limit,
+and every daily run would have to download it.
 """
 from __future__ import annotations
 
@@ -117,21 +118,29 @@ def main() -> None:
         publish()
 
 
-RELEASE_TAG = "StoryBotStudio"
 RELEASE_REPO = "Khalidawan787/StoryBotStudio"  # private
 
 
 def publish() -> None:
-    """Replace the zip on the GitHub release (created once if it is missing)."""
-    exists = subprocess.run(["gh", "release", "view", RELEASE_TAG, "--repo", RELEASE_REPO], cwd=ROOT,
-                            capture_output=True).returncode == 0
-    if exists:
-        command = ["gh", "release", "upload", RELEASE_TAG, str(ZIP_PATH), "--clobber"]
-    else:
-        command = ["gh", "release", "create", RELEASE_TAG, str(ZIP_PATH),
-                   "--title", RELEASE_TAG, "--notes", "Story Bot Studio, Windows app (latest build)."]
-    subprocess.run(command + ["--repo", RELEASE_REPO], cwd=ROOT, check=True)
-    print(f"Published (private, admin only): https://github.com/{RELEASE_REPO}/releases/tag/{RELEASE_TAG}")
+    """Upload this build as a NEW dated release; earlier builds are never removed.
+
+    Each build gets its own release (tag StoryBotStudio-YYYY-MM-DD-HHMM) with a
+    zip named StoryBotStudio_YYYY-MM-DD_HHMM.zip, so any older version can still
+    be downloaded and the newest is always at the top of the Releases page.
+    """
+    from datetime import datetime
+
+    now = datetime.now()
+    dated = ZIP_PATH.with_name(f"StoryBotStudio_{now:%Y-%m-%d_%H%M}.zip")
+    shutil.copy2(ZIP_PATH, dated)
+    tag = f"StoryBotStudio-{now:%Y-%m-%d-%H%M}"
+    subprocess.run([
+        "gh", "release", "create", tag, str(dated), "--repo", RELEASE_REPO,
+        "--title", f"StoryBotStudio {now:%d %b %Y, %I:%M %p}",
+        "--notes", "Story Bot Studio, Windows app. Program only: no .env, tokens, "
+                   "OAuth clients or database.",
+    ], cwd=ROOT, check=True)
+    print(f"Published (private, admin only): https://github.com/{RELEASE_REPO}/releases/tag/{tag}")
 
 
 if __name__ == "__main__":

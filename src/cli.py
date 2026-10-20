@@ -42,13 +42,13 @@ def main() -> None:
     daily_all.add_argument("--count", default="",
                            help="Videos per channel; blank = each channel's own topics_per_day.")
     daily_all.add_argument("--slot", default="all",
-                           help="Build slot: all, auto (every slot that has started today), or 0-3.")
+                           help="Build slot: all, auto (every slot that has started today), or 0-7.")
 
     daily_long = sub.add_parser("daily-long-all", help="Create one ~5-minute video for every connected channel.")
     daily_long.add_argument("--upload", default="true", help="true or false")
     daily_long.add_argument("--scenes", default="20", help="Scenes per long video; 20 targets about 5 minutes.")
     daily_long.add_argument("--slot", default="all",
-                            help="Build slot: all, auto (every slot that has started today), or 0-3.")
+                            help="Build slot: all, auto (every slot that has started today), or 0-7.")
 
     gen = sub.add_parser("gen-topics", help="Generate new genre topics with free Gemini.")
     gen.add_argument("--channel", required=True, help="Channel id (crime/love/horror/motivation)")
@@ -99,7 +99,7 @@ def main() -> None:
     prevthumb.add_argument("--out", default="", help="Output .jpg path (default: runs/preview_thumbnail.jpg)")
 
     posts = sub.add_parser("page-posts", help="Today's picture post on each Facebook Page that has it switched on.")
-    posts.add_argument("--slot", default="all", help="all, auto, or a slot number 0-3")
+    posts.add_argument("--slot", default="all", help="all, auto, or a slot number 0-7")
     posts.add_argument("--dry-run", default="false", help="true = build and show the post without publishing")
 
     catchup = sub.add_parser("catch-up-daily", help="Create today's missing daily videos after schedule time.")

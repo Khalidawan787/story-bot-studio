@@ -2,16 +2,18 @@
 
 One GitHub job may run for at most a few hours, and every channel adds about
 20-25 minutes of rendering. Instead of one ever-longer morning run, the day has
-four slots and each channel belongs to one; the workflow runs once per slot and
-builds only that slot's channels. The cron lines in
+eight slots, three hours apart, and each channel belongs to one; the workflow
+runs once per slot and builds only that slot's channels. The cron lines in
 .github/workflows/daily-videos.yml must match SLOTS_UTC.
 """
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-# (hour, minute) in UTC. Pakistan is UTC+5: 07:30, 13:30, 19:30, 01:30.
-SLOTS_UTC = [(2, 30), (8, 30), (14, 30), (20, 30)]
+# (hour, minute) in UTC, every three hours. Pakistan is UTC+5: 07:30, 10:30,
+# 13:30, 16:30, 19:30, 22:30, 01:30, 04:30. Until 20 Oct 2026 there were only
+# four (02:30, 08:30, 14:30, 20:30 UTC); a channel's old slot n is now 2n.
+SLOTS_UTC = [(2, 30), (5, 30), (8, 30), (11, 30), (14, 30), (17, 30), (20, 30), (23, 30)]
 LOCAL_OFFSET = timedelta(hours=5)
 # Roughly what fits in one run before it gets uncomfortably long.
 SLOT_CAPACITY = 7
