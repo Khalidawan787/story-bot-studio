@@ -12,7 +12,8 @@ its lesson banks; each machine adds its own keys once, following
 START_HERE_NEW_PC.md.
 
 Options: --publish (build, then upload), --publish-only (upload the zip already
-built), --label "text" (added to the zip name), --keep-old (keep older builds).
+built), --label "text" (added to the zip name), --delete-old (remove older builds;
+without it every older build is kept).
 
 Add --publish to also upload the zip, named with today's date and time, as a
 new release of the PRIVATE repository Khalidawan787/StoryBotStudio, so only the
@@ -134,10 +135,10 @@ def _option(name: str) -> str:
 def publish(zip_path: Path = ZIP_PATH) -> None:
     """Upload this build as a new dated private release.
 
-    Name: StoryBotStudio_YYYY-MM-DD_HHMM[_label].zip (Pakistan time). By default
-    older releases are removed once the new one is up, so only the newest stays;
-    --keep-old leaves them. --label "tiktok guide updated" adds a note to the
-    zip name and the release title.
+    Name: StoryBotStudio_YYYY-MM-DD_HHMM[_label].zip (Pakistan time). Older
+    releases are always kept (the admin's standing rule); only --delete-old
+    removes them, after the new one is up. --label "tiktok guide updated" adds
+    a note to the zip name and the release title.
     """
     import re as _re
     from datetime import datetime, timedelta, timezone
@@ -156,7 +157,7 @@ def publish(zip_path: Path = ZIP_PATH) -> None:
         "--notes", "Story Bot Studio, Windows app. Program only: no .env, tokens, "
                    "OAuth clients or database." + (f" Change: {label}." if label else ""),
     ], cwd=ROOT, check=True)
-    if "--keep-old" not in sys.argv:
+    if "--delete-old" in sys.argv:
         # Older releases go only after the new one is safely up.
         listing = subprocess.run(
             ["gh", "release", "list", "--repo", RELEASE_REPO, "--limit", "100", "--json", "tagName", "-q", ".[].tagName"],
