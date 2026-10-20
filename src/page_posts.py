@@ -385,7 +385,7 @@ def _verified_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
     """
     from . import verified_facts as vf
     used = _posted_subjects(channel.id) | vf._used_subjects(channel, False)
-    names = [name for name in vf._listed_subjects() if name.lower() not in used]
+    names = [name for name in vf._listed_subjects(channel) if name.lower() not in used]
     article = photo = None
     credit = ""
     for name in names[:12]:
