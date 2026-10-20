@@ -2,28 +2,79 @@
 
 One GitHub job may run for at most a few hours, and every channel adds about
 20-25 minutes of rendering. Instead of one ever-longer morning run, the day has
-eight slots, three hours apart, and each channel belongs to one; the workflow
-runs once per slot and builds only that slot's channels. The cron lines in
+ten slots, two hours apart through the US day, and each channel belongs to one;
+the workflow runs once per slot and builds only that slot's channels. Times are
+shown in the time zone chosen on the dashboard (data/display_timezone.txt). The cron lines in
 .github/workflows/daily-videos.yml must match SLOTS_UTC.
 """
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-# (hour, minute) in UTC, every three hours. Pakistan is UTC+5: 07:30, 10:30,
-# 13:30, 16:30, 19:30, 22:30, 01:30, 04:30. Until 20 Oct 2026 there were only
-# four (02:30, 08:30, 14:30, 20:30 UTC); a channel's old slot n is now 2n.
-SLOTS_UTC = [(2, 30), (5, 30), (8, 30), (11, 30), (14, 30), (17, 30), (20, 30), (23, 30)]
+# (hour, minute) in UTC, in order through the UTC day. Two hours apart with a
+# gap at 06:30-10:30 UTC, the middle of the US night: US Eastern (summer time)
+# 20:30, 22:30, 00:30, 06:30, 08:30 ... 18:30. Changed 20 Oct 2026 from eight
+# slots (and before that four); channels.json was re-assigned at the same time.
+SLOTS_UTC = [(0, 30), (2, 30), (4, 30), (10, 30), (12, 30), (14, 30),
+             (16, 30), (18, 30), (20, 30), (22, 30)]
+
+# Time zones offered on the dashboard for showing the build times.
+TIMEZONES = {
+    "Asia/Karachi": "Pakistan (PKT)",
+    "America/New_York": "US Eastern (New York)",
+    "America/Chicago": "US Central (Chicago)",
+    "America/Denver": "US Mountain (Denver)",
+    "America/Los_Angeles": "US Pacific (Los Angeles)",
+    "Europe/London": "UK (London)",
+}
+_TZ_FILE_NAME = "display_timezone.txt"
+
+
+def display_timezone() -> str:
+    from .config import settings
+
+    try:
+        name = (settings.root / "data" / _TZ_FILE_NAME).read_text(encoding="utf-8").strip()
+    except OSError:
+        name = ""
+    return name if name in TIMEZONES else "Asia/Karachi"
+
+
+def set_display_timezone(name: str) -> None:
+    from .config import settings
+
+    if name not in TIMEZONES:
+        raise ValueError(f"unknown time zone {name}")
+    (settings.root / "data" / _TZ_FILE_NAME).write_text(name, encoding="utf-8")
+
+
+def _zone():
+    """The chosen zone; PKT as a fixed offset if the zone database is missing."""
+    try:
+        from zoneinfo import ZoneInfo
+
+        return ZoneInfo(display_timezone())
+    except Exception:
+        return timezone(timedelta(hours=5), "PKT")
 LOCAL_OFFSET = timedelta(hours=5)
 # Roughly what fits in one run before it gets uncomfortably long.
 SLOT_CAPACITY = 7
 
 
 def label(slot: int) -> str:
-    """'07:30 AM PKT' for slot 0."""
+    """'03:30 PM PKT' / '06:30 AM EDT': the slot's start in the chosen time zone, today."""
     hour, minute = SLOTS_UTC[slot % len(SLOTS_UTC)]
-    moment = datetime(2000, 1, 1, hour, minute) + LOCAL_OFFSET
-    return moment.strftime("%I:%M %p PKT")
+    today = datetime.now(timezone.utc).replace(hour=hour, minute=minute, second=0, microsecond=0)
+    local = today.astimezone(_zone())
+    return local.strftime("%I:%M %p ") + (local.tzname() or "")
+
+
+def local_order(slot: int) -> int:
+    """Minutes after local midnight, to list the slots morning-to-night in the chosen zone."""
+    hour, minute = SLOTS_UTC[slot % len(SLOTS_UTC)]
+    today = datetime.now(timezone.utc).replace(hour=hour, minute=minute, second=0, microsecond=0)
+    local = today.astimezone(_zone())
+    return local.hour * 60 + local.minute
 
 
 def channel_slot(channel) -> int:

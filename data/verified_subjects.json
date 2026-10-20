@@ -84,5 +84,42 @@
     "Roald Amundsen",
     "Junko Tabei",
     "Ibn Battuta"
-  ]
+  ],
+  "subjects_by_genre": {
+    "crime": [
+      "Great Train Robbery (1963)",
+      "Lufthansa heist",
+      "Antwerp diamond heist",
+      "Brink's-Mat robbery",
+      "Hatton Garden safe deposit burglary",
+      "D. B. Cooper",
+      "Isabella Stewart Gardner Museum theft",
+      "Northern Bank robbery",
+      "Securitas depot robbery",
+      "Knightsbridge Security Deposit robbery",
+      "Baker Street robbery",
+      "June 1962 Alcatraz escape",
+      "Al Capone",
+      "Bonnie and Clyde",
+      "John Dillinger",
+      "Ned Kelly",
+      "Charles Ponzi",
+      "Bernie Madoff",
+      "Victor Lustig",
+      "Enron scandal",
+      "Pablo Escobar",
+      "Hawley Harvey Crippen",
+      "Dunbar Armored robbery",
+      "Frank Lucas",
+      "Belle Starr",
+      "Butch Cassidy",
+      "Jesse James",
+      "Billy the Kid",
+      "Kray twins",
+      "Ronnie Biggs",
+      "Stopwatch Gang",
+      "Águila Blanca (heist)"
+    ]
+  },
+  "_note_genres": "subjects_by_genre: a verified channel whose genre is listed here draws from that list instead of 'subjects'. Crime: famous, well-documented cases (heists, frauds, historic outlaws, escapes); no cases with child victims or graphic killings."
 }

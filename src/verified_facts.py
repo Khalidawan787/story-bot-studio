@@ -163,11 +163,28 @@ def _used_subjects(channel: Channel, long_form: bool) -> set[str]:
     return used | _FAILED.get((channel.id, long_form), set())
 
 
-def _listed_subjects() -> list[str]:
+def _listed_subjects(channel: Channel | None = None) -> list[str]:
+    """The channel's genre list when there is one (crime cases), else the people list."""
     try:
-        return [str(name) for name in json.loads(SUBJECTS_FILE.read_text(encoding="utf-8"))["subjects"]]
+        data = json.loads(SUBJECTS_FILE.read_text(encoding="utf-8"))
     except Exception:
         return []
+    genre = str(getattr(channel, "genre", "") or "").lower()
+    names = (data.get("subjects_by_genre") or {}).get(genre) or data.get("subjects") or []
+    return [str(name) for name in names]
+
+
+# What to ask for when a genre's list runs out. The model only proposes names;
+# each must still be a Wikipedia article, and the script comes from that article.
+_SUGGEST_BRIEF = {
+    "crime": (
+        "Name 15 real, famous, well-documented criminal cases or criminals from history whose "
+        "story fits a true-crime video channel: heists, robberies, frauds and swindles, outlaws, "
+        "prison escapes, notable investigations. Only subjects with their own English Wikipedia "
+        "article, settled long ago (before 2015). No cases whose victims were children, no "
+        "serial or mass killings, nobody who was never charged, no living politicians."
+    ),
+}
 
 
 def _suggested_subjects(channel: Channel, used: set[str]) -> list[str]:
@@ -178,11 +195,14 @@ def _suggested_subjects(channel: Channel, used: set[str]) -> list[str]:
     """
     from .genre_topics import _script_json
 
-    raw = _script_json(
+    brief = _SUGGEST_BRIEF.get(str(channel.genre).lower()) or (
         f"Name 15 real, well-documented people from world history whose life fits a "
         f"'{channel.genre}' video channel: courage, sacrifice or service to others. "
         "Only people with their own English Wikipedia article. No fictional or legendary "
-        "figures, no religious prophets, no living politicians.\n"
+        "figures, no religious prophets, no living politicians."
+    )
+    raw = _script_json(
+        brief + "\n"
         f"Do not repeat any of these: {'; '.join(sorted(used))[:3000] or 'none'}.\n"
         'Return ONLY JSON: {"names": [str]}'
     )
@@ -192,7 +212,7 @@ def _suggested_subjects(channel: Channel, used: set[str]) -> list[str]:
 def next_article(channel: Channel, long_form: bool = False) -> Article:
     """A real person this channel has not covered yet in this format."""
     used = _used_subjects(channel, long_form)
-    names = [name for name in _listed_subjects() if name.lower() not in used]
+    names = [name for name in _listed_subjects(channel) if name.lower() not in used]
     # Each channel walks the list in its own order, and its long videos in
     # another, so a channel's Short and long video are not the same person.
     random.Random(f"{channel.id}:{long_form}").shuffle(names)
@@ -288,7 +308,7 @@ def _prompt(channel: Channel, article: Article, scenes: int, long_form: bool, fe
         shape = (f"Write a long-form script of about 5 minutes as {scenes * 2 + 10} entries in 'scenes'. "
                  "Each 'line' is ONE plain sentence of 16-24 words reporting one thing the SOURCE says "
                  "happened. No commentary on what it meant, proved or showed, and nothing about feelings "
-                 "or character unless the SOURCE states it. Follow the person's life in order and do "
+                 "or character unless the SOURCE states it. Follow the story in order and do "
                  "not repeat a fact.")
     else:
         shape = f"Write a short video script: exactly {scenes} scenes, each 'line' one sentence of 14-26 words."
@@ -300,8 +320,9 @@ def _prompt(channel: Channel, article: Article, scenes: int, long_form: bool, fe
         "number, place, event, quote, thought, feeling or outcome that the SOURCE does not state. "
         "Do not invent scenes or dialogue. If the SOURCE does not say it, leave it out.\n"
         "- Write every number as digits exactly as in the SOURCE (1957, 20,000).\n"
-        "- Say the person's full name in the first scene.\n"
-        "- 'title' must contain the person's name and no claim that is not in the SOURCE.\n"
+        "- Say the subject's full name (the person, or the case) in the first scene.\n"
+        "- 'title' must contain that name and no claim that is not in the SOURCE.\n"
+        "- No graphic violence or gore; describe crimes plainly, as a documentary would.\n"
         "- 'label' = a 2-4 word caption without numbers.\n"
         "- 'image_prompt' = a plain real-world scene that fits the line (a place, an object, people "
         "at work). Never the person's face, never text. No art-style words.\n"

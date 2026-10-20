@@ -37,6 +37,7 @@ SECRET_FILES = [
     "data/pollinations_api_key.txt",
     "data/cloudflare_account_id.txt",
     "data/cloudflare_api_token.txt",
+    "data/display_timezone.txt",
 ]
 SECRET_GLOBS = ["client_secret_*.json", "token*.json"]
 

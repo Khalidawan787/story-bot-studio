@@ -333,8 +333,10 @@ def home():
         channel_uploads_today=uploads_today_count(ch.id), channel_upload_limit=upload_limit_for_channel(ch.id),
         api=api_center(ch), calendar=upcoming_schedule(ch.id),
         setup=channel_factory.setup_status(ch), factory=ch.created_by == "factory",
+        timezones=slots.TIMEZONES, timezone_now=slots.display_timezone(),
         slot_now=slots.channel_slot(ch), slot_options=[
-            (i, slots.label(i), len(members)) for i, members in slots.load().items()
+            (i, slots.label(i), len(members))
+            for i, members in sorted(slots.load().items(), key=lambda item: slots.local_order(item[0]))
         ],
         quick_links=setup_guide.quick_links(channel_factory.setup_status(ch).get("project_id", "")),
         quick_steps=setup_guide.QUICK_STEPS,
@@ -1286,6 +1288,17 @@ def channel_slot_change():
     return redirect(url_for("home", channel=ch.id))
 
 
+@app.post("/display-timezone")
+def display_timezone_change():
+    ch = current_channel()
+    try:
+        slots.set_display_timezone(request.form.get("tz", ""))
+        flash(f"Times now shown in {slots.TIMEZONES[slots.display_timezone()]}.", "ok")
+    except Exception as exc:
+        flash(f"Could not change the time zone: {exc}", "error")
+    return redirect(url_for("home", channel=ch.id))
+
+
 @app.post("/channel-language")
 def channel_language_change():
     ch = current_channel()
@@ -1832,6 +1845,14 @@ PAGE = r"""
         {% for i, when, count in slot_options %}<option value="{{i}}" {{'selected' if i == slot_now else ''}}>{{when}} · {{count}} channel{{'' if count == 1 else 's'}}</option>{% endfor %}
       </select>
       <span class="hint">Up to about 7 channels fit in one time slot.</span>
+    </form>
+    <form method="post" action="/display-timezone" class="row slot-row">
+      <input type="hidden" name="channel" value="{{ch.id}}">
+      <span>🌍 Time zone</span>
+      <select name="tz" onchange="this.form.submit()">
+        {% for value, name in timezones.items() %}<option value="{{value}}" {{'selected' if value == timezone_now else ''}}>{{name}}</option>{% endfor %}
+      </select>
+      <span class="hint">Sirf dikhane ke liye: saare waqt is zone mein nazar aate hain. Har channel ka waqt upar chunein.</span>
     </form>
     <form method="post" action="/channel-language" class="row slot-row">
       <input type="hidden" name="channel" value="{{ch.id}}">
