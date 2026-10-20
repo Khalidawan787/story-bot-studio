@@ -11,6 +11,9 @@ and full access to the YouTube channels. The zip now ships only the program and
 its lesson banks; each machine adds its own keys once, following
 START_HERE_NEW_PC.md.
 
+Options: --publish (build, then upload), --publish-only (upload the zip already
+built), --label "text" (added to the zip name), --keep-old (keep older builds).
+
 Add --publish to also upload the zip, named with today's date and time, as a
 new release of the PRIVATE repository Khalidawan787/StoryBotStudio, so only the
 admin can download it. Older builds stay there; nothing is deleted. Not the
@@ -121,40 +124,56 @@ def main() -> None:
 RELEASE_REPO = "Khalidawan787/StoryBotStudio"  # private
 
 
-def publish() -> None:
-    """Upload this build as a NEW dated release; earlier builds are never removed.
+def _option(name: str) -> str:
+    """Value after --name on the command line ('' when absent)."""
+    if name in sys.argv and sys.argv.index(name) + 1 < len(sys.argv):
+        return sys.argv[sys.argv.index(name) + 1]
+    return ""
 
-    Each build gets its own release (tag StoryBotStudio-YYYY-MM-DD-HHMM) with a
-    zip named StoryBotStudio_YYYY-MM-DD_HHMM.zip, so any older version can still
-    be downloaded and the newest is always at the top of the Releases page.
+
+def publish(zip_path: Path = ZIP_PATH) -> None:
+    """Upload this build as a new dated private release.
+
+    Name: StoryBotStudio_YYYY-MM-DD_HHMM[_label].zip (Pakistan time). By default
+    older releases are removed once the new one is up, so only the newest stays;
+    --keep-old leaves them. --label "tiktok guide updated" adds a note to the
+    zip name and the release title.
     """
+    import re as _re
     from datetime import datetime, timedelta, timezone
 
     # Pakistan time, whatever the PC clock is set to (this one runs on US time).
     now = datetime.now(timezone(timedelta(hours=5)))
-    dated = ZIP_PATH.with_name(f"StoryBotStudio_{now:%Y-%m-%d_%H%M}.zip")
-    shutil.copy2(ZIP_PATH, dated)
-    tag = f"StoryBotStudio-{now:%Y-%m-%d-%H%M}"
+    label = _option("--label").strip()
+    slug = _re.sub(r"[^A-Za-z0-9]+", "-", label).strip("-")
+    suffix = f"_{slug}" if slug else ""
+    dated = zip_path.with_name(f"StoryBotStudio_{now:%Y-%m-%d_%H%M}{suffix}.zip")
+    shutil.copy2(zip_path, dated)
+    tag = f"StoryBotStudio-{now:%Y-%m-%d-%H%M}{('-' + slug) if slug else ''}"
+    title = f"StoryBotStudio {now:%d %b %Y, %I:%M %p} PKT" + (f" ({label})" if label else "")
     subprocess.run([
-        "gh", "release", "create", tag, str(dated), "--repo", RELEASE_REPO,
-        "--title", f"StoryBotStudio {now:%d %b %Y, %I:%M %p} PKT",
+        "gh", "release", "create", tag, str(dated), "--repo", RELEASE_REPO, "--title", title,
         "--notes", "Story Bot Studio, Windows app. Program only: no .env, tokens, "
-                   "OAuth clients or database.",
+                   "OAuth clients or database." + (f" Change: {label}." if label else ""),
     ], cwd=ROOT, check=True)
-    # Only the newest build is kept (the admin asked for that on 20 Oct 2026).
-    # Older releases go only after the new one is safely up.
-    listing = subprocess.run(
-        ["gh", "release", "list", "--repo", RELEASE_REPO, "--limit", "100", "--json", "tagName", "-q", ".[].tagName"],
-        cwd=ROOT, capture_output=True, text=True, check=True,
-    ).stdout.split()
-    for old in listing:
-        if old != tag:
-            subprocess.run(["gh", "release", "delete", old, "--repo", RELEASE_REPO, "--cleanup-tag", "-y"],
-                           cwd=ROOT, check=False)
-            print(f"Removed older build {old}")
+    if "--keep-old" not in sys.argv:
+        # Older releases go only after the new one is safely up.
+        listing = subprocess.run(
+            ["gh", "release", "list", "--repo", RELEASE_REPO, "--limit", "100", "--json", "tagName", "-q", ".[].tagName"],
+            cwd=ROOT, capture_output=True, text=True, check=True,
+        ).stdout.split()
+        for old in listing:
+            if old != tag:
+                subprocess.run(["gh", "release", "delete", old, "--repo", RELEASE_REPO, "--cleanup-tag", "-y"],
+                               cwd=ROOT, check=False)
+                print(f"Removed older build {old}")
     print(f"Published (private, admin only): https://github.com/{RELEASE_REPO}/releases/tag/{tag}")
     print(f"Download: https://github.com/{RELEASE_REPO}/releases/download/{tag}/{dated.name}")
 
 
 if __name__ == "__main__":
-    main()
+    if "--publish-only" in sys.argv:
+        # Upload the zip already in dist/ (the code has not changed since it was built).
+        publish()
+    else:
+        main()
