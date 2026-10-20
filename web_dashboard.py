@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import sqlite3
 import threading
 from datetime import datetime
@@ -1288,6 +1289,79 @@ def channel_slot_change():
     return redirect(url_for("home", channel=ch.id))
 
 
+# Ownership-check files (TikTok "URL properties", Google, Meta) published at the
+# root of the GitHub Pages site through site_extra/ (scripts/build_status_page.py).
+_SITE_FILE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,120}\.(txt|html)$")
+# Pages the site builds itself; an upload must never replace one of them.
+_SITE_OWN_FILES = {"index.html", "privacy.html", "terms.html", "404.html"}
+
+
+def site_extra_files() -> list[str]:
+    folder = settings.root / "site_extra"
+    return sorted(p.name for p in folder.glob("*") if p.is_file() and p.name != "README.md") if folder.is_dir() else []
+
+
+app.jinja_env.globals.update(site_extra_files=site_extra_files)
+
+
+@app.post("/site-file")
+def site_file_upload():
+    """Put a verification file on the website: save, commit, push, rebuild Pages."""
+    import subprocess
+
+    ch = current_channel()
+    uploaded = request.files.get("site_file")
+    name = Path(getattr(uploaded, "filename", "") or "").name
+    if not uploaded or not _SITE_FILE_NAME.match(name) or name.lower() in _SITE_OWN_FILES:
+        flash("Sirf verification file chalegi: .txt ya .html, naam mein sirf angrezi harf/number "
+              "(jaise tiktokAbC123.txt).", "error")
+        return redirect(url_for("home", channel=ch.id))
+    data = uploaded.read(65_537)
+    if not data or len(data) > 65_536:
+        flash("File khaali hai ya bahut bari (64 KB se zyada). Verification file chhoti hoti hai.", "error")
+        return redirect(url_for("home", channel=ch.id))
+    folder = settings.root / "site_extra"
+    folder.mkdir(exist_ok=True)
+    (folder / name).write_bytes(data)
+    site = setup_guide.SITE
+
+    def job():
+        def run(*command):
+            done = subprocess.run(command, cwd=settings.root, capture_output=True, text=True)
+            if done.returncode != 0:
+                raise RuntimeError(f"{' '.join(command[:3])} failed: {(done.stderr or done.stdout).strip()[:300]}")
+            return done.stdout
+
+        if not (settings.root / ".git").exists():
+            raise RuntimeError("Is PC par bot ka git repo nahi; file site_extra mein save ho gayi, "
+                               "lekin website par bhejne ke liye yeh kaam us PC se karein jahan repo hai.")
+        run("git", "add", "--", f"site_extra/{name}")
+        staged = subprocess.run(["git", "diff", "--cached", "--quiet", "--", f"site_extra/{name}"],
+                                cwd=settings.root).returncode
+        if staged:
+            # Only this file is committed, whatever else is changed on this PC.
+            run("git", "commit", "-m", f"site_extra: add {name} (ownership check)", "--", f"site_extra/{name}")
+        run("git", "push", "origin", "HEAD")
+        run("gh", "workflow", "run", "status-page.yml")
+        url = f"{site}{name}"
+        import time
+        import urllib.request
+
+        for _ in range(40):                     # GitHub Pages takes 2-4 minutes
+            time.sleep(10)
+            try:
+                with urllib.request.urlopen(url + f"?check={int(time.time())}", timeout=20) as response:
+                    if response.status == 200 and response.read().strip() == data.strip():
+                        return f"Live: {url} : ab TikTok/Google mein Verify dabayein."
+            except Exception:
+                continue
+        return f"Bhej diya, lekin abhi tak live nahi dikhi: {url} . 2-3 minute baad link khol kar dekhein, phir Verify."
+
+    start_job(f"Website par verification file: {name}", job)
+    flash(f"{name} website par bheji ja rahi hai (2-4 minute). Neeche Jobs mein 'Live' aaye to Verify dabayein.", "ok")
+    return redirect(url_for("home", channel=ch.id))
+
+
 @app.post("/display-timezone")
 def display_timezone_change():
     ch = current_channel()
@@ -2183,7 +2257,14 @@ PAGE = r"""
         <h4>B. "This URL is not verified" ho to</h4><ol>
         <li>Upar dayein <strong>URL properties</strong> &rarr; <strong>Verify properties</strong> &rarr; type <strong>URL prefix</strong> (Domain nahi) &rarr; URL: <code>{{tiktok_site}}</code></li>
         <li>TikTok ki <code>tiktok&hellip;.txt</code> file download karein. <strong>Verify abhi na dabayein.</strong></li>
-        <li>File bot ke <code>site_extra</code> folder mein rakhein, commit + push karein, phir GitHub Actions mein <strong>Status page</strong> workflow chalayein (2&ndash;3 minute). File ka link browser mein khul jaye to TikTok mein <strong>Verify</strong> dabayein.</li>
+        <li>Wahi file <strong>yahan upload karein</strong>. Bot isay website par khud bhejta hai (2&ndash;4 minute) aur Jobs mein "Live: &hellip;" aate hi TikTok mein <strong>Verify</strong> dabayein:
+          <form method="post" action="/site-file" enctype="multipart/form-data" class="row" style="margin:8px 0;gap:10px;align-items:center">
+            <input type="hidden" name="channel" value="{{ch.id}}">
+            <input type="file" name="site_file" accept=".txt,.html" required>
+            <button class="green sm" type="submit">Upload &amp; website par lagao</button>
+          </form>
+          {% set present = site_extra_files() %}{% if present %}<span class="hint">Website par pehle se: {% for f in present %}<a href="{{tiktok_site}}{{f}}" target="_blank">{{f}}</a>{{ ', ' if not loop.last else '' }}{% endfor %}</span>{% endif %}
+        </li>
         <li>Verification har app aur har mode (Production / Sandbox) ki alag hoti hai. URL properties ke dropdown mein "for Production" / "for Sandbox" badal kar dekh lein. File ek dafa website par ho to baad mein sirf Verify dabana hota hai.</li>
         </ol>
 
