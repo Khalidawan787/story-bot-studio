@@ -10,6 +10,12 @@ who received that file also received the OpenAI key, the Google OAuth client
 and full access to the YouTube channels. The zip now ships only the program and
 its lesson banks; each machine adds its own keys once, following
 START_HERE_NEW_PC.md.
+
+Add --publish to also replace the zip on the "StoryBotStudio" release of the
+PRIVATE repository Khalidawan787/StoryBotStudio, so only the admin can download
+it. Not the bot's own repository: that one is public (GitHub Pages hosts the
+status page and the privacy/terms links), the zip is close to GitHub's 100 MB
+file limit, and every daily run would have to download it.
 """
 from __future__ import annotations
 
@@ -107,6 +113,25 @@ def main() -> None:
     print(f"\nRelease ready: {ZIP_PATH}  ({count} files, {size_mb:.1f} MB)")
     print("No .env, tokens, client secrets or database are inside — the new PC "
           "adds those itself.")
+    if "--publish" in sys.argv:
+        publish()
+
+
+RELEASE_TAG = "StoryBotStudio"
+RELEASE_REPO = "Khalidawan787/StoryBotStudio"  # private
+
+
+def publish() -> None:
+    """Replace the zip on the GitHub release (created once if it is missing)."""
+    exists = subprocess.run(["gh", "release", "view", RELEASE_TAG, "--repo", RELEASE_REPO], cwd=ROOT,
+                            capture_output=True).returncode == 0
+    if exists:
+        command = ["gh", "release", "upload", RELEASE_TAG, str(ZIP_PATH), "--clobber"]
+    else:
+        command = ["gh", "release", "create", RELEASE_TAG, str(ZIP_PATH),
+                   "--title", RELEASE_TAG, "--notes", "Story Bot Studio, Windows app (latest build)."]
+    subprocess.run(command + ["--repo", RELEASE_REPO], cwd=ROOT, check=True)
+    print(f"Published (private, admin only): https://github.com/{RELEASE_REPO}/releases/tag/{RELEASE_TAG}")
 
 
 if __name__ == "__main__":
