@@ -580,6 +580,122 @@ def _crossfade_join(
 
 
 def render_video(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: Path, scene_audio_paths: list[Path] | None = None, channel=None, scene_marks: list | None = None, content_type: str = "short", reuse_from: Path | None = None) -> Path:
+    """Render the scenes, join them, then open the video on a preview montage."""
+    result = _render_and_join(lesson, audio_path, output_path, run_dir, scene_audio_paths, channel,
+                              scene_marks, content_type, reuse_from)
+    if settings.enable_preview and scene_audio_paths:
+        first = max(2.5, _audio_duration(scene_audio_paths[0]) + 0.35)
+        try:
+            add_preview(result, run_dir, lesson.title, first, content_type,
+                        question=preview_question(lesson, channel, run_dir))
+        except Exception as exc:
+            # The video is finished without it; a preview must never cost it.
+            print(f"[video] preview skipped ({exc})")
+    return result
+
+
+def preview_question(lesson: Lesson, channel, run_dir: Path) -> str:
+    """One curiosity question the video answers, shown big over the preview.
+
+    "How did one man capture 132 soldiers?" makes a viewer stay to find out.
+    Written from this script only, so it adds no claim of its own; on failure
+    the preview shows the title instead.
+    """
+    cached = run_dir / "preview_question.txt"
+    if cached.exists():
+        return cached.read_text(encoding="utf-8").strip()
+    from .genre_topics import _script_json
+    from .language import is_urdu
+
+    script = " ".join(scene.line for scene in lesson.scenes)[:2500]
+    language = "Roman Urdu (Urdu in English letters)" if channel is not None and is_urdu(channel) else "English"
+    try:
+        raw = _script_json(
+            "Write ONE short curiosity question for the opening of this video, in "
+            f"{language}, at most 10 words, ending with '?'. The video must answer it. "
+            "Use only what the script says: no new names, numbers or claims. "
+            "Style only, never copy: 'What if the sun went dark for a day?', "
+            "'Why did no one believe the warning?', 'How do you hide a whole ship?'\n"
+            f"Title: {lesson.title}\nScript: {script}\n"
+            'Return ONLY JSON: {"question": str}'
+        )
+        question = " ".join(str(raw.get("question") or "").split())
+    except Exception as exc:
+        print(f"[video] preview question failed ({exc})")
+        question = ""
+    import re as _re
+
+    # A number in the question must be one the script says (it once wrote 132
+    # where the script said "more than 130").
+    numbers = set(_re.findall(r"\d[\d,.]*\d|\d", question))
+    if (numbers - set(_re.findall(r"\d[\d,.]*\d|\d", script)) or not question.endswith("?")
+            or len(question.split()) > 14):
+        question = ""
+    cached.write_text(question, encoding="utf-8")
+    return question
+
+
+def add_preview(video_path: Path, run_dir: Path, title: str, first_seconds: float, content_type: str,
+                question: str = "") -> Path:
+    """Replace the picture under the hook line with fast cuts from the whole video.
+
+    The hook's voice stays as it is; only its picture changes, to 5-7 shots of
+    0.6-0.8 s taken evenly from the rest of the video, with the title in a band
+    over the caption area (those shots carry other scenes' captions). The video
+    keeps its length.
+    """
+    import re as _re
+
+    total = _audio_duration(video_path)
+    span = min(first_seconds, 5.0)
+    if total < first_seconds + 8:
+        return video_path
+    shots = max(4, min(7, round(span / 0.7)))
+    shot = span / shots
+    usable = total - first_seconds - shot - 0.5
+    starts = [first_seconds + usable * (i + 0.5) / shots for i in range(shots)]
+    W, H = _dimensions(content_type)
+    band_y, band_h = (int(H * 0.40), int(H * 0.40)) if content_type == "short" else (int(H * 0.70), int(H * 0.30))
+    clean = (question or _re.sub(r"\s*\|.*$", "", str(title or ""))).strip().upper()
+    width = 16 if content_type == "short" else 34
+    title_file = run_dir / "preview_title.txt"
+    title_file.write_text("\n".join(textwrap.wrap(clean, width=width)[:3]) or clean, encoding="utf-8")
+    label_file = run_dir / "preview_label.txt"
+    label_file.write_text("COMING UP", encoding="utf-8")
+    font = font_path()
+    font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
+    title_size = 92 if content_type == "short" else 64
+    label_size = 44 if content_type == "short" else 34
+    parts = [f"[0:v]split={shots + 1}" + "".join(f"[s{i}]" for i in range(shots + 1))]
+    for i, start in enumerate(starts):
+        parts.append(f"[s{i}]trim=start={start:.3f}:duration={shot:.3f},setpts=PTS-STARTPTS[c{i}]")
+    parts.append(
+        "".join(f"[c{i}]" for i in range(shots)) + f"concat=n={shots}:v=1:a=0,"
+        f"drawbox=x=0:y={band_y}:w=iw:h={band_h}:color=black@0.9:t=fill,"
+        f"drawtext=textfile='{escape_filter_path(str(label_file))}'{font_arg}:fontsize={label_size}:"
+        f"fontcolor=white:box=1:boxcolor=0xe53935@0.95:boxborderw=14:x=(w-text_w)/2:y={band_y + 40},"
+        f"drawtext=textfile='{escape_filter_path(str(title_file))}'{font_arg}:fontsize={title_size}:"
+        f"fontcolor=0xffe066:borderw=4:bordercolor=black:line_spacing=12:"
+        f"x=(w-text_w)/2:y={band_y + 40 + label_size + 60}[pre]"
+    )
+    parts.append(f"[s{shots}]trim=start={span:.3f},setpts=PTS-STARTPTS[rest]")
+    parts.append("[pre][rest]concat=n=2:v=1:a=0,format=yuv420p[v]")
+    out = run_dir / "with_preview.mp4"
+    quality = _quality()
+    subprocess.run([
+        ffmpeg_bin(), "-y", "-v", "error", "-i", str(video_path), "-filter_complex", ";".join(parts),
+        "-map", "[v]", "-map", "0:a?", "-c:v", "libx264", "-preset", quality["preset"], "-crf", quality["crf"],
+        "-c:a", "copy", "-movflags", "+faststart", str(out),
+    ], check=True)
+    if abs(_audio_duration(out) - total) > 1.0:
+        out.unlink(missing_ok=True)
+        raise RuntimeError("preview changed the video length")
+    out.replace(video_path)
+    print(f"[video] preview: {shots} shots over the first {span:.1f}s")
+    return video_path
+
+
+def _render_and_join(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: Path, scene_audio_paths: list[Path] | None = None, channel=None, scene_marks: list | None = None, content_type: str = "short", reuse_from: Path | None = None) -> Path:
     """Render the lesson. With `reuse_from` (an earlier run folder), each scene
     takes that run's picture and stock clip instead of making new ones; used
     for the second-language copy of a video (dual_language.py)."""

@@ -46,6 +46,9 @@ class Settings:
     # Smooth crossfades between scenes instead of hard cuts. Audio stays exactly
     # in sync because each clip carries the transition as extra tail time.
     enable_transitions: bool = os.getenv("ENABLE_TRANSITIONS", "true").lower() == "true"
+    # Open with a 3-5 second montage of the whole video under the hook line, so
+    # a viewer sees at once what the video holds (most left at 0:02 before).
+    enable_preview: bool = os.getenv("ENABLE_PREVIEW", "true").lower() == "true"
     transition_seconds: float = float(os.getenv("TRANSITION_SECONDS", "0.45"))
     # Sharpen + vignette + gentle grade. Free image providers cap at about half
     # of 1080p, so this pass is what stops the upscale from looking soft.
