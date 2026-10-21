@@ -170,7 +170,14 @@ def _listed_subjects(channel: Channel | None = None) -> list[str]:
     except Exception:
         return []
     genre = str(getattr(channel, "genre", "") or "").lower()
-    names = (data.get("subjects_by_genre") or {}).get(genre) or data.get("subjects") or []
+    names = (data.get("subjects_by_genre") or {}).get(genre)
+    if names is None:
+        # The people list is for the history/heroes channels only. A crime Page
+        # once got Rosa Parks and Abdul Sattar Edhi because its own list was
+        # missing (an old copy of this file came back from the bot-state
+        # branch); with no list of its own a channel now asks for subjects of
+        # its own genre instead (_suggested_subjects).
+        names = data.get("subjects") or [] if genre in ("", "heroic history", "history") else []
     return [str(name) for name in names]
 
 

@@ -71,6 +71,9 @@ jobs:
           if git ls-remote --exit-code --heads origin bot-state >/dev/null 2>&1; then
             git fetch --depth=1 origin bot-state
             git archive origin/bot-state | tar -x -C .
+            # Settings kept in the repository, not run state: the copy saved
+            # in bot-state is older and must not replace the committed one.
+            git checkout HEAD -- data/verified_subjects.json
             echo "State restored from the bot-state branch:"
             ls -la bot.sqlite3 2>/dev/null || echo "  (no database yet)"
           else
