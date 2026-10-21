@@ -553,6 +553,13 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
                 progress_callback=lambda value: set_upload_progress(video_id, value),
                 upload_thumbnail=thumbnail_upload_allowed(channel.id),
             )
+            if getattr(channel, "focus_country", ""):
+                try:
+                    from .playlists import add_to_playlist
+
+                    add_to_playlist(channel, video_url)
+                except Exception as exc:
+                    print(f"[playlist] skipped ({exc})")
         if publish_at is not None:
             mark_scheduled(video_id, video_url, publish_at.isoformat())
             return f"{video_id}: scheduled for {publish_at.isoformat()} {video_url}"

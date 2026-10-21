@@ -169,6 +169,11 @@ def _listed_subjects(channel: Channel | None = None) -> list[str]:
         data = json.loads(SUBJECTS_FILE.read_text(encoding="utf-8"))
     except Exception:
         return []
+    country = str(getattr(channel, "focus_country", "") or "").strip()
+    if country:
+        # A country run (focus_country) takes only that country's people; once
+        # they are used up, _suggested_subjects asks for more from it.
+        return [str(name) for name in (data.get("subjects_by_country") or {}).get(country, [])]
     genre = str(getattr(channel, "genre", "") or "").lower()
     names = (data.get("subjects_by_genre") or {}).get(genre)
     if names is None:
@@ -210,6 +215,9 @@ def _suggested_subjects(channel: Channel, used: set[str]) -> list[str]:
         "Only people with their own English Wikipedia article. No fictional or legendary "
         "figures, no religious prophets, no living politicians."
     )
+    country = str(getattr(channel, "focus_country", "") or "").strip()
+    if country:
+        brief += f" All 15 must be from {country} (born there or best known as its citizens)."
     raw = _script_json(
         brief + "\n"
         f"Do not repeat any of these: {'; '.join(sorted(used))[:3000] or 'none'}.\n"

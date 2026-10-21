@@ -389,6 +389,16 @@ def run_pipeline(
                 apply_upload_error_backoff(channel_id, error)
                 publish_at = None  # nothing reached YouTube, so release the slot
 
+    if video_url and channel is not None and getattr(channel, "focus_country", ""):
+        try:
+            from .playlists import add_to_playlist
+
+            note = add_to_playlist(channel, video_url)
+            if note:
+                print(f"[playlist] {note}")
+        except Exception as exc:
+            print(f"[playlist] skipped ({exc})")
+
     video_db_id = save_video(
         job_id=job_id,
         topic=lesson.topic_key,
