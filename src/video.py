@@ -349,7 +349,24 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
             meta = earlier.with_suffix(".pexels.json")
             if meta.exists():
                 shutil.copy2(meta, run_dir / meta.name)
-    clip_path = _scene_clip(scene, duration, output_path, run_dir, channel, content_type)
+    # A fact video opens on its subject's real photo, and shows it again where
+    # a scene names the subject (archive_images.py); the rest is video.
+    real_photo = None
+    if not reuse_from and channel is not None:
+        from .verified_facts import is_verified_channel
+
+        if is_verified_channel(channel):
+            from .archive_images import photo_for_scene
+
+            try:
+                number = int(output_path.stem.rsplit("_", 1)[-1])
+            except ValueError:
+                number = 0
+            try:
+                real_photo = photo_for_scene(number, scene, run_dir)
+            except Exception as exc:
+                print(f"[video] {output_path.stem}: real photo unavailable ({exc})")
+    clip_path = None if real_photo else _scene_clip(scene, duration, output_path, run_dir, channel, content_type)
     if clip_path:
         try:
             return _encode_scene(
@@ -362,7 +379,7 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
             output_path.unlink(missing_ok=True)
             clip_path.unlink(missing_ok=True)
             clip_path.with_suffix(".pexels.json").unlink(missing_ok=True)
-    image_path = None
+    image_path = real_photo
     if reuse_from:
         from .dual_language import reused_image
 

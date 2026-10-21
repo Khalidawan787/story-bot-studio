@@ -85,6 +85,120 @@ def _scene_queries(scene: Scene, channel=None) -> list[str]:
     return seen
 
 
+def _scene_words(scene: Scene) -> set[str]:
+    from .image_assets import _STOCK_STOP_WORDS
+
+    return {
+        word.lower() for word in re.findall(r"[A-Za-z]{3,}", f"{scene.label} {scene.image_prompt or ''} {scene.line}")
+        if word.lower() not in _STOCK_STOP_WORDS and word.lower() not in _FILLER_WORDS
+    }
+
+
+# ------------------------------------------------------------ archive footage
+# Wikimedia Commons holds real old film (newsreels, war footage, early cinema)
+# under free licences. For a fact channel that is the honest picture of the
+# past, so it is tried before modern stock footage.
+_COMMONS = "https://commons.wikimedia.org/w/api.php"
+_COMMONS_CACHE: dict[str, list[dict]] = {}
+SUBJECT_FILE = "archive_subject.txt"
+
+
+def write_subject(run_dir: Path, title: str) -> None:
+    """Remember what the video is about, for the archive search."""
+    if title:
+        (run_dir / SUBJECT_FILE).write_text(title, encoding="utf-8")
+
+
+def _commons_search(query: str) -> list[dict]:
+    if query in _COMMONS_CACHE:
+        return _COMMONS_CACHE[query]
+    params = urllib.parse.urlencode({
+        "action": "query", "format": "json", "formatversion": "2",
+        "generator": "search", "gsrsearch": f"filetype:video {query}", "gsrnamespace": "6", "gsrlimit": "20",
+        "prop": "videoinfo", "viprop": "url|size|mediatype|derivatives|extmetadata",
+    })
+    request = urllib.request.Request(f"{_COMMONS}?{params}", headers={
+        "User-Agent": "StoryBotStudio/1.0 (https://github.com/Khalidawan787/story-bot-studio)"})
+    with urllib.request.urlopen(request, timeout=30) as response:
+        pages = json.loads(response.read().decode("utf-8")).get("query", {}).get("pages") or []
+    _COMMONS_CACHE[query] = pages
+    return pages
+
+
+def _commons_queries(scene: Scene, run_dir: Path) -> list[str]:
+    subject_file = run_dir / SUBJECT_FILE
+    subject = subject_file.read_text(encoding="utf-8").strip() if subject_file.exists() else ""
+    words = [w for w in re.findall(r"[A-Za-z]{4,}", f"{scene.label} {scene.image_prompt or ''}")
+             if w.lower() not in _FILLER_WORDS][:3]
+    queries = []
+    if subject:
+        queries.append(subject)
+    if subject and words:
+        queries.append(f"{subject} {words[0]}")
+    if words:
+        queries.append(" ".join(words[:2]))
+    return [q for i, q in enumerate(queries) if q and q not in queries[:i]]
+
+
+def _commons_clip(scene: Scene, output_path: Path, run_dir: Path, landscape: bool, min_seconds: float) -> Path:
+    """A real archival film clip from Wikimedia Commons, cut to this scene."""
+    import subprocess
+
+    from .page_posts import _FREE_LICENCE
+    from .visuals import ffmpeg_bin
+
+    used_file = run_dir / "commons_used.json"
+    used = json.loads(used_file.read_text(encoding="utf-8")) if used_file.exists() else {}
+    tried: list[str] = []
+    for query in _commons_queries(scene, run_dir):
+        tried.append(query)
+        query_words = {w.lower() for w in re.findall(r"[A-Za-z]{3,}", query)}
+        for page in _commons_search(query):
+            info = (page.get("videoinfo") or [{}])[0]
+            meta = info.get("extmetadata") or {}
+            licence = str((meta.get("LicenseShortName") or {}).get("value") or "")
+            title = str(page.get("title") or "")
+            if not _FREE_LICENCE.match(licence) or (meta.get("NonFree") or {}).get("value"):
+                continue
+            # The file's own name must be about the query, not just mention it in a category.
+            if not query_words & {w.lower() for w in re.findall(r"[A-Za-z]{3,}", title)}:
+                continue
+            seconds = float(meta.get("Duration", {}).get("value") or info.get("duration") or 0) or 60.0
+            renditions = [d for d in info.get("derivatives") or []
+                          if "webm" in str(d.get("type")) and 300 <= int(d.get("height") or 0) <= 720]
+            source = (sorted(renditions, key=lambda d: -int(d.get("height") or 0)) or [{}])[0].get("src") \
+                or info.get("url")
+            if not source or int(info.get("size") or 0) > 400_000_000 and not renditions:
+                continue
+            # A different stretch of the same film for each scene that uses it.
+            offset_seen = used.get(title, [])
+            start = max(0.0, min(seconds - max(min_seconds, 4), seconds * random.uniform(0.1, 0.7)))
+            if any(abs(start - o) < max(min_seconds, 6) for o in offset_seen):
+                start = (max(offset_seen) + max(min_seconds, 6)) % max(seconds - min_seconds, 1)
+            done = subprocess.run([
+                ffmpeg_bin(), "-y", "-v", "error", "-ss", f"{start:.2f}", "-i", source,
+                "-t", f"{max(min_seconds, 3) + 1:.2f}", "-an", "-vf", "fps=30,format=yuv420p",
+                "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", str(output_path),
+            ], capture_output=True, timeout=240)
+            if done.returncode != 0 or not output_path.exists() or output_path.stat().st_size < 50_000:
+                output_path.unlink(missing_ok=True)
+                continue
+            used.setdefault(title, []).append(start)
+            used_file.write_text(json.dumps(used), encoding="utf-8")
+            artist = re.sub(r"<[^>]+>", "", str((meta.get("Artist") or {}).get("value") or "")).strip()
+            gen = run_dir / "gen"
+            gen.mkdir(exist_ok=True)
+            (gen / f"{output_path.stem}.wikimedia.json").write_text(json.dumps({
+                "title": title.replace("File:", "").rsplit(".", 1)[0][:90],
+                "creator": " ".join(artist.split())[:80] or "Wikimedia Commons",
+                "license": licence,
+                "source_page": str(info.get("descriptionurl") or ""),
+            }), encoding="utf-8")
+            print(f"[archive] {output_path.stem}: {title} at {start:.0f}s")
+            return output_path
+    raise RuntimeError(f"no archive film for {', '.join(tried) or 'this scene'}")
+
+
 def _search(query: str, landscape: bool, key: str) -> list[dict]:
     orientation = "landscape" if landscape else "portrait"
     cache_key = (query, orientation)
@@ -123,6 +237,42 @@ def _best_file(video: dict, landscape: bool) -> dict | None:
     return best[1] if best else None
 
 
+# Words in a Pexels page name that mean a person is on screen. On a channel
+# about real people of the past (heroes, crime cases) such a clip stands in for
+# the real person: a 1918 hero was shown as a woman soldier of today.
+_PEOPLE_WORDS = {
+    "man", "men", "woman", "women", "girl", "girls", "boy", "boys", "person", "people",
+    "child", "children", "kid", "kids", "guy", "lady", "couple", "family", "soldier",
+    "soldiers", "officer", "military", "army", "student", "worker", "businessman",
+    "teenager", "baby", "portrait", "face", "selfie", "model", "crowd", "male", "female",
+    "patient", "nurse", "doctor", "elderly", "senior", "grandmother", "grandfather", "grandma",
+    "grandpa", "mother", "father", "son", "daughter", "wife", "husband", "friend", "friends",
+    "player", "athlete", "dancer", "actor", "actress", "police", "policeman", "cop", "firefighter",
+    "pilot", "sailor", "veteran", "bride", "groom", "lover", "lovers", "hero", "someone", "guys",
+}
+
+
+def _page_words(video: dict) -> set[str]:
+    """Words of the clip's page name: pexels.com/video/old-church-bell-tower-123/."""
+    slug = str(video.get("url") or "").rstrip("/").rsplit("/", 1)[-1]
+    return {word for word in re.findall(r"[a-z]{3,}", slug.lower())}
+
+
+def _relevant(video: dict, wanted: set[str], strict_people: bool) -> bool:
+    """True when the clip's own page name shares a word with what the scene is about.
+
+    The clip was found by a search, but Pexels matches loosely: "130 prisoners"
+    brought back a duck in a puddle. A clip whose name has none of the scene's
+    words is not used; on fact channels neither is one with people in it.
+    """
+    words = _page_words(video)
+    if strict_people and words & _PEOPLE_WORDS:
+        return False
+    if not words:
+        return not strict_people
+    return bool(words & wanted)
+
+
 def _banned(video: dict) -> bool:
     from .image_assets import _STOCK_BANNED_WORDS
 
@@ -159,7 +309,20 @@ def fetch_scene_clip(
         raise RuntimeError("No Pexels API key. Get a free one at pexels.com/api.")
     used = _used_ids(run_dir)
     errors: list[str] = []
-    for query in _scene_queries(scene, channel):
+    from .verified_facts import is_verified_channel
+
+    fact_channel = is_verified_channel(channel)
+    if fact_channel:
+        try:
+            return _commons_clip(scene, output_path, run_dir, landscape, min_seconds)
+        except Exception as exc:
+            errors.append(f"archive: {exc}")
+    queries = _scene_queries(scene, channel)
+    mood = queries[-1] if queries else ""
+    for query in queries:
+        # The scene's own words must appear in the clip's name; the genre mood
+        # line (last query) is a fallback and only has to match itself.
+        wanted = set(re.findall(r"[a-z]{3,}", query.lower())) if query == mood else _scene_words(scene)
         try:
             videos = _search(query, landscape, key)
         except Exception as exc:
@@ -169,7 +332,7 @@ def fetch_scene_clip(
         candidates = [
             video for video in videos
             if int(video.get("id") or 0) not in used and not _banned(video)
-            and _best_file(video, landscape)
+            and _best_file(video, landscape) and _relevant(video, wanted, fact_channel)
         ]
         if not candidates:
             errors.append(f"{query}: no usable clip")

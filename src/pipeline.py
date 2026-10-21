@@ -188,6 +188,16 @@ def run_pipeline(
     run_dir = Path(resume_run_dir).resolve() if resume_run_dir else settings.runs_dir / datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     job_id = run_dir.name
     run_dir.mkdir(parents=True, exist_ok=True)
+    if channel is not None:
+        from .verified_facts import is_verified_channel, source_url
+
+        if is_verified_channel(channel):
+            from urllib.parse import unquote
+
+            from .stock_video import write_subject
+
+            article = source_url(channel, lesson.topic_key)
+            write_subject(run_dir, unquote(article.rsplit("/", 1)[-1]).replace("_", " ") if article else "")
 
     scene_audio_paths = []
     scene_marks: list = []
