@@ -152,12 +152,17 @@ def add_background_music(video_path: Path, run_dir: Path, seed_text: str = "",
             f"[1:a]volume={volume}[music];"
             "[0:a]asplit=2[voice][key];"
             "[music][key]sidechaincompress=threshold=0.015:ratio=12:attack=5:release=350[ducked];"
-            "[voice][ducked]amix=inputs=2:duration=first:dropout_transition=0[a]"
+            # normalize=0: amix would otherwise halve the voice. loudnorm brings
+            # the whole video to YouTube's -14 LUFS; videos came out at about
+            # -26 dB, quiet on a phone next to other Shorts.
+            "[voice][ducked]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,"
+            "loudnorm=I=-14:TP=-1.5:LRA=11[a]"
         )
     else:
         filter_complex = (
             f"[1:a]volume={volume}[music];"
-            "[0:a][music]amix=inputs=2:duration=first:dropout_transition=0[a]"
+            "[0:a][music]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,"
+            "loudnorm=I=-14:TP=-1.5:LRA=11[a]"
         )
 
     subprocess.run(

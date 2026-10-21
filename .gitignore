@@ -74,3 +74,6 @@ Thumbs.db
 data/github_sync.json
 # This PC's dashboard automation switch
 data/dashboard_automation.txt
+
+# Owner music for the videos (src/music_moods.py: data/music/<channel id>/)
+!data/music/**/*.mp3

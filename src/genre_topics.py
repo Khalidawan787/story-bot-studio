@@ -213,6 +213,16 @@ def _script_json(prompt: str) -> dict:
     raise RuntimeError("Script providers failed: " + " | ".join(errors))
 
 
+# Most viewers left Shorts at 0:02 (YouTube Studio, 21 Oct 2026): the first
+# line set the scene ("At precisely 2:14 AM, a lone figure slipped into a
+# cafe") instead of giving a reason to stay.
+HOOK_RULE = (
+    "The FIRST scene is the hook, heard in the first two seconds: under 12 words, the most "
+    "gripping, surprising or emotional moment of this story, or a question it answers, said "
+    "straight away. No scene-setting, no greeting, no 'in this video'. Then tell the story."
+)
+
+
 def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) -> dict:
     from .verified_facts import is_verified_channel, write_next_lesson
 
@@ -225,7 +235,7 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) ->
     schema = (
         f"Return ONLY JSON: {{\"title\": str, \"intro\": str, \"outro\": str, "
         f"\"scenes\": [{{\"label\": str, \"line\": str, {_speech_field(channel)}\"image_prompt\": str}}]}}.\n"
-        f"Use exactly {scenes} scenes. 'line' = one narrated sentence. "
+        f"Use exactly {scenes} scenes. 'line' = one narrated sentence. {HOOK_RULE} "
         f"'label' = a 2-4 word on-screen caption. 'image_prompt' = a visual "
         f"description of that scene (scene only, no art-style words)."
         + script_rules(channel)
@@ -477,13 +487,13 @@ def generate_from_prompt(
         format_instructions = (
             f"Write a YouTube long-form script targeting about 5 minutes of narration. "
             f"Use exactly {scenes} scenes. Each scene line must contain 38-43 words "
-            f"(about 760-860 narrated words total). Make the opening immediately engaging, "
+            f"(about 760-860 narrated words total). Open with a hook: the first sentence is the most gripping moment or question of the story, no scene-setting, "
             f"keep a clear story or teaching arc, and end with a satisfying takeaway."
         )
     else:
         format_instructions = (
             f"Write a short video script. Use exactly {scenes} scenes. "
-            "Each scene line must be one narrated sentence."
+            "Each scene line must be one narrated sentence. " + HOOK_RULE
         )
     prompt = (
         f"You are a scriptwriter for a {channel.genre} YouTube channel. Tone: {tone}.\n"

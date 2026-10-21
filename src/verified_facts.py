@@ -318,7 +318,11 @@ def _prompt(channel: Channel, article: Article, scenes: int, long_form: bool, fe
                  "or character unless the SOURCE states it. Follow the story in order and do "
                  "not repeat a fact.")
     else:
-        shape = f"Write a short video script: exactly {scenes} scenes, each 'line' one sentence of 14-26 words."
+        # Viewers left at 0:02 when scene 1 was "X was born in rural Tennessee".
+        shape = (f"Write a short video script: exactly {scenes} scenes, each 'line' one sentence of 14-26 words. "
+                 "Scene 1 is the HOOK, heard in the first two seconds: the single most astonishing "
+                 "fact in the SOURCE, under 16 words, stated plainly (the deed, the odds, the number). "
+                 "Then tell the story in order from scene 2.")
     speech = '"speech": str, ' if is_urdu(channel) else ""
     return (
         f"You write true stories for the video channel '{channel.name}'. Tone: {tone}.\n"
@@ -327,7 +331,7 @@ def _prompt(channel: Channel, article: Article, scenes: int, long_form: bool, fe
         "number, place, event, quote, thought, feeling or outcome that the SOURCE does not state. "
         "Do not invent scenes or dialogue. If the SOURCE does not say it, leave it out.\n"
         "- Write every number as digits exactly as in the SOURCE (1957, 20,000).\n"
-        "- Say the subject's full name (the person, or the case) in the first scene.\n"
+        "- Say the subject's full name (the person, or the case) in the first or second scene.\n"
         "- 'title' must contain that name and no claim that is not in the SOURCE.\n"
         "- No graphic violence or gore; describe crimes plainly, as a documentary would.\n"
         "- 'label' = a 2-4 word caption without numbers.\n"
