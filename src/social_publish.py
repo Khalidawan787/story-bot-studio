@@ -696,13 +696,20 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
     set_social_upload(video_id, platform, "uploading")
     try:
         if platform == "facebook":
-            # Title, the source of a fact-checked story, then the tags.
+            # Title, the story in full (a second-language copy writes it to
+            # post.txt), the source of a fact-checked story, then the tags.
             from .verified_facts import source_url_for
 
             source = source_url_for(row["channel"], str(row["topic"] or ""))
+            body_file = path.parent / "post.txt"
+            body = body_file.read_text(encoding="utf-8").strip() if video_override and body_file.exists() else ""
+            urdu = bool(re.search(r"[؀-ۿ]", row["title"]))
             description = "\n\n".join(filter(None, [
                 row["title"],
-                f"Source: Wikipedia — {source}" if source else "",
+                body,
+                (f"ماخذ: ویکیپیڈیا — {source}" if urdu else f"Source: Wikipedia — {source}") if source else "",
+                ("کہانی اچھی لگی ہو تو لائک کریں، پیج فالو کریں اور کمنٹ میں اپنی رائے دیں۔"
+                 if urdu else "Like, follow the page and tell us in the comments what you think.") if body else "",
                 facebook_tags(row["channel"], str(row["topic"] or ""), row["content_type"], row["title"]),
             ]))
             remote_id, post_url = upload_facebook(

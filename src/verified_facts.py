@@ -203,8 +203,10 @@ def _suggested_subjects(channel: Channel, used: set[str]) -> list[str]:
     from .genre_topics import _script_json
 
     brief = _SUGGEST_BRIEF.get(str(channel.genre).lower()) or (
-        f"Name 15 real, well-documented people from world history whose life fits a "
-        f"'{channel.genre}' video channel: courage, sacrifice or service to others. "
+        f"Name 15 real, well-documented people whose life story fits a "
+        f"'{channel.genre}' video channel: heroes of courage, sacrifice or service, and also "
+        "famous lives - cricketers, other sports stars, scientists and inventors, past national "
+        "leaders, Hollywood, Bollywood and Pakistani film and music stars. Mix the kinds. "
         "Only people with their own English Wikipedia article. No fictional or legendary "
         "figures, no religious prophets, no living politicians."
     )

@@ -126,7 +126,16 @@ def build_copy(lesson: Lesson, channel, run_dir: Path, content_type: str, target
     title = translated.title_speech or str(
         build_metadata(translated, copy_channel, content_type=content_type)["title"]
     )
+    # The post itself tells the whole story (social_publish.publish_video reads it).
+    (out_dir / "post.txt").write_text(post_body(translated, target), encoding="utf-8")
     return video, title
+
+
+def post_body(lesson: Lesson, target: str) -> str:
+    """The story in full for the Facebook post, a few sentences per paragraph."""
+    lines = [(scene.speech if target == "ur" and scene.speech else scene.line).strip() for scene in lesson.scenes]
+    lines = [line for line in lines if line]
+    return "\n\n".join(" ".join(lines[i:i + 3]) for i in range(0, len(lines), 3))
 
 
 def reused_image(scene: Scene, reuse_from: Path) -> Path | None:
