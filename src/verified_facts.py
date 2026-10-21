@@ -163,13 +163,52 @@ def _used_subjects(channel: Channel, long_form: bool) -> set[str]:
     return used | _FAILED.get((channel.id, long_form), set())
 
 
+# A "world" run gives each country this many Shorts before moving on.
+VIDEOS_PER_COUNTRY = 10
+
+
+def _subjects_data() -> dict:
+    try:
+        return json.loads(SUBJECTS_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def current_country(channel) -> str:
+    """The country a focused channel is on now ("" when it has no focus).
+
+    focus_country "USA" stays on the USA. "world" walks country_order in
+    verified_subjects.json: a country is done once VIDEOS_PER_COUNTRY Shorts
+    carry it (write_lesson stamps each script with its country).
+    """
+    focus = str(getattr(channel, "focus_country", "") or "").strip()
+    if focus.lower() != "world":
+        return focus
+    order = _subjects_data().get("country_order") or []
+    done: dict[str, int] = {}
+    for key, raw in _bank_rows(channel).items():
+        if raw.get("country") and not key.startswith("long_"):
+            done[raw["country"]] = done.get(raw["country"], 0) + 1
+    for country in order:
+        if done.get(country, 0) < VIDEOS_PER_COUNTRY:
+            return country
+    return order[-1] if order else ""
+
+
+def country_of(channel, topic_key: str) -> str:
+    """The country a saved script was written for ("" if none)."""
+    try:
+        return str(_bank_rows(channel).get(topic_key, {}).get("country") or "")
+    except Exception:
+        return ""
+
+
 def _listed_subjects(channel: Channel | None = None) -> list[str]:
     """The channel's genre list when there is one (crime cases), else the people list."""
-    try:
-        data = json.loads(SUBJECTS_FILE.read_text(encoding="utf-8"))
-    except Exception:
+    data = _subjects_data()
+    if not data:
         return []
-    country = str(getattr(channel, "focus_country", "") or "").strip()
+    country = current_country(channel)
     if country:
         # A country run (focus_country) takes only that country's people; once
         # they are used up, _suggested_subjects asks for more from it.
@@ -215,7 +254,7 @@ def _suggested_subjects(channel: Channel, used: set[str]) -> list[str]:
         "Only people with their own English Wikipedia article. No fictional or legendary "
         "figures, no religious prophets, no living politicians."
     )
-    country = str(getattr(channel, "focus_country", "") or "").strip()
+    country = current_country(channel)
     if country:
         brief += f" All 15 must be from {country} (born there or best known as its citizens)."
     raw = _script_json(
@@ -459,6 +498,7 @@ def write_lesson(channel: Channel, article: Article, scenes: int = 8, long_form:
         "verified": True,
         "source_title": article.title,
         "source_url": article.url,
+        **({"country": current_country(channel)} if getattr(channel, "focus_country", "") else {}),
     }
 
 

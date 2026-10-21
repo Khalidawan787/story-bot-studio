@@ -557,7 +557,7 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
                 try:
                     from .playlists import add_to_playlist
 
-                    add_to_playlist(channel, video_url)
+                    add_to_playlist(channel, video_url, str(row["topic"] or ""))
                 except Exception as exc:
                     print(f"[playlist] skipped ({exc})")
         if publish_at is not None:

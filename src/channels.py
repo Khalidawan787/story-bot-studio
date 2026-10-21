@@ -48,8 +48,9 @@ class Channel:
     # True stories about real people only: every script is written from a
     # Wikipedia article and checked against it (verified_facts.py).
     verified_facts: bool = False
-    # A fact-only channel can stay on one country's people ("USA") for a
-    # while; its videos then also go into a "<country> Heroes" playlist.
+    # A fact-only channel can stay on one country's people ("USA"), or walk
+    # every country in turn ("world", verified_facts.current_country); each
+    # video also goes into its "<country> Heroes" playlist (playlists.py).
     focus_country: str = ""
 
     @property

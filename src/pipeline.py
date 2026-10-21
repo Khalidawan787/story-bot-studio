@@ -393,7 +393,7 @@ def run_pipeline(
         try:
             from .playlists import add_to_playlist
 
-            note = add_to_playlist(channel, video_url)
+            note = add_to_playlist(channel, video_url, lesson.topic_key)
             if note:
                 print(f"[playlist] {note}")
         except Exception as exc:

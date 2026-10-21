@@ -1,4 +1,4 @@
-"""Put a channel's uploads into a YouTube playlist ("USA Heroes").
+"""Put a channel's uploads into a YouTube playlist per country ("USA Heroes").
 
 The upload login (youtube_upload.py) may only upload, and widening its scope
 would log every channel out, so playlists use a second login of their own,
@@ -28,8 +28,7 @@ def playlist_token_path(channel) -> Path:
     return token.with_name(f"{token.stem}_playlist{token.suffix}")
 
 
-def playlist_title(channel) -> str:
-    country = str(getattr(channel, "focus_country", "") or "").strip()
+def playlist_title(country: str) -> str:
     return f"{country} Heroes" if country else ""
 
 
@@ -66,14 +65,16 @@ def _playlist_id(youtube, title: str, description: str) -> str:
     return created["id"]
 
 
-def add_to_playlist(channel, video_url: str) -> str:
-    """Add an uploaded video to the channel's country playlist. Returns a note."""
-    title = playlist_title(channel)
+def add_to_playlist(channel, video_url: str, topic_key: str = "") -> str:
+    """Add an uploaded video to its country's playlist. Returns a note."""
+    from .verified_facts import country_of, current_country
+
+    country = country_of(channel, topic_key) or current_country(channel)
+    title = playlist_title(country)
     if not title or not video_url or "v=" not in video_url:
         return ""
     video_id = video_url.split("v=", 1)[1].split("&", 1)[0]
     youtube = _service(channel)
-    country = channel.focus_country.strip()
     playlist = _playlist_id(
         youtube, title, f"True stories of real people from {country}: heroes, legends and famous lives.",
     )
