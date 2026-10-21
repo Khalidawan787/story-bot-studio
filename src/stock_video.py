@@ -249,6 +249,8 @@ _PEOPLE_WORDS = {
     "grandpa", "mother", "father", "son", "daughter", "wife", "husband", "friend", "friends",
     "player", "athlete", "dancer", "actor", "actress", "police", "policeman", "cop", "firefighter",
     "pilot", "sailor", "veteran", "bride", "groom", "lover", "lovers", "hero", "someone", "guys",
+    "judge", "lawyer", "attorney", "reporter", "journalist", "detective", "suspect", "prisoner",
+    "climber", "hiker", "tourist", "fan", "fans", "audience", "speaker", "politician",
 }
 
 
