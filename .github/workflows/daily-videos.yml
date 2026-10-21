@@ -60,6 +60,9 @@ jobs:
     concurrency:
       group: daily-videos
       cancel-in-progress: false
+    env:
+      # Print each line as it happens, so a killed step still shows how far it got.
+      PYTHONUNBUFFERED: "1"
 
     steps:
       - name: Check out the code
@@ -116,6 +119,8 @@ jobs:
       # Each makes only what this slot's channels are still missing today.
       - name: Build and upload today's long videos
         if: ${{ env.LONG_VIDEOS != 'false' }}
+        # A long video that dies must not cost the day's Shorts or the saved state.
+        continue-on-error: true
         run: python -m src.cli daily-long-all --upload "$UPLOAD" --slot "$SLOT"
 
       - name: Build and upload today's Shorts

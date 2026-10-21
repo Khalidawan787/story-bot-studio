@@ -583,6 +583,10 @@ def render_video(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: P
     """Render the scenes, join them, then open the video on a preview montage."""
     result = _render_and_join(lesson, audio_path, output_path, run_dir, scene_audio_paths, channel,
                               scene_marks, content_type, reuse_from)
+    try:
+        add_end_card(result, run_dir, content_type)
+    except Exception as exc:
+        print(f"[video] end card skipped ({exc})")
     if settings.enable_preview and scene_audio_paths:
         first = max(2.5, _audio_duration(scene_audio_paths[0]) + 0.35)
         try:
@@ -640,9 +644,9 @@ def add_preview(video_path: Path, run_dir: Path, title: str, first_seconds: floa
     """Replace the picture under the hook line with fast cuts from the whole video.
 
     The hook's voice stays as it is; only its picture changes, to 5-7 shots of
-    0.6-0.8 s taken evenly from the rest of the video, with the title in a band
-    over the caption area (those shots carry other scenes' captions). The video
-    keeps its length.
+    0.6-0.8 s taken evenly from the rest of the video, full screen. Those shots
+    carry other scenes' captions, so only the caption zone is softly blurred and
+    the question is written over it. The video keeps its length.
     """
     import re as _re
 
@@ -655,28 +659,33 @@ def add_preview(video_path: Path, run_dir: Path, title: str, first_seconds: floa
     usable = total - first_seconds - shot - 0.5
     starts = [first_seconds + usable * (i + 0.5) / shots for i in range(shots)]
     W, H = _dimensions(content_type)
-    band_y, band_h = (int(H * 0.40), int(H * 0.40)) if content_type == "short" else (int(H * 0.70), int(H * 0.30))
+    # Where the karaoke captions sit (_write_karaoke_ass: bottom-aligned, MarginV).
+    zone_y, zone_h = (int(H * 0.60), int(H * 0.20)) if content_type == "short" else (int(H * 0.72), int(H * 0.25))
     clean = (question or _re.sub(r"\s*\|.*$", "", str(title or ""))).strip().upper()
-    width = 16 if content_type == "short" else 34
+    width = 18 if content_type == "short" else 36
     title_file = run_dir / "preview_title.txt"
     title_file.write_text("\n".join(textwrap.wrap(clean, width=width)[:3]) or clean, encoding="utf-8")
-    label_file = run_dir / "preview_label.txt"
-    label_file.write_text("COMING UP", encoding="utf-8")
     font = font_path()
     font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
-    title_size = 92 if content_type == "short" else 64
-    label_size = 44 if content_type == "short" else 34
+    title_size = 76 if content_type == "short" else 54
     parts = [f"[0:v]split={shots + 1}" + "".join(f"[s{i}]" for i in range(shots + 1))]
     for i, start in enumerate(starts):
         parts.append(f"[s{i}]trim=start={start:.3f}:duration={shot:.3f},setpts=PTS-STARTPTS[c{i}]")
     parts.append(
-        "".join(f"[c{i}]" for i in range(shots)) + f"concat=n={shots}:v=1:a=0,"
-        f"drawbox=x=0:y={band_y}:w=iw:h={band_h}:color=black@0.9:t=fill,"
-        f"drawtext=textfile='{escape_filter_path(str(label_file))}'{font_arg}:fontsize={label_size}:"
-        f"fontcolor=white:box=1:boxcolor=0xe53935@0.95:boxborderw=14:x=(w-text_w)/2:y={band_y + 40},"
+        "".join(f"[c{i}]" for i in range(shots)) + f"concat=n={shots}:v=1:a=0,split[m][z]"
+    )
+    # Blurred, with edges that fade out (no hard band).
+    feather = zone_h // 4
+    parts.append(
+        f"[z]crop=iw:{zone_h}:0:{zone_y},gblur=sigma=26,format=yuva420p,"
+        f"geq=lum='p(X,Y)':cb='p(X,Y)':cr='p(X,Y)':a='255*min(1,min(Y,H-1-Y)/{feather})'[zb]"
+    )
+    parts.append(
+        f"[m][zb]overlay=0:{zone_y},"
         f"drawtext=textfile='{escape_filter_path(str(title_file))}'{font_arg}:fontsize={title_size}:"
-        f"fontcolor=0xffe066:borderw=4:bordercolor=black:line_spacing=12:"
-        f"x=(w-text_w)/2:y={band_y + 40 + label_size + 60}[pre]"
+        f"fontcolor=white:borderw=6:bordercolor=black@0.85:shadowx=0:shadowy=5:shadowcolor=black@0.6:"
+        f"line_spacing=-14:x=(w-text_w)/2:y={zone_y}+({zone_h}-text_h)/2:"
+        f"alpha='min(1,t/0.25)'[pre]"
     )
     parts.append(f"[s{shots}]trim=start={span:.3f},setpts=PTS-STARTPTS[rest]")
     parts.append("[pre][rest]concat=n=2:v=1:a=0,format=yuv420p[v]")
@@ -692,6 +701,39 @@ def add_preview(video_path: Path, run_dir: Path, title: str, first_seconds: floa
         raise RuntimeError("preview changed the video length")
     out.replace(video_path)
     print(f"[video] preview: {shots} shots over the first {span:.1f}s")
+    return video_path
+
+
+def add_end_card(video_path: Path, run_dir: Path, content_type: str, seconds: float = 4.0) -> Path:
+    """A small "LIKE • SUBSCRIBE • COMMENT" tag over the last seconds, gently bobbing.
+
+    It goes near the top, clear of the captions and of the YouTube/TikTok
+    buttons at the bottom; the narrator says the same (pipeline._with_end_call).
+    """
+    total = _audio_duration(video_path)
+    if total < seconds + 6:
+        return video_path
+    start = total - seconds
+    text_file = run_dir / "end_card.txt"
+    text_file.write_text("LIKE  \u2022  SUBSCRIBE  \u2022  COMMENT", encoding="utf-8")
+    font = font_path()
+    font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
+    _, H = _dimensions(content_type)
+    size, y = (50, int(H * 0.16)) if content_type == "short" else (38, int(H * 0.08))
+    vf = (
+        f"drawtext=textfile='{escape_filter_path(str(text_file))}'{font_arg}:fontsize={size}:"
+        f"fontcolor=white:box=1:boxcolor=0xe53935@0.95:boxborderw=22:"
+        f"x=(w-text_w)/2:y={y}+10*sin(2*PI*1.6*(t-{start:.2f})):"
+        f"enable='gte(t,{start:.2f})':alpha='min(1,(t-{start:.2f})/0.3)'"
+    )
+    out = run_dir / "with_end_card.mp4"
+    quality = _quality()
+    subprocess.run([
+        ffmpeg_bin(), "-y", "-v", "error", "-i", str(video_path), "-vf", vf,
+        "-c:v", "libx264", "-preset", quality["preset"], "-crf", quality["crf"],
+        "-c:a", "copy", "-movflags", "+faststart", str(out),
+    ], check=True)
+    out.replace(video_path)
     return video_path
 
 

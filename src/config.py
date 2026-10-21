@@ -81,7 +81,7 @@ class Settings:
     ffmpeg_bin: str = _resolve_bin(os.getenv("FFMPEG_BIN"), "ffmpeg.exe")
     ffprobe_bin: str = _resolve_bin(os.getenv("FFPROBE_BIN"), "ffprobe.exe")
     enable_background_music: bool = os.getenv("ENABLE_BACKGROUND_MUSIC", "true").lower() == "true"
-    background_music_volume: float = float(os.getenv("BACKGROUND_MUSIC_VOLUME", "0.08"))
+    background_music_volume: float = float(os.getenv("BACKGROUND_MUSIC_VOLUME", "0.11"))
     # Duck the music under the narrator's voice so speech stays crisp instead of
     # fighting a flat music bed (sidechain compression).
     enable_music_ducking: bool = os.getenv("ENABLE_MUSIC_DUCKING", "true").lower() == "true"

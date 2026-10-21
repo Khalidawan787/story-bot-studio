@@ -163,6 +163,41 @@ def _connected(channel) -> bool:
         return False
 
 
+_END_CALL = {
+    "en": "If you enjoyed this, hit like, subscribe for more, and tell us in the comments what you think.",
+    "sleep": "If this story helped you rest, like it, subscribe, and tell us in the comments "
+             "which story you want next. Sleep well.",
+}
+_END_CALL_UR = (
+    "Video achi lagi ho to like karein, channel subscribe karein, aur comment mein apni raye zaroor batayein.",
+    "ویڈیو اچھی لگی ہو تو لائک کریں، چینل سبسکرائب کریں، اور کمنٹ میں اپنی رائے ضرور بتائیں۔",
+)
+
+
+def _with_end_call(lesson: Lesson, channel) -> Lesson:
+    """The narrator closes by asking for a like, a subscribe and a comment.
+
+    Not on made-for-kids channels (comments are off there).
+    """
+    import dataclasses
+
+    from .language import is_urdu
+
+    if channel is None or getattr(channel, "made_for_kids", False) or not lesson.scenes:
+        return lesson
+    last = lesson.scenes[-1]
+    if "subscribe" in f"{last.line} {last.speech}".lower():
+        return lesson
+    if is_urdu(channel):
+        line, speech = f"{last.line} {_END_CALL_UR[0]}", f"{last.speech or last.line} {_END_CALL_UR[1]}"
+    else:
+        sleepy = "sleep" in f"{channel.id} {getattr(channel, 'genre', '')}".lower() or "snuggle" in channel.id
+        call = _END_CALL["sleep" if sleepy else "en"]
+        line, speech = f"{last.line} {call}", (f"{last.speech} {call}" if last.speech else "")
+    scenes = [*lesson.scenes[:-1], dataclasses.replace(last, line=line, speech=speech)]
+    return dataclasses.replace(lesson, scenes=scenes)
+
+
 def run_pipeline(
     lesson: Lesson, upload: bool = False, channel=None, content_type: str = "short",
     queue: bool | None = None, resume_run_dir: Path | None = None,
@@ -185,6 +220,7 @@ def run_pipeline(
         raise ValueError(f"Unsupported content type: {content_type}")
     if content_type == "short" and _needs_interactive_rewrite(lesson, channel):
         lesson = _interactive_kids_lesson(lesson)
+    lesson = _with_end_call(lesson, channel)
     run_dir = Path(resume_run_dir).resolve() if resume_run_dir else settings.runs_dir / datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     job_id = run_dir.name
     run_dir.mkdir(parents=True, exist_ok=True)
