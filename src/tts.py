@@ -26,8 +26,11 @@ if "speech.platform.bing.com" in edge_tts.communicate.WSS_URL:
 # address asks for speech too fast. GitHub runners share addresses, so a whole
 # video used to fail on the first refusal. Requests are now spaced out, and a
 # refusal is retried after a growing pause before the video is given up.
-_MIN_GAP_SECONDS = 1.0
-_RETRY_WAITS = (5, 15, 30, 60, 90, 120)
+_MIN_GAP_SECONDS = 2.0
+# A long video asks for ~25 voices in a row; on a busy runner address the
+# service refused one for over five minutes (a Crime long video was lost), so
+# the last waits run to four minutes.
+_RETRY_WAITS = (10, 20, 40, 60, 90, 120, 180, 240)
 _last_request = 0.0
 
 
