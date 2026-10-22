@@ -668,9 +668,14 @@ def add_preview(video_path: Path, run_dir: Path, title: str, first_seconds: floa
     font = font_path()
     font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
     title_size = 76 if content_type == "short" else 54
-    parts = [f"[0:v]split={shots + 1}" + "".join(f"[s{i}]" for i in range(shots + 1))]
+    # Each shot is read as its own seeked input. Splitting one input instead
+    # made ffmpeg hold every frame up to the last shot in memory, which on a
+    # 5-minute video starved the GitHub runner until it died.
+    shot_inputs: list[str] = []
+    parts = []
     for i, start in enumerate(starts):
-        parts.append(f"[s{i}]trim=start={start:.3f}:duration={shot:.3f},setpts=PTS-STARTPTS[c{i}]")
+        shot_inputs += ["-ss", f"{start:.3f}", "-t", f"{shot:.3f}", "-i", str(video_path)]
+        parts.append(f"[{i + 1}:v]setpts=PTS-STARTPTS[c{i}]")
     parts.append(
         "".join(f"[c{i}]" for i in range(shots)) + f"concat=n={shots}:v=1:a=0,split[m][z]"
     )
@@ -687,12 +692,13 @@ def add_preview(video_path: Path, run_dir: Path, title: str, first_seconds: floa
         f"line_spacing=-14:x=(w-text_w)/2:y={zone_y}+({zone_h}-text_h)/2:"
         f"alpha='min(1,t/0.25)'[pre]"
     )
-    parts.append(f"[s{shots}]trim=start={span:.3f},setpts=PTS-STARTPTS[rest]")
+    parts.append(f"[0:v]trim=start={span:.3f},setpts=PTS-STARTPTS[rest]")
     parts.append("[pre][rest]concat=n=2:v=1:a=0,format=yuv420p[v]")
     out = run_dir / "with_preview.mp4"
     quality = _quality()
     subprocess.run([
-        ffmpeg_bin(), "-y", "-v", "error", "-i", str(video_path), "-filter_complex", ";".join(parts),
+        ffmpeg_bin(), "-y", "-v", "error", "-i", str(video_path), *shot_inputs,
+        "-filter_complex", ";".join(parts),
         "-map", "[v]", "-map", "0:a?", "-c:v", "libx264", "-preset", quality["preset"], "-crf", quality["crf"],
         "-c:a", "copy", "-movflags", "+faststart", str(out),
     ], check=True)

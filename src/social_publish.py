@@ -7,7 +7,7 @@ import mimetypes
 import secrets
 import time
 import uuid
-from datetime import timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.parse import urlencode
@@ -260,7 +260,8 @@ def facebook_tags(channel_id: str, topic: str, content_type: str, title: str) ->
     return " ".join(unique[:10])
 
 
-def _facebook_reel(video: Path, title: str, token: str, description: str = "") -> tuple[str, str]:
+def _facebook_reel(video: Path, title: str, token: str, description: str = "",
+                   publish_at: int | None = None) -> tuple[str, str]:
     start_query = urlencode({"access_token": token, "upload_phase": "start"})
     started = _request_json(
         f"https://graph.facebook.com/{FB_API_VERSION}/me/video_reels?{start_query}", method="POST"
@@ -276,10 +277,14 @@ def _facebook_reel(video: Path, title: str, token: str, description: str = "") -
     }, "POST")
     if uploaded.get("success") is False:
         raise RuntimeError("Facebook Reel file transfer failed.")
-    finish_query = urlencode({
+    finish = {
         "access_token": token, "video_id": video_id, "upload_phase": "finish",
         "video_state": "PUBLISHED", "description": description or title, "title": title,
-    })
+    }
+    if publish_at:
+        # Goes live by itself at the same moment as the YouTube video.
+        finish.update({"video_state": "SCHEDULED", "scheduled_publish_time": str(int(publish_at))})
+    finish_query = urlencode(finish)
     finished = _request_json(
         f"https://graph.facebook.com/{FB_API_VERSION}/me/video_reels?{finish_query}", method="POST"
     )
@@ -371,14 +376,31 @@ def _facebook_long(video: Path, title: str, page_id: str, token: str,
 
 
 def upload_facebook(channel_id: str, video: Path, title: str, content_type: str,
-                    description: str = "") -> tuple[str, str]:
+                    description: str = "", publish_at: int | None = None) -> tuple[str, str]:
     cfg = account(channel_id, "facebook")
     page_id, token = str(cfg.get("page_id", "")), str(cfg.get("page_access_token", ""))
     if not page_id or not token:
         raise RuntimeError("Facebook is not configured for this channel.")
     if content_type == "short":
-        return _facebook_reel(video, title, token, description)
-    return _facebook_long(video, title, page_id, token, description=description)
+        return _facebook_reel(video, title, token, description, publish_at)
+    return _facebook_long(video, title, page_id, token, publish_at, description=description)
+
+
+def _facebook_schedule(publish_at: str | None) -> int | None:
+    """YouTube's publish time as a Unix time Facebook can schedule, else None (post now).
+
+    Facebook schedules only between 10 minutes and about a month ahead.
+    """
+    if not publish_at:
+        return None
+    try:
+        when = datetime.fromisoformat(str(publish_at).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    ahead = (when - datetime.now(timezone.utc)).total_seconds()
+    return int(when.timestamp()) if 15 * 60 <= ahead <= 28 * 86400 else None
 
 
 def _tiktok_token(channel_id: str) -> str:
@@ -712,10 +734,12 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
                  if urdu else "Like, follow the page and tell us in the comments what you think.") if body else "",
                 facebook_tags(row["channel"], str(row["topic"] or ""), row["content_type"], row["title"]),
             ]))
+            scheduled = _facebook_schedule(row["publish_at"])
             remote_id, post_url = upload_facebook(
-                row["channel"], path, row["title"], row["content_type"], description,
+                row["channel"], path, row["title"], row["content_type"], description, scheduled,
             )
-            message = f"Facebook upload complete: {post_url}"
+            message = (f"Facebook scheduled for the YouTube time: {post_url}" if scheduled
+                       else f"Facebook upload complete: {post_url}")
         elif platform == "tiktok" and (force_tiktok_mode or account(row["channel"], "tiktok").get("mode")) == "zernio":
             remote_id, post_url, slot = upload_tiktok_zernio(
                 row["channel"], path, tiktok_caption(row), row["publish_at"],
