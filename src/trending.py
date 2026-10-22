@@ -348,8 +348,8 @@ def _news_prompt(channel: Channel, trend: Trend, scenes: int, long_form: bool) -
     else:
         shape = (
             f"Write a fast, punchy YouTube Shorts news explainer. Use exactly {scenes} "
-            "scenes. Each scene line is one narrated sentence. Open with the single "
-            "most surprising fact so nobody scrolls away."
+            "scenes. Each scene line is one narrated sentence of 12-20 words, so the Short "
+            "runs 60 to 85 seconds. Open with the single most surprising fact so nobody scrolls away."
         )
     return (
         f"You are the writer for a world-news explainer channel. Today is {today}.\n"
@@ -374,7 +374,7 @@ def _news_prompt(channel: Channel, trend: Trend, scenes: int, long_form: bool) -
     )
 
 
-def generate_trending_topics(channel: Channel, count: int = 2, scenes: int = 8) -> list[str]:
+def generate_trending_topics(channel: Channel, count: int = 2, scenes: int = 12) -> list[str]:
     """Turn today's top world trends into scripts. Returns the new topic keys."""
     from .genre_topics import _build_lesson, _script_json, load_genre_lessons
 

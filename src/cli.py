@@ -284,7 +284,7 @@ def main() -> None:
         wanted = max(0, int(args.make))
         if wanted:
             channel = get_channel(args.channel)
-            keys = generate_trending_topics(channel, count=wanted, scenes=8)
+            keys = generate_trending_topics(channel, count=wanted)
             print(f"\n[{channel.id}] wrote {len(keys)} trending script(s):")
             for k in keys:
                 print(f"  - {k}")

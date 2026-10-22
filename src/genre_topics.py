@@ -223,7 +223,13 @@ HOOK_RULE = (
 )
 
 
-def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) -> dict:
+# A Short runs 60 to 85 seconds: 12 scenes of one 12-20 word sentence each
+# (about 190 words). Facebook takes Reels only up to 90 seconds.
+SHORT_SCENES = 12
+SHORT_LINE_WORDS = "12-20"
+
+
+def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT_SCENES) -> dict:
     from .verified_facts import is_verified_channel, write_next_lesson
 
     if is_verified_channel(channel):
@@ -235,7 +241,8 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = 8) ->
     schema = (
         f"Return ONLY JSON: {{\"title\": str, \"intro\": str, \"outro\": str, "
         f"\"scenes\": [{{\"label\": str, \"line\": str, {_speech_field(channel)}\"image_prompt\": str}}]}}.\n"
-        f"Use exactly {scenes} scenes. 'line' = one narrated sentence. {HOOK_RULE} "
+        f"Use exactly {scenes} scenes. 'line' = one narrated sentence of {SHORT_LINE_WORDS} words "
+        f"(the Short must run 60 to 85 seconds). {HOOK_RULE} "
         f"'label' = a 2-4 word on-screen caption. 'image_prompt' = a visual "
         f"description of that scene (scene only, no art-style words)."
         + script_rules(channel)
@@ -580,7 +587,7 @@ def load_genre_lessons(channel: Channel) -> dict:
     return {}
 
 
-def generate_genre_topics(channel: Channel, count: int = 5, scenes: int = 8) -> list[str]:
+def generate_genre_topics(channel: Channel, count: int = 5, scenes: int = SHORT_SCENES) -> list[str]:
     """Create `count` new genre topics for a channel and save them. Returns new keys.
 
     scenes controls video length: ~5 scenes ≈ 30 sec, ~40 scenes ≈ 5-7 min.

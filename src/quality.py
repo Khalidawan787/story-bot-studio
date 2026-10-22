@@ -41,6 +41,9 @@ def inspect_video(video_path: Path, content_type: str) -> dict[str, object]:
     else:
         if not (5 <= duration <= 180):
             issues.append(f"Short duration is {duration:.1f} seconds")
+        elif duration < 60:
+            # Not a failure (the video still goes out), but Shorts are meant to run a minute.
+            print(f"[quality] note: Short runs {duration:.0f}s, under the 60s target")
         if height <= width:
             issues.append(f"Short must be vertical ({width}x{height})")
 

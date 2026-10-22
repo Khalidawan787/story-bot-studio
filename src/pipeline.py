@@ -91,6 +91,8 @@ def _append_image_credits(metadata: dict, run_dir: Path) -> None:
 
 def _interactive_kids_lesson(lesson: Lesson) -> Lesson:
     """Turn passive Kids Shorts into a quick question-and-answer game."""
+    import dataclasses
+
     scenes: list[Scene] = []
     for index, scene in enumerate(lesson.scenes):
         if index == 0:
@@ -103,6 +105,23 @@ def _interactive_kids_lesson(lesson: Lesson) -> Lesson:
             label=scene.label, line=line, image=scene.image,
             image_prompt=scene.image_prompt,
         ))
+    # A bank lesson alone runs about 20 seconds. Quiz rounds over the same
+    # pictures bring the Short to a minute, and repetition is how small
+    # children learn the words.
+    rounds = (
+        lambda s: f"Do you remember this one? Think... Yes! It is {s.label}! {s.line}",
+        lambda s: f"One more time, say it loud with me: {s.label}! Great job!",
+    )
+    first = list(scenes)
+    for make in rounds:
+        if sum(len(s.line.split()) for s in scenes) >= 150:
+            break
+        scenes += [Scene(label=s.label, line=make(s), image=s.image, image_prompt=s.image_prompt)
+                   for s in lesson.scenes]
+    if len(scenes) > len(first):
+        scenes[len(first)] = dataclasses.replace(
+            scenes[len(first)], line="Now let's play a memory game! " + scenes[len(first)].line,
+        )
     return Lesson(
         topic_key=lesson.topic_key, title=lesson.title, category=lesson.category,
         intro=lesson.intro, outro=lesson.outro, scenes=scenes,

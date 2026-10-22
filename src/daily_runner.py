@@ -235,12 +235,12 @@ def select_daily_topics(count: int = 2, channel: Channel | None = None) -> list[
                     # source is unreachable, fall through to the normal generator
                     # so the daily run still produces something.
                     from .trending import generate_trending_topics
-                    if not generate_trending_topics(channel, count=shortage, scenes=8):
+                    if not generate_trending_topics(channel, count=shortage):
                         from .genre_topics import generate_genre_topics
-                        generate_genre_topics(channel, count=shortage, scenes=8)
+                        generate_genre_topics(channel, count=shortage)
                 else:
                     from .genre_topics import generate_genre_topics
-                    generate_genre_topics(channel, count=shortage, scenes=8)
+                    generate_genre_topics(channel, count=shortage)
                 lessons = only_verified(channel, load_topics_for(channel))
             except Exception as exc:
                 print(f"[daily_runner] {channel.id}: could not replenish unique topics ({exc})")

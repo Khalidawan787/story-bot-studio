@@ -42,7 +42,7 @@ _CUT_SECTIONS = (
 _SHORT_SOURCE_CHARS = (1500, 9000)    # (least needed, most sent to the writer)
 _LONG_SOURCE_CHARS = (14000, 20000)
 _LONG_MIN_WORDS = 720                 # about 4.5 minutes of narration
-_SHORT_MIN_SCENES = 5
+_SHORT_MIN_SCENES = 9                  # with 12 asked for: still about a minute
 
 
 @dataclass(frozen=True)
@@ -368,7 +368,8 @@ def _prompt(channel: Channel, article: Article, scenes: int, long_form: bool, fe
                  "not repeat a fact.")
     else:
         # Viewers left at 0:02 when scene 1 was "X was born in rural Tennessee".
-        shape = (f"Write a short video script: exactly {scenes} scenes, each 'line' one sentence of 14-26 words. "
+        shape = (f"Write a short video script: exactly {scenes} scenes, each 'line' one sentence of 12-20 words "
+                 "(the Short must run 60 to 85 seconds). "
                  "Scene 1 is the HOOK, heard in the first two seconds: the single most astonishing "
                  "fact in the SOURCE, under 16 words, stated plainly (the deed, the odds, the number). "
                  "Then tell the story in order from scene 2.")

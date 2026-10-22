@@ -381,7 +381,10 @@ def upload_facebook(channel_id: str, video: Path, title: str, content_type: str,
     page_id, token = str(cfg.get("page_id", "")), str(cfg.get("page_access_token", ""))
     if not page_id or not token:
         raise RuntimeError("Facebook is not configured for this channel.")
-    if content_type == "short":
+    from .video import _audio_duration
+
+    # Facebook takes Reels only up to 90 seconds; a longer Short goes up as a Page video.
+    if content_type == "short" and _audio_duration(video) <= 89.5:
         return _facebook_reel(video, title, token, description, publish_at)
     return _facebook_long(video, title, page_id, token, publish_at, description=description)
 
