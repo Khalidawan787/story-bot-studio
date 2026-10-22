@@ -1,8 +1,11 @@
 """One picture post a day on a channel's Facebook Page, besides its videos.
 
 Switched on per channel ("Also post one picture a day" in the Facebook
-settings). The post is a picture with a headline burned in and a few sentences
-of text under it, in the language chosen for that Page.
+settings). The post is a picture with a headline burned in and a short
+blog-style text under it (a few paragraphs, ending with a question for the
+comments), in the language chosen for that Page. It is scheduled on Facebook
+for the hour the Page's readers are most active (BEST_POST_TIME), whatever
+hour the run happens.
 
 A fact-only channel (verified_facts.py) posts about a real person: the text is
 written from the Wikipedia article and checked against it, the article is
@@ -17,8 +20,9 @@ import html
 import re
 import sqlite3
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from .channels import Channel, load_channels
 from .config import settings
@@ -46,16 +50,46 @@ def _table(conn: sqlite3.Connection) -> None:
     )
 
 
-def _today() -> str:
-    return datetime.now().date().isoformat()
+# When each kind of Page's readers are most active, US Eastern time (the
+# channels' audience): news in the morning, history over lunch, bedtime stories
+# before the children sleep, true crime in the evening. A Page's own
+# "post_time" setting ("HH:MM") overrides this.
+POST_TZ = ZoneInfo("America/New_York")
+BEST_POST_TIME = {
+    "trending": "08:30",
+    "heroic history": "12:30",
+    "history": "12:30",
+    "bedtime stories": "19:30",
+    "crime": "20:00",
+}
+_DEFAULT_POST_TIME = "13:00"
 
 
-def posted_today(channel_id: str) -> bool:
+def next_post_time(channel: Channel, now: datetime | None = None) -> datetime:
+    """The next best posting moment for this Page, at least 20 minutes ahead
+    (Facebook schedules no sooner than 10 minutes)."""
+    now = now or datetime.now(timezone.utc)
+    wanted = str(account(channel.id, "facebook").get("post_time")
+                 or BEST_POST_TIME.get(str(channel.genre).lower(), _DEFAULT_POST_TIME))
+    hour, minute = (int(part) for part in wanted.split(":", 1))
+    local = now.astimezone(POST_TZ)
+    when = local.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    if when < local + timedelta(minutes=20):
+        when += timedelta(days=1)
+    return when.astimezone(timezone.utc)
+
+
+def _post_day(when: datetime) -> str:
+    return when.astimezone(POST_TZ).date().isoformat()
+
+
+def posted_on(channel_id: str, day: str) -> bool:
+    """A post is already made (or scheduled) for this Page on this day."""
     conn = connect()
     try:
         _table(conn)
         return conn.execute(
-            "SELECT 1 FROM page_posts WHERE channel = ? AND day = ?", (channel_id, _today()),
+            "SELECT 1 FROM page_posts WHERE channel = ? AND day = ?", (channel_id, day),
         ).fetchone() is not None
     finally:
         conn.close()
@@ -71,13 +105,13 @@ def _posted_subjects(channel_id: str) -> set[str]:
         conn.close()
 
 
-def _record(channel_id: str, subject: str, post_id: str, post_url: str) -> None:
+def _record(channel_id: str, day: str, subject: str, post_id: str, post_url: str) -> None:
     conn = connect()
     try:
         _table(conn)
         conn.execute(
             "INSERT INTO page_posts (channel, day, subject, post_id, post_url, created_at) VALUES (?,?,?,?,?,?)",
-            (channel_id, _today(), subject, post_id, post_url, datetime.now(timezone.utc).isoformat()),
+            (channel_id, day, subject, post_id, post_url, datetime.now(timezone.utc).isoformat()),
         )
         conn.commit()
     finally:
@@ -404,15 +438,16 @@ def _verified_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
         break
     if article is None:
         raise RuntimeError("no unused real subject with a real photo was found for a picture post")
-    key, raw = vf.write_lesson(channel, article, scenes=5, long_form=False)
+    key, raw = vf.write_lesson(channel, article, scenes=10, long_form=False)
     lesson = Lesson(
         topic_key=key, title=article.title, category=raw["category"], intro="", outro="",
-        scenes=[Scene(**scene) for scene in raw["scenes"][:5]],
+        scenes=[Scene(**scene) for scene in raw["scenes"][:10]],
     )
     title, lines = _in_page_language(channel, lesson, strict=True)
     picture = post_card(photo, article.title, subject_blurb(article.title), channel, work / "page_post.jpg")
     caption = "\n\n".join(filter(None, [
-        title, "\n".join(lines), f"Source: Wikipedia — {article.url}", credit,
+        title, _paragraphs(lines), _question(channel, article.title),
+        f"Source: Wikipedia — {article.url}", credit,
         # The person's own name as the tag: a channel keyword such as
         # "#AncientCivilizations" would be a false label on most of them.
         "#" + re.sub(r"[^A-Za-z0-9]", "", article.title),
@@ -461,7 +496,7 @@ def _trending_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
     for key, raw in reversed(stories[-6:]):          # newest first
         lesson = Lesson(
             topic_key=key, title=str(raw["title"]), category="Trending", intro="", outro="",
-            scenes=[Scene(**scene) for scene in raw["scenes"][:4]],
+            scenes=[Scene(**scene) for scene in raw["scenes"]],
         )
         for subject in _news_subjects(lesson):
             try:
@@ -477,7 +512,8 @@ def _trending_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
                 photo, str(raw["title"]), f"Pictured: {subject}", channel, work / "page_post.jpg", max_lines=4,
             )
             caption = "\n\n".join(filter(None, [
-                title, "\n".join(lines), f"Pictured: {subject}. {credit}", _hashtags(channel) or "#News",
+                title, _paragraphs(lines), _question(channel, subject), f"Pictured: {subject}. {credit}",
+                _hashtags(channel) or "#News",
             ]))
             return caption, picture, str(raw["title"])
     raise RuntimeError("no recent story has a real, free-to-use picture of its subject; nothing posted")
@@ -492,7 +528,9 @@ def _written_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
     avoid = "; ".join(sorted(_posted_subjects(channel.id))[-30:]) or "none"
     raw = _script_json(
         f"Write one short Facebook Page post for the {channel.genre} page '{channel.name}'. Tone: {tone}.\n"
-        "A headline of at most 8 words and 3 or 4 sentences that are useful or interesting on their own. "
+        "A short blog post: a headline of at most 8 words and 8 to 10 sentences (about 180-230 words) "
+        "that are useful or interesting on their own, telling one small story or idea from start to end. "
+        "The last sentence asks the readers a simple question to answer in the comments. "
         "No hashtags, no emojis, no invented numbers, quotes or names of real people.\n"
         f"Do not repeat these headlines: {avoid}.\n"
         'Return ONLY JSON: {"title": str, "lines": [str], "image_prompt": str}'
@@ -505,19 +543,35 @@ def _written_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
     lesson = Lesson(
         topic_key=re.sub(r"[^a-z0-9]+", "_", title.lower()).strip("_")[:60] or "page_post",
         title=title, category=channel.genre.title(), intro="", outro="",
-        scenes=[Scene(label=title[:30], line=line, image="", image_prompt=prompt) for line in lines[:4]],
+        scenes=[Scene(label=title[:30], line=line, image="", image_prompt=prompt) for line in lines[:10]],
     )
     shown_title, shown_lines = _in_page_language(channel, lesson, strict=False)
     picture = create_thumbnail(lesson, None, work / "page_post.jpg", channel, "long")
-    caption = "\n\n".join(filter(None, [shown_title, "\n".join(shown_lines), _hashtags(channel)]))
+    caption = "\n\n".join(filter(None, [shown_title, _paragraphs(shown_lines), _hashtags(channel)]))
     return caption, picture, title
 
 
-def publish_daily_post(channel: Channel, dry_run: bool = False) -> str:
-    """Make today's picture post for one channel and put it on its Page.
+def _paragraphs(lines: list[str], per: int = 2) -> str:
+    """Sentences grouped into short paragraphs, the way a blog post reads."""
+    return "\n\n".join(" ".join(lines[i:i + per]) for i in range(0, len(lines), per))
 
-    `dry_run` builds the picture and text and shows them without posting.
+
+def _question(channel: Channel, subject: str) -> str:
+    """A closing question for the comments. It states no fact, so it needs no check."""
+    from .language import is_urdu
+
+    if is_urdu(channel) or str(account(channel.id, "facebook").get("language") or "") == "ur":
+        return f"آپ {subject} کی کہانی کے بارے میں کیا سوچتے ہیں؟ کمنٹ میں ضرور بتائیں۔"
+    return f"What do you think about {subject}? Tell us in the comments."
+
+
+def publish_daily_post(channel: Channel, dry_run: bool = False, when: datetime | None = None) -> str:
+    """Make the day's picture post for one channel and schedule it on its Page.
+
+    It goes live at `when` (default: next_post_time). `dry_run` builds the
+    picture and text and shows them without posting.
     """
+    when = when or next_post_time(channel)
     from .social_publish import FB_API_VERSION, _multipart, _send_binary
     from .verified_facts import is_verified_channel
 
@@ -536,9 +590,13 @@ def publish_daily_post(channel: Channel, dry_run: bool = False) -> str:
 
     if not dry_run and not facebook_posts_here():
         raise RuntimeError(facebook_elsewhere_reason())
+    local = when.astimezone(POST_TZ).strftime("%d %b %I:%M %p ET")
     if dry_run:
-        return f"NOT posted (dry run). Picture: {picture}\n{caption}"
-    body, content_type = _multipart({"caption": caption, "access_token": token}, "source", picture)
+        return f"NOT posted (dry run; would go live {local}). Picture: {picture}\n{caption}"
+    body, content_type = _multipart({
+        "caption": caption, "access_token": token,
+        "published": "false", "scheduled_publish_time": str(int(when.timestamp())),
+    }, "source", picture)
     result = _send_binary(
         f"https://graph.facebook.com/{FB_API_VERSION}/{page_id}/photos", body,
         {"Content-Type": content_type}, "POST",
@@ -547,8 +605,8 @@ def publish_daily_post(channel: Channel, dry_run: bool = False) -> str:
     if not post_id:
         raise RuntimeError(f"Facebook did not accept the picture post: {result}")
     url = f"https://www.facebook.com/{post_id}"
-    _record(channel.id, subject, post_id, url)
-    return f"posted '{subject}' -> {url}"
+    _record(channel.id, _post_day(when), subject, post_id, url)
+    return f"scheduled '{subject}' for {local} -> {url}"
 
 
 def run_daily_posts(slot: set[int] | None = None, dry_run: bool = False) -> list[tuple[str, str]]:
@@ -561,11 +619,12 @@ def run_daily_posts(slot: set[int] | None = None, dry_run: bool = False) -> list
             continue
         if not daily_post_on(channel.id):
             continue
-        if posted_today(channel.id) and not dry_run:
-            results.append((channel.id, "SKIPPED today's picture post already exists"))
+        when = next_post_time(channel)
+        if posted_on(channel.id, _post_day(when)) and not dry_run:
+            results.append((channel.id, f"SKIPPED the post for {_post_day(when)} is already scheduled"))
             continue
         try:
-            results.append((channel.id, "OK " + publish_daily_post(channel, dry_run=dry_run)))
+            results.append((channel.id, "OK " + publish_daily_post(channel, dry_run=dry_run, when=when)))
         except Exception as exc:
             results.append((channel.id, f"FAILED {exc}"))
     return results
