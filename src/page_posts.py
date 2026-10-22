@@ -424,7 +424,8 @@ def _verified_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
     credit = ""
     for name in names[:12]:
         try:
-            candidate = vf.fetch_article(name)
+            # The long article text: a hero's post tells the whole life, not a few lines.
+            candidate = vf.fetch_article(name, long_form=True)
             if candidate.title.lower() in used:
                 continue
             found = _free_article_photo(candidate.title, work / "article_photo.jpg")
@@ -438,15 +439,21 @@ def _verified_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
         break
     if article is None:
         raise RuntimeError("no unused real subject with a real photo was found for a picture post")
-    key, raw = vf.write_lesson(channel, article, scenes=10, long_form=False)
+    # Long form: about 22 single facts, each checked, joined into 6 paragraphs.
+    # When too few of them stand in the article, 10 checked facts instead.
+    try:
+        key, raw = vf.write_lesson(channel, article, scenes=6, long_form=True, min_words=280)
+    except RuntimeError as exc:
+        print(f"[page_posts] {channel.id}: long post failed its check ({exc}); writing 10 facts")
+        key, raw = vf.write_lesson(channel, article, scenes=10, long_form=False)
     lesson = Lesson(
         topic_key=key, title=article.title, category=raw["category"], intro="", outro="",
-        scenes=[Scene(**scene) for scene in raw["scenes"][:10]],
+        scenes=[Scene(**scene) for scene in raw["scenes"]],
     )
     title, lines = _in_page_language(channel, lesson, strict=True)
     picture = post_card(photo, article.title, subject_blurb(article.title), channel, work / "page_post.jpg")
     caption = "\n\n".join(filter(None, [
-        title, _paragraphs(lines), _question(channel, article.title),
+        title, _paragraphs(lines, per=1), _question(channel, article.title),
         f"Source: Wikipedia — {article.url}", credit,
         # The person's own name as the tag: a channel keyword such as
         # "#AncientCivilizations" would be a false label on most of them.
@@ -565,13 +572,15 @@ def _question(channel: Channel, subject: str) -> str:
     return f"What do you think about {subject}? Tell us in the comments."
 
 
-def publish_daily_post(channel: Channel, dry_run: bool = False, when: datetime | None = None) -> str:
+def publish_daily_post(channel: Channel, dry_run: bool = False, when: datetime | None = None,
+                       right_now: bool = False) -> str:
     """Make the day's picture post for one channel and schedule it on its Page.
 
-    It goes live at `when` (default: next_post_time). `dry_run` builds the
-    picture and text and shows them without posting.
+    It goes live at `when` (default: next_post_time), or at once with
+    `right_now`. `dry_run` builds the picture and text and shows them without
+    posting.
     """
-    when = when or next_post_time(channel)
+    when = datetime.now(timezone.utc) if right_now else (when or next_post_time(channel))
     from .social_publish import FB_API_VERSION, _multipart, _send_binary
     from .verified_facts import is_verified_channel
 
@@ -593,10 +602,10 @@ def publish_daily_post(channel: Channel, dry_run: bool = False, when: datetime |
     local = when.astimezone(POST_TZ).strftime("%d %b %I:%M %p ET")
     if dry_run:
         return f"NOT posted (dry run; would go live {local}). Picture: {picture}\n{caption}"
-    body, content_type = _multipart({
-        "caption": caption, "access_token": token,
-        "published": "false", "scheduled_publish_time": str(int(when.timestamp())),
-    }, "source", picture)
+    fields = {"caption": caption, "access_token": token}
+    if not right_now:
+        fields.update({"published": "false", "scheduled_publish_time": str(int(when.timestamp()))})
+    body, content_type = _multipart(fields, "source", picture)
     result = _send_binary(
         f"https://graph.facebook.com/{FB_API_VERSION}/{page_id}/photos", body,
         {"Content-Type": content_type}, "POST",
@@ -606,7 +615,7 @@ def publish_daily_post(channel: Channel, dry_run: bool = False, when: datetime |
         raise RuntimeError(f"Facebook did not accept the picture post: {result}")
     url = f"https://www.facebook.com/{post_id}"
     _record(channel.id, _post_day(when), subject, post_id, url)
-    return f"scheduled '{subject}' for {local} -> {url}"
+    return f"{'posted' if right_now else 'scheduled'} '{subject}' for {local} -> {url}"
 
 
 def run_daily_posts(slot: set[int] | None = None, dry_run: bool = False) -> list[tuple[str, str]]:

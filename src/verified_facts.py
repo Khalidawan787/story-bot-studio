@@ -440,14 +440,19 @@ def _joined(rows: list[dict], scenes: int) -> list[dict]:
     return joined
 
 
-def _enough(rows: list[dict], long_form: bool) -> bool:
+def _enough(rows: list[dict], long_form: bool, min_words: int | None = None) -> bool:
     if long_form:
-        return sum(len(row["line"].split()) for row in rows) >= _LONG_MIN_WORDS
+        return sum(len(row["line"].split()) for row in rows) >= (min_words or _LONG_MIN_WORDS)
     return len(rows) >= _SHORT_MIN_SCENES
 
 
-def write_lesson(channel: Channel, article: Article, scenes: int = 8, long_form: bool = False) -> tuple[str, dict]:
-    """A checked script about `article`'s subject, as (key, lesson) for the topic bank."""
+def write_lesson(channel: Channel, article: Article, scenes: int = 8, long_form: bool = False,
+                 min_words: int | None = None) -> tuple[str, dict]:
+    """A checked script about `article`'s subject, as (key, lesson) for the topic bank.
+
+    `min_words` lowers the long-form length a checked script must reach (a
+    Facebook post needs far less than a 5-minute video).
+    """
     from .genre_topics import _script_json, _slug, _speech_of
 
     feedback = ""
@@ -456,7 +461,7 @@ def write_lesson(channel: Channel, article: Article, scenes: int = 8, long_form:
         rows, dropped = _checked_rows(channel, article, raw)
         for note in dropped:
             print(f"[verified_facts] {channel.id}: dropped {note}")
-        if _enough(rows, long_form):
+        if _enough(rows, long_form, min_words):
             break
         feedback = (
             f"only {len(rows)} of its lines were supported by the SOURCE. Unsupported: "
