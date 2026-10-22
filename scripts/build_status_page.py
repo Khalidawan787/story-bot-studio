@@ -30,7 +30,7 @@ from src.channels import load_channels  # noqa: E402
 from src.config import settings  # noqa: E402
 from src.db import youtube_quota_day_start  # noqa: E402
 from src.pending_uploads import upload_limit_for_channel, uploads_today_count  # noqa: E402
-from src.social_accounts import facebook_auto_ready  # noqa: E402
+from src.social_accounts import account as social_account, facebook_auto_ready  # noqa: E402
 from src.youtube_accounts import list_accounts  # noqa: E402
 from src import run_log, slots  # noqa: E402
 
@@ -136,10 +136,18 @@ def collect() -> dict:
                 continue  # a channel that publishes nowhere has nothing to report
             latest = _rows(
                 conn,
-                """SELECT title, status, created_at, error FROM videos
+                """SELECT id, title, status, created_at, error, video_url, publish_at FROM videos
                    WHERE channel = ? AND hidden_at IS NULL ORDER BY id DESC LIMIT 1""",
                 (channel.id,),
             )
+            tiktok_cfg = social_account(channel.id, "tiktok")
+            tiktok = bool(tiktok_cfg.get("auto_upload") and (tiktok_cfg.get("zernio_api_key") or tiktok_cfg.get("access_token")))
+            social = {
+                r["platform"]: dict(r) for r in _rows(
+                    conn, "SELECT platform, status, post_url, error FROM social_uploads WHERE video_id = ?",
+                    (latest[0]["id"],),
+                )
+            } if latest else {}
             placeholders = ",".join("?" for _ in PENDING_STATUSES)
             pending = _rows(
                 conn,
@@ -162,6 +170,8 @@ def collect() -> dict:
                 "last_video": dict(latest[0]) if latest else None,
                 "youtube": youtube,
                 "facebook": facebook,
+                "tiktok": tiktok,
+                "social": social,
             })
 
         recent = _rows(
@@ -318,6 +328,7 @@ def _card(channel: dict) -> str:
     platforms = "".join([
         "<span class='plat on'>YouTube</span>" if channel.get("youtube") else "<span class='plat'>YouTube off</span>",
         "<span class='plat on'>Facebook</span>" if channel.get("facebook") else "",
+        "<span class='plat on'>TikTok</span>" if channel.get("tiktok") else "",
     ])
     pending = channel["pending"]
     facts = [
@@ -335,7 +346,8 @@ def _card(channel: dict) -> str:
     elif video:
         last_html = (f"<div class='last'><div class='last-top'><span class='muted'>Latest video · "
                      f"{_local(video['created_at'])}</span>{_status(video['status'], video.get('error'))}</div>"
-                     f"<div class='last-title'>{html.escape(str(video['title'] or 'Untitled'))}</div></div>")
+                     f"<div class='last-title'>{html.escape(str(video['title'] or 'Untitled'))}</div>"
+                     f"{_platform_line(channel, video)}</div>")
     else:
         last_html = "<div class='last'><span class='muted'>No video made yet</span></div>"
     return f"""
@@ -345,6 +357,45 @@ def _card(channel: dict) -> str:
       <dl class="facts">{facts_html}</dl>
       {last_html}
     </article>"""
+
+
+def _platform_line(channel: dict, video: dict) -> str:
+    """One chip per platform for the latest video: green once it is live there,
+    otherwise the time it goes live (or why it has not)."""
+    now = datetime.now(timezone.utc)
+    when = _parse(video.get("publish_at"))
+    later = when is not None and when > now
+
+    def chip(name: str, state: str, note: str = "") -> str:
+        mark = {"ok": "✓", "warn": "⏳", "bad": "✕"}.get(state, "")
+        text = f"{name} {mark}" + (f" · {note}" if note else "")
+        return f"<span class='pill {state}'>{html.escape(text)}</span>"
+
+    chips = []
+    if channel.get("youtube"):
+        if video.get("video_url"):
+            chips.append(chip("YouTube", "warn", _local(video["publish_at"])) if later else chip("YouTube", "ok"))
+        elif video.get("status") in PENDING_STATUSES:
+            # The next run uploads it if today's quota has room, else the first
+            # run after YouTube's quota day resets.
+            full = all(a["limit"] and a["used"] >= a["limit"] for a in channel["accounts"] if a["connected"])
+            start = youtube_quota_day_start() + timedelta(days=1) if full else now
+            chips.append(chip("YouTube", "warn", _local(slots.next_run(start).isoformat())))
+        else:
+            chips.append(chip("YouTube", "bad", "not uploaded"))
+    for key, name, wanted in (("facebook", "Facebook", channel.get("facebook")), ("tiktok", "TikTok", channel.get("tiktok"))):
+        if not wanted:
+            continue
+        row = (channel.get("social") or {}).get(key)
+        if row and row.get("status") == "submitted":
+            chips.append(chip(name, "warn", _local(video["publish_at"])) if later else chip(name, "ok"))
+        elif row and row.get("status") == "failed":
+            chips.append(chip(name, "bad", "failed"))
+        elif later:
+            chips.append(chip(name, "warn", _local(video["publish_at"])))
+        else:
+            chips.append(chip(name, "warn", "with the next upload"))
+    return f"<div class='plat-line'>{''.join(chips)}</div>" if chips else ""
 
 
 def _video(row: sqlite3.Row) -> str:
@@ -578,6 +629,7 @@ _CSS = """
           background:var(--chip); color:var(--chip-text) }
   .pill.ok { background:var(--ok-bg); color:var(--ok) } .pill.warn { background:var(--warn-bg); color:var(--warn) }
   .pill.bad { background:var(--bad-bg); color:var(--bad) }
+  .plat-line { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px }
   .chip { background:var(--chip); color:var(--chip-text); border-radius:99px; padding:1px 9px; font-size:12px }
   .meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:6px }
 
