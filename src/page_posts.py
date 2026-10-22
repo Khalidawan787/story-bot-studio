@@ -105,6 +105,45 @@ def _posted_subjects(channel_id: str) -> set[str]:
         conn.close()
 
 
+def _squash(text: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", str(text or "").lower())
+
+
+def _page_messages(channel_id: str, limit: int = 60) -> list[str]:
+    """The text of the Page's recent and scheduled posts, read from Facebook.
+
+    The local record only knows posts made on this machine; the PC and the
+    GitHub run each posted Harriet Tubman once on the same Page. Facebook
+    itself knows every post, whoever made it.
+    """
+    from urllib.parse import urlencode
+
+    from .social_publish import FB_API_VERSION, _request_json
+
+    cfg = account(channel_id, "facebook")
+    page_id, token = str(cfg.get("page_id") or ""), str(cfg.get("page_access_token") or "")
+    if not page_id or not token:
+        return []
+    messages: list[str] = []
+    for edge in ("posts", "scheduled_posts"):
+        query = urlencode({"fields": "message", "limit": limit, "access_token": token})
+        try:
+            data = _request_json(f"https://graph.facebook.com/{FB_API_VERSION}/{page_id}/{edge}?{query}")
+        except Exception as exc:
+            print(f"[page_posts] {channel_id}: could not read the Page's {edge} ({exc})")
+            continue
+        messages += [str(row.get("message") or "") for row in data.get("data") or []]
+    return messages
+
+
+def _on_page(subject: str, page_text: str) -> bool:
+    """True when the Page already has a post about `subject`. Matched on the
+    squashed name, so an Urdu post still matches through its #Name tag and its
+    Wikipedia link (wiki/Harriet_Tubman)."""
+    key = _squash(subject)
+    return len(key) >= 5 and key in page_text
+
+
 def _record(channel_id: str, day: str, subject: str, post_id: str, post_url: str) -> None:
     conn = connect()
     try:
@@ -419,14 +458,16 @@ def _verified_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
     """
     from . import verified_facts as vf
     used = _posted_subjects(channel.id) | vf._used_subjects(channel, False)
-    names = [name for name in vf._listed_subjects(channel) if name.lower() not in used]
+    page_text = _squash(" ".join(_page_messages(channel.id)))
+    names = [name for name in vf._listed_subjects(channel)
+             if name.lower() not in used and not _on_page(name, page_text)]
     article = photo = None
     credit = ""
     for name in names[:12]:
         try:
             # The long article text: a hero's post tells the whole life, not a few lines.
             candidate = vf.fetch_article(name, long_form=True)
-            if candidate.title.lower() in used:
+            if candidate.title.lower() in used or _on_page(candidate.title, page_text):
                 continue
             found = _free_article_photo(candidate.title, work / "article_photo.jpg")
         except Exception as exc:
@@ -496,9 +537,11 @@ def _trending_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
     from .genre_topics import load_genre_lessons
 
     posted = _posted_subjects(channel.id)
+    page_text = _squash(" ".join(_page_messages(channel.id)))
     stories = [
         (key, raw) for key, raw in load_genre_lessons(channel).items()
         if key.startswith("trend_") and str(raw.get("title") or "").lower() not in posted
+        and not _on_page(str(raw.get("title") or ""), page_text)
     ]
     for key, raw in reversed(stories[-6:]):          # newest first
         lesson = Lesson(
@@ -532,7 +575,10 @@ def _written_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
     from .thumbnails import create_thumbnail
 
     tone = getattr(channel, "tone", "") or GENRE_TONE.get(channel.genre, "engaging")
-    avoid = "; ".join(sorted(_posted_subjects(channel.id))[-30:]) or "none"
+    # Headlines from this machine's record and the first line of each recent
+    # post on the Page itself, wherever it was made.
+    on_page = [message.split("\n", 1)[0].strip() for message in _page_messages(channel.id)]
+    avoid = "; ".join([*sorted(_posted_subjects(channel.id))[-30:], *filter(None, on_page[:30])]) or "none"
     raw = _script_json(
         f"Write one short Facebook Page post for the {channel.genre} page '{channel.name}'. Tone: {tone}.\n"
         "A short blog post: a headline of at most 8 words and 8 to 10 sentences (about 180-230 words) "
