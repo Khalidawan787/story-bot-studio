@@ -601,6 +601,8 @@ def generate_genre_topics(channel: Channel, count: int = 5, scenes: int = SHORT_
         lessons = load_genre_lessons(channel)
     existing_titles = [v.get("title", "") for v in lessons.values()]
     added: list[str] = []
+    path = channel.custom_lessons_path if channel.builtin else channel.lessons_path
+    path.parent.mkdir(parents=True, exist_ok=True)
 
     for _ in range(count):
         try:
@@ -609,14 +611,20 @@ def generate_genre_topics(channel: Channel, count: int = 5, scenes: int = SHORT_
             print(f"[genre_topics] {channel.id}: generation failed ({e})")
             break
         key = one.pop("_key")
+        source = str(one.get("source_title") or "").lower()
+        if source and any(str(v.get("source_title") or "").lower() == source for v in lessons.values()):
+            print(f"[genre_topics] {channel.id}: {one.get('source_title')} is already in the bank; skipped")
+            continue
         if key in lessons:
             key = f"{key}_{len(lessons) + 1}"
         lessons[key] = one
         existing_titles.append(one["title"])
         added.append(key)
+        # Saved after every script: a fact-only channel picks its next person
+        # from what the bank file holds, and saving once at the end gave both
+        # of a day's Shorts the same person (two "Sojourner Truth" Shorts).
+        path.write_text(json.dumps(lessons, indent=2, ensure_ascii=False), encoding="utf-8")
 
-    path = channel.custom_lessons_path if channel.builtin else channel.lessons_path
-    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(lessons, indent=2, ensure_ascii=False), encoding="utf-8")
     return added
 
