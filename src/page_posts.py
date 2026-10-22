@@ -613,6 +613,9 @@ def _written_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
         'Return ONLY JSON: {"title": str, "lines": [str], "image_prompt": str}'
     )
     title = " ".join(str(raw.get("title") or "").split())
+    if len(title.split()) > 10:
+        # The writer sometimes hands back a whole sentence as the headline.
+        title = " ".join(re.split(r"[,.!?;:]", title)[0].split()[:8])
     lines = [" ".join(str(line).split()) for line in raw.get("lines") or [] if str(line).strip()]
     if not title or not lines:
         raise RuntimeError("the post writer returned nothing usable")
