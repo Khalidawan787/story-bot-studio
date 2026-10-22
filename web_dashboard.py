@@ -326,6 +326,8 @@ def home():
             {
                 "id": a.id, "name": a.label, "connected": a.connected,
                 "email": youtube_accounts.account_email(ch.id, a.id),
+                "project": youtube_accounts.project_id(ch.id, a.id),
+                "project_email": youtube_accounts.project_email(youtube_accounts.project_id(ch.id, a.id)),
                 "used_today": uploads_today_count(ch.id, a.id),
                 "limit": upload_limit_for_channel(ch.id, a.id),
             }
@@ -1115,6 +1117,16 @@ def account_remove():
         flash(f"Removed '{account_id}' from {ch.name}.", "ok")
     except Exception as exc:
         flash(str(exc), "error")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/project-email")
+def project_email_save():
+    ch = current_channel()
+    project = request.form.get("project", "").strip()
+    if project:
+        youtube_accounts.set_project_email(project, request.form.get("email", ""))
+        flash(f"Saved the Gmail for Google project {project}.", "ok")
     return redirect(url_for("home", channel=ch.id))
 
 
@@ -2025,7 +2037,8 @@ PAGE = r"""
     <table style="width:100%;margin-top:12px;border-collapse:collapse">
       <tr style="text-align:left;color:var(--muted);font-size:13px">
         <th style="padding:6px 8px">Account</th><th style="padding:6px 8px">YouTube channel</th>
-        <th style="padding:6px 8px">Google email</th>
+        <th style="padding:6px 8px">Channel Gmail <span class="hint">(YouTube channel)</span></th>
+        <th style="padding:6px 8px">Quota Gmail <span class="hint">(Google Cloud project)</span></th>
         <th style="padding:6px 8px">Today</th><th style="padding:6px 8px">Status</th><th></th>
       </tr>
       {% for a in accounts %}
@@ -2033,6 +2046,7 @@ PAGE = r"""
         <td style="padding:8px"><span class="chip">{{a.id}}</span></td>
         <td style="padding:8px">{{a.name}}</td>
         <td style="padding:8px">{% if a.email %}<span class="email">{{a.email}}</span>{% elif a.connected %}<span class="hint">not saved — press Reconnect once to show it</span>{% else %}<span class="hint">—</span>{% endif %}</td>
+        <td style="padding:8px">{% if a.project %}<form method="post" action="/project-email" class="row" style="gap:6px;align-items:center;flex-wrap:nowrap"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="project" value="{{a.project}}"><input name="email" type="email" value="{{a.project_email}}" placeholder="project owner's Gmail" style="width:210px;padding:4px 8px;font-size:13px"><button class="ghost sm" type="submit">Save</button></form><div class="hint" style="margin-top:3px">project: {{a.project}}</div>{% else %}<span class="hint">no OAuth JSON found</span>{% endif %}</td>
         <td style="padding:8px">{{a.used_today}} / {{a.limit}}</td>
         <td style="padding:8px">{% if a.connected %}<span style="color:var(--ok)">● Connected</span>{% else %}<span style="color:var(--warn)">● Not connected</span>{% endif %}</td>
         <td style="padding:8px"><div class="row" style="justify-content:flex-end">

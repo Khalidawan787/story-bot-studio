@@ -45,6 +45,8 @@ data/trending_history.json
 data/youtube_accounts.json
 # Which Gmail each YouTube account signed in with
 data/account_emails.json
+# Which Gmail owns each Google Cloud project (its upload quota)
+data/project_emails.json
 # Hand-made thumbnails you drop in (large, machine-specific)
 data/thumbnails/
 # Downloaded on first use (170 MB cut-out model for the layered animation)

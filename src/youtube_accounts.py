@@ -248,3 +248,39 @@ def set_account_email(channel_id: str, account_id: str, email: str) -> None:
         emails.pop(key, None)
     _EMAILS_FILE.parent.mkdir(parents=True, exist_ok=True)
     _EMAILS_FILE.write_text(json.dumps(emails, indent=2, sort_keys=True), encoding="utf-8")
+
+
+# The Gmail that owns each Google Cloud project. Its daily upload quota is the
+# one an account spends, and nothing in the OAuth JSON names that Gmail, so the
+# owner types it once on the dashboard. Keyed by project id.
+_PROJECT_EMAILS_FILE = settings.root / "data" / "project_emails.json"
+
+
+def project_id(channel_id: str, account_id: str = MAIN_ACCOUNT) -> str:
+    """The Google Cloud project behind one account's OAuth JSON ("" if unknown)."""
+    try:
+        secret = channel_for_account(channel_id, account_id).client_secret_path
+        data = json.loads(secret.read_text(encoding="utf-8"))
+        return str((data.get("installed") or data.get("web") or {}).get("project_id") or "")
+    except Exception:
+        return ""
+
+
+def project_email(project: str) -> str:
+    try:
+        return str(json.loads(_PROJECT_EMAILS_FILE.read_text(encoding="utf-8")).get(project) or "")
+    except Exception:
+        return ""
+
+
+def set_project_email(project: str, email: str) -> None:
+    try:
+        emails = json.loads(_PROJECT_EMAILS_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        emails = {}
+    if email.strip():
+        emails[project] = email.strip()
+    else:
+        emails.pop(project, None)
+    _PROJECT_EMAILS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    _PROJECT_EMAILS_FILE.write_text(json.dumps(emails, indent=2, sort_keys=True), encoding="utf-8")
