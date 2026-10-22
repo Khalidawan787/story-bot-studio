@@ -363,7 +363,8 @@ def run_pipeline(
                             "automatic upload resumes after the YouTube quota day resets"
                         )
                     else:
-                        publish_at = next_publish_at(channel_id, reservation_key=reservation_key)
+                        publish_at = next_publish_at(channel_id, reservation_key=reservation_key,
+                                                     content_type=content_type)
                         video_url = upload_video(
                             video_path, thumbnail_path, metadata, channel=channel,
                             publish_at=publish_at,

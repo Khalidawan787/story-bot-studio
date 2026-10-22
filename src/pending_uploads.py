@@ -545,7 +545,8 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
                 load_lesson_for(channel, row["topic"]), channel,
                 content_type=row["content_type"] or "short",
             )
-            publish_at = next_publish_at(channel.id, reservation_key=reservation_key)
+            publish_at = next_publish_at(channel.id, reservation_key=reservation_key,
+                                         content_type=row["content_type"] or "short")
             set_upload_progress(video_id, 0)
             video_url = upload_video(
                 video_path, thumbnail_path, metadata, channel=channel,

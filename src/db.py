@@ -433,6 +433,8 @@ def reserve_publish_slot(
     channel: str,
     interval_hours: float = 3.0,
     first_delay_hours: float = 1.0,
+    fixed_times: tuple[str, ...] = (),
+    fixed_tz=None,
 ) -> str:
     """Atomically reserve this channel's next spaced publish time.
 
@@ -480,11 +482,34 @@ def reserve_publish_slot(
             ).fetchall()
             if value
         ]
-        candidate = base
-        for _ in range(48):
-            if not any(abs((candidate - slot).total_seconds()) < gap * 1800 for slot in taken):
-                break
-            candidate += timedelta(hours=gap)
+        if fixed_times and fixed_tz is not None:
+            # The channel's own daily release times (schedule.RELEASE_TIMES):
+            # the first one at least 45 minutes ahead that no other video of
+            # this channel holds, today or on a later day.
+            soonest = now + timedelta(minutes=45)
+            local_today = now.astimezone(fixed_tz).date()
+            candidate = None
+            for day in range(30):
+                date = local_today + timedelta(days=day)
+                for value in sorted(fixed_times):
+                    hour, minute = (int(part) for part in value.split(":", 1))
+                    moment = datetime(date.year, date.month, date.day, hour, minute,
+                                      tzinfo=fixed_tz).astimezone(timezone.utc)
+                    if moment < soonest:
+                        continue
+                    if any(abs((moment - slot).total_seconds()) < 30 * 60 for slot in taken):
+                        continue
+                    candidate = moment
+                    break
+                if candidate:
+                    break
+            candidate = candidate or base
+        else:
+            candidate = base
+            for _ in range(48):
+                if not any(abs((candidate - slot).total_seconds()) < gap * 1800 for slot in taken):
+                    break
+                candidate += timedelta(hours=gap)
         publish_at = candidate.isoformat()
         conn.execute(
             "INSERT INTO publish_slots (reservation_key, channel, publish_at, created_at) VALUES (?, ?, ?, ?)",
