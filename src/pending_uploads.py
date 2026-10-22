@@ -547,6 +547,12 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
             )
             publish_at = next_publish_at(channel.id, reservation_key=reservation_key,
                                          content_type=row["content_type"] or "short")
+            if publish_at is not None and publish_at < datetime.now(timezone.utc) + timedelta(minutes=15):
+                # The time booked for Facebook and TikTok while YouTube waited has
+                # passed; YouTube needs one ahead, so it takes the next free slot.
+                cancel_publish_at(reservation_key)
+                publish_at = next_publish_at(channel.id, reservation_key=reservation_key,
+                                             content_type=row["content_type"] or "short")
             set_upload_progress(video_id, 0)
             video_url = upload_video(
                 video_path, thumbnail_path, metadata, channel=channel,

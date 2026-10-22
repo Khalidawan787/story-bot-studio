@@ -389,6 +389,32 @@ def upload_facebook(channel_id: str, video: Path, title: str, content_type: str,
     return _facebook_long(video, title, page_id, token, publish_at, description=description)
 
 
+def _shared_publish_time(row, video_id: int) -> str | None:
+    """The moment this video goes live everywhere.
+
+    Normally its YouTube publishAt. When the YouTube upload has not happened
+    (quota, an error), the channel's next fixed release time is booked under
+    the key the later YouTube retry uses (pending_uploads: "video:<id>"), so
+    Facebook and TikTok wait for that time and YouTube then gets the same one.
+    Before this, a failed YouTube upload sent the video to Facebook at once.
+    """
+    if row["publish_at"]:
+        return str(row["publish_at"])
+    try:
+        from .youtube_accounts import connected_accounts
+
+        if not connected_accounts(row["channel"]):
+            return None  # a Facebook-only channel posts straight away
+        from .schedule import next_publish_at
+
+        when = next_publish_at(row["channel"], reservation_key=f"video:{video_id}",
+                               content_type=row["content_type"] or "short")
+        return when.isoformat() if when else None
+    except Exception as exc:
+        print(f"[social] no shared release time for video {video_id} ({exc}); posting now")
+        return None
+
+
 def _facebook_schedule(publish_at: str | None) -> int | None:
     """YouTube's publish time as a Unix time Facebook can schedule, else None (post now).
 
@@ -718,6 +744,7 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
 
         if not facebook_posts_here():
             raise RuntimeError(facebook_elsewhere_reason())
+    publish_at = _shared_publish_time(row, video_id)
     set_social_upload(video_id, platform, "uploading")
     try:
         if platform == "facebook":
@@ -737,7 +764,7 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
                  if urdu else "Like, follow the page and tell us in the comments what you think.") if body else "",
                 facebook_tags(row["channel"], str(row["topic"] or ""), row["content_type"], row["title"]),
             ]))
-            scheduled = _facebook_schedule(row["publish_at"])
+            scheduled = _facebook_schedule(publish_at)
             remote_id, post_url = upload_facebook(
                 row["channel"], path, row["title"], row["content_type"], description, scheduled,
             )
@@ -745,7 +772,7 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
                        else f"Facebook upload complete: {post_url}")
         elif platform == "tiktok" and (force_tiktok_mode or account(row["channel"], "tiktok").get("mode")) == "zernio":
             remote_id, post_url, slot = upload_tiktok_zernio(
-                row["channel"], path, tiktok_caption(row), row["publish_at"],
+                row["channel"], path, tiktok_caption(row), publish_at,
             )
             pkt = slot.astimezone(timezone(timedelta(hours=5))).strftime("%d %b %I:%M %p PKT")
             message = f"TikTok public post via Zernio, goes live {pkt}"
