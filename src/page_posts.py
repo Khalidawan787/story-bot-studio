@@ -157,12 +157,36 @@ def _record(channel_id: str, day: str, subject: str, post_id: str, post_url: str
         conn.close()
 
 
-def _hashtags(channel: Channel) -> str:
+# Broad tags per kind of Page, added after the post's own tags so every post
+# carries 5 to 10 (_hashtags).
+_GENRE_TAGS = {
+    "crime": ["TrueCrime", "CrimeStory", "RealCases", "Mystery", "Documentary", "CrimeHistory", "TrueStory"],
+    "trending": ["News", "WorldNews", "Trending", "BreakingNews", "CurrentEvents"],
+    "bedtime stories": ["BedtimeStories", "SleepStories", "KidsStories", "Goodnight", "CalmMind"],
+    "heroic history": ["TrueStory", "RealHeroes", "History", "Biography", "Inspiration", "WorldHistory", "Legends"],
+}
+
+
+def _hashtags(channel: Channel, lead: list[str] | tuple = ()) -> str:
+    """5 to 10 hashtags: `lead` first (the person or subject), then the
+    channel's keywords, then broad tags for its kind of Page."""
     from .seo import _GENRE_KEYWORDS
 
+    from .verified_facts import is_verified_channel
+
     keywords = list(getattr(channel, "keywords", ()) or ()) or _GENRE_KEYWORDS.get(channel.genre, [])
-    words = [re.sub(r"[^A-Za-z0-9]", "", str(k).title()) for k in keywords]
-    return " ".join(f"#{word}" for word in words[:3] if word)
+    if is_verified_channel(channel):
+        # A true-story Page's keywords name kinds of people ("cricket legends");
+        # on a post about one person most of them would be false labels.
+        keywords = []
+    pool = [*lead, *keywords[:5], *_GENRE_TAGS.get(str(channel.genre).lower(), ["Story", "Inspiration", "DailyPost"])]
+    words = []
+    for word in pool:
+        word = str(word).replace("'", "")
+        word = re.sub(r"[^A-Za-z0-9]", "", word.title() if " " in word else word[:1].upper() + word[1:])
+        if word and word.lower() not in {w.lower() for w in words}:
+            words.append(word)
+    return " ".join(f"#{word}" for word in words[:10])
 
 
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
@@ -496,9 +520,9 @@ def _verified_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
     caption = "\n\n".join(filter(None, [
         title, _paragraphs(lines, per=1), _question(channel, article.title),
         f"Source: Wikipedia — {article.url}", credit,
-        # The person's own name as the tag: a channel keyword such as
-        # "#AncientCivilizations" would be a false label on most of them.
-        "#" + re.sub(r"[^A-Za-z0-9]", "", article.title),
+        # The person's own name leads; the channel's keywords now describe
+        # true lives in general, so they fit every person.
+        _hashtags(channel, lead=[re.sub(r"[^A-Za-z0-9]", "", article.title)]),
     ]))
     return caption, picture, article.title
 
@@ -563,7 +587,7 @@ def _trending_post(channel: Channel, work: Path) -> tuple[str, Path, str]:
             )
             caption = "\n\n".join(filter(None, [
                 title, _paragraphs(lines), _question(channel, subject), f"Pictured: {subject}. {credit}",
-                _hashtags(channel) or "#News",
+                _hashtags(channel, lead=[re.sub(r"[^A-Za-z0-9]", "", subject)]),
             ]))
             return caption, picture, str(raw["title"])
     raise RuntimeError("no recent story has a real, free-to-use picture of its subject; nothing posted")
