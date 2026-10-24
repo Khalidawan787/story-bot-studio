@@ -1,0 +1,1763 @@
+{
+  "long_yuri_gagarin_first_human_in_space": {
+    "title": "Yuri Gagarin: First Human in Space",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "First Cosmonaut",
+        "line": "Yuri Alekseyevich Gagarin was a Soviet pilot and cosmonaut, the first person to journey into outer space. Yuri Alekseyevich Gagarin was born on 9 March 1934 in the village of Klushino, Russian SFSR.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_01.jpg",
+        "image_prompt": "A vintage Soviet pilot's uniform., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Family Farm",
+        "line": "His parents, Aleksey Ivanovich Gagarin and Anna Timofeyevna Gagarina, worked as a carpenter and dairy farmer. Yuri was the third of four children, with an elder brother and a sister.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_02.jpg",
+        "image_prompt": "A collective farm in the Soviet era., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Elder Brother",
+        "line": "His elder brother Valentin was born in 1924 and helped with cattle on the family farm. His sister Zoya, born in 1927, helped take care of Yuri and their youngest brother Boris.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_03.jpg",
+        "image_prompt": "A young boy tending cattle on a farm., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "War Impact",
+        "line": "The Gagarin family suffered during the German occupation of their village during World War II. Retreating Red Army soldiers seized the collective farm's livestock during the German advance on Moscow.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_04.jpg",
+        "image_prompt": "A village scene during wartime occupation., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Village Captured",
+        "line": "Nazis captured Klushino on 18 October 1941, impacting the village and its residents. On their first day, the Germans burned down the school, ending Yuri's first year of education.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_05.jpg",
+        "image_prompt": "German soldiers entering a village., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Forced Labor",
+        "line": "Germans burned 27 houses and forced residents, including the Gagarins, to work farms for soldiers. A Nazi officer took over the Gagarin family's residence in the occupied village.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_06.jpg",
+        "image_prompt": "Villagers working in fields under supervision., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mud Hut Living",
+        "line": "The family built a 3 by 3 meter mud hut behind their house, living there for 21 months. Yuri became a saboteur after a German soldier tried to hang his younger brother Boris.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_07.jpg",
+        "image_prompt": "A small, crude mud hut., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Acts of Sabotage",
+        "line": "Yuri retaliated by pouring soil into tank batteries and mixing chemical supplies for the soldier's work. In early 1943, his two elder siblings were deported to Poland for slave labor.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_08.jpg",
+        "image_prompt": "Hands secretly tampering with military equipment., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Escape and Conscription",
+        "line": "His siblings escaped, were found by Soviet soldiers, and conscripted into the war effort. His elder siblings did not return home until 1945, after World War II ended.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_09.jpg",
+        "image_prompt": "Soldiers interacting with civilians., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Feared Dead",
+        "line": "The rest of the Gagarin family believed their two elder children were dead. Yuri's father was overcome with grief and hunger, often sickly, and beaten for refusing German work.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_10.jpg",
+        "image_prompt": "A grieving family., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Hospital Service",
+        "line": "He spent the remainder of the war at a hospital, first as a patient, then an orderly. Yuri's mother was hospitalized after a soldier gashed her leg with a scythe during this period.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_11.jpg",
+        "image_prompt": "A hospital ward during wartime., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mine Clearance Aid",
+        "line": "Aleksey helped the Red Army find mines buried by fleeing Germans after their rout from Klushino. In 1946, the family moved to Gzhatsk, where Yuri Gagarin continued his education.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_12.jpg",
+        "image_prompt": "Soldiers searching for mines on a road., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Crude School",
+        "line": "Yuri and Boris enrolled in a crude town school run by a young volunteer teacher. They learned to read using a discarded Soviet military manual from the war.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_13.jpg",
+        "image_prompt": "Children in a makeshift classroom., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Airman Teacher",
+        "line": "A former Soviet airman joined to teach maths and science, Yuri's favorite subjects. Yuri was part of a group of children who built various model aeroplanes.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_14.jpg",
+        "image_prompt": "A man teaching mathematics and science., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Aircraft Fascination",
+        "line": "His interest in aeroplanes was energized after a fighter plane crash-landed in Klushino during the war. In 1950, aged 16, Gagarin began an apprenticeship as a foundryman at a steel plant.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_15.jpg",
+        "image_prompt": "A damaged fighter plane in a field., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Evening Classes",
+        "line": "He enrolled at a local \"young workers\" school for seventh-grade evening classes. In 1951, he graduated with honors and was selected for training at Saratov to study tractors.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_16.jpg",
+        "image_prompt": "Students in an evening classroom., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Flying Club Cadet",
+        "line": "In Saratov, Gagarin volunteered at a local flying club for weekend training as an air cadet. He earned extra money as a part-time dock laborer on the River Volga.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_17.jpg",
+        "image_prompt": "A biplane on an airfield., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Air Force School",
+        "line": "In 1955, Gagarin was accepted to the First Chkalov Higher Air Force Pilots School. He began training on the Yak-18 and later progressed to flying the MiG-15 in February 1956.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_18.jpg",
+        "image_prompt": "An entrance to an Air Force school., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Landing Difficulties",
+        "line": "Gagarin struggled twice to land the trainer aircraft and risked dismissal from pilot training. The commander of the regiment decided to give him another chance at landing.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_19.jpg",
+        "image_prompt": "A cockpit interior view., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Cushion Solution",
+        "line": "His flight instructor gave him a cushion to improve his cockpit view, and he landed successfully. After completing his evaluation in a trainer aircraft, Gagarin began flying solo in 1957.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_20.jpg",
+        "image_prompt": "A pilot in a cockpit., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Lieutenant Commission",
+        "line": "On 5 November 1957, Gagarin was commissioned a lieutenant in the Soviet Air Forces. He graduated the next day and was posted to Luostari Air Base near the Norwegian border.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_21.jpg",
+        "image_prompt": "Military epaulets with lieutenant insignia., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Fighter Pilot",
+        "line": "He was assigned to the 769th Fighter Aviation Regiment, flying Mikoyan-Gurevich MiG-15bis aircraft. By October 1959, he had accumulated a total of 265 hours of flight time.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_22.jpg",
+        "image_prompt": "A MiG-15bis jet in flight., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Pilot Rating",
+        "line": "On 7 July 1959, he received the rating of Military Pilot 3rd Class. After Luna 3's launch, he expressed interest in space exploration, and his recommendation was forwarded.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_23.jpg",
+        "image_prompt": "A military pilot badge., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Senior Lieutenant",
+        "line": "Gagarin was promoted to senior lieutenant on 6 November 1959, after a space program medical interview. Military physicians chose 29 cosmonaut candidates from 154 qualified pilots short-listed by Air Force units.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_24.jpg",
+        "image_prompt": "Military rank insignia., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "First Twelve",
+        "line": "Gagarin was among the first twelve approved cosmonaut candidates on 7 March 1960. Gagarin began rigorous training at Khodynka Airfield in central Moscow on 15 March 1960.",
+        "speech": "",
+        "image": "assets/generated/yuri_gagarin_first_human_in_space_25.jpg",
+        "image_prompt": "A list of names being reviewed., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Yuri Gagarin",
+    "source_url": "https://en.wikipedia.org/wiki/Yuri_Gagarin"
+  },
+  "long_hannibal_a_carthaginian_general_and_statesman": {
+    "title": "Hannibal: A Carthaginian General and Statesman",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Early Life",
+        "line": "Hannibal was a Carthaginian general and statesman during the Second Punic War. He lived during a period of great tension in the Mediterranean Basin. Hannibal made a pledge to his father to never be a friend of Rome. In 218 BC, Hannibal attacked Saguntum, an ally of Rome in Hispania. This attack on Saguntum sparked the Second Punic War.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_01.jpg",
+        "image_prompt": "Ancient Carthaginian harbor with ships., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Alpine Crossing",
+        "line": "Hannibal invaded Italy by crossing the Alps with North African war elephants. He won battles at Ticinus, Trebia, Lake Trasimene, and Cannae against the Romans. Hannibal was distinguished for his ability to assess strengths and weaknesses. His strategies allowed him to conquer and ally with several Italian cities. Hannibal occupied most of southern Italy for fifteen years.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_02.jpg",
+        "image_prompt": "Elephants trekking through a snowy mountain pass., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Fabian Strategy",
+        "line": "Romans, led by Fabius Maximus, waged a war of attrition against him. Carthaginian defeats in Hispania prevented Hannibal from being reinforced. A Roman counter-invasion of North Africa forced him to return to Carthage. Hannibal was defeated at the Battle of Zama, ending the war. After the war, Hannibal successfully ran for the office of sufet.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_03.jpg",
+        "image_prompt": "Roman soldiers marching in formation., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Financial Reforms",
+        "line": "He enacted political and financial reforms to enable war indemnity payment. Unpopular reforms led him to flee into voluntary exile from Carthage. He lived at the Seleucid court and advised Antiochus III the Great. Hannibal advised Antiochus III in his war against Rome. Antiochus met defeat at the Battle of Magnesia and accepted Rome's terms.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_04.jpg",
+        "image_prompt": "Ancient scrolls and coins on a table., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Flight to Armenia",
+        "line": "Hannibal fled again and made a stop in the Kingdom of Armenia. His flight ultimately ended at the court of Bithynia. He was betrayed to the Romans and died by suicide. Hannibal is considered one of the greatest military tacticians of antiquity. Hannibal is a common Semitic Phoenician-Carthaginian personal name.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_05.jpg",
+        "image_prompt": "Travelers on a dusty road leading to distant mountains., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Name Meaning",
+        "line": "His name means 'Baal is gracious' or 'The grace of Baal'. Greek historians rendered the name as Anníbas. Phoenicians and Carthaginians used patronymics or epithets for distinction. He is often referred to as Hannibal, son of Hamilcar Barca. Barca, his father's cognomen, means 'lightning' or 'thunderbolt'.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_06.jpg",
+        "image_prompt": "Symbols of the ancient deity Baal Hammon., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Barcid Family",
+        "line": "His father's progeny are collectively known as the Barcids. His brothers are sometimes referred to as Hasdrubal Barca and Mago Barca. Hannibal was one of the sons of Carthaginian general Hamilcar Barca. He was most likely born in Carthage, a region colonized by Canaanites. He had several sisters and two brothers, Hasdrubal and Mago.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_07.jpg",
+        "image_prompt": "A family crest or sigil from antiquity., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Brothers-in-Law",
+        "line": "His brothers-in-law were Hasdrubal the Fair and Numidian king Naravas. After the First Punic War, Hamilcar set out to improve fortunes. Hamilcar began subjugation of tribes in the Iberian Peninsula. Hamilcar marched his army across Numidia to the Pillars of Hercules. Hamilcar demanded Hannibal swear he would never be a friend of Rome.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_08.jpg",
+        "image_prompt": "Two men in distinct ancient military uniforms., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Oath of Steel",
+        "line": "Hannibal swore he would use fire and steel to arrest Rome's destiny. Hamilcar drowned in battle, and Hasdrubal succeeded to his command. Hannibal, then 18 years old, served as an officer under Hasdrubal. Hasdrubal signed a treaty with Rome not to expand north of the Ebro. Upon Hasdrubal's assassination, Hannibal was proclaimed commander-in-chief.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_09.jpg",
+        "image_prompt": "A sword being held aloft in a fiery glow., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Livy's Description",
+        "line": "Livy described Hannibal as having the same look and fire as his father. Hannibal married a woman from the Spanish city of Castulo. Hannibal spent two years consolidating holdings and conquering Hispania south of the Ebro. He showed tactical skills at the battle of the River Tagus. Rome made an alliance with Saguntum, claiming the city as protectorate.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_10.jpg",
+        "image_prompt": "A portrait bust of a determined ancient man., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Treaty Breach",
+        "line": "Hannibal perceived the alliance with Saguntum as a treaty breach. He laid siege to Saguntum, and the city fell after eight months. The booty from Saguntum gained him much support from the Carthaginian government. The Roman Senate dispatched a delegation demanding to know about Saguntum. The delegation leader Quintus Fabius Maximus Verrucosus demanded Carthage choose war or peace.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_11.jpg",
+        "image_prompt": "A broken treaty scroll lying on the ground., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Po Valley Alliance",
+        "line": "Romans became aware of an alliance between Carthage and the Celts of the Po Valley. Roughly 10,000 Celtic tribesmen joined Hannibal's army in the Po Valley. By 220 BC, the Romans had annexed the Po region as Cisalpine Gaul. Hannibal departed Cartagena, Spain, in the late spring of 218 BC. He fought his way through northern tribes to the Pyrenees foothills.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_12.jpg",
+        "image_prompt": "Celtic warriors gathered around a campfire., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Troop Detachment",
+        "line": "He left a detachment of 20,000 troops to garrison the conquered region. At the Pyrenees, he released 11,000 Iberian troops who were reluctant. Hannibal reached the Rhône by September, conciliating Gaulish chiefs. Hannibal's army numbered 38,000 infantry, 8,000 cavalry, and 38 elephants. Hannibal outmanoeuvred natives who tried to prevent his crossing of the Alps.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_13.jpg",
+        "image_prompt": "Sentries standing guard at a fortified mountain pass., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Rhône Valley Route",
+        "line": "He evaded a Roman force by turning inland up the Rhône valley. His exact route over the Alps has been a source of scholarly dispute. Biostratigraphic archaeological data suggests passage near the Col de la Traversette. Peat bogs showed ground heavily disturbed by thousands of animals and humans. The soil bore traces of bacteria associated with horses and mules.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_14.jpg",
+        "image_prompt": "Ancient soldiers marching along a riverbank., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Radiocarbon Dating",
+        "line": "Radiocarbon dating secured dates around 218 BC, the year of Hannibal's march. Polybius writes that Hannibal crossed the highest of the Alpine passes. Hannibal used vinegar and fire to break through a rockfall. He arrived in Italy with 20,000 foot soldiers and 6,000 horsemen. This suggests he had lost almost half of his force.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_15.jpg",
+        "image_prompt": "A scientist using a radiocarbon dating machine., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Operating Without Aid",
+        "line": "From the start, he calculated he would operate without aid from Hispania. His grand strategy involved opening a northern front against Rome. The task involved mobilization of 60,000 to 100,000 troops. He trained a war elephant corps, all of which had to be provisioned. His march frustrated enemy attempts to fight on foreign ground.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_16.jpg",
+        "image_prompt": "A lone figure looking towards a distant horizon., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Detaching Tribes",
+        "line": "His appearance among the Gauls enabled him to detach them from Rome. Consul Publius Cornelius Scipio assumed responsibility for dealing with Hannibal. Scipio had not expected Hannibal to attempt crossing the Alps. Scipio transported his army to Italy by sea in time to meet Hannibal. Hannibal's forces were engaged in the Battle of Ticinus in November 218 BC.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_17.jpg",
+        "image_prompt": "Tribal leaders shaking hands with Hannibal., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Evacuating the Plain",
+        "line": "Hannibal forced the Romans to evacuate the plain of Lombardy with superior cavalry. Celtic and Ligurian troops bolstered his army back to around 40,000 men. Scipio was severely injured, his life saved by his son. Consul Tiberius Sempronius Longus was ordered back from Sicily to reinforce Scipio. Hannibal skillfully maneuvered to head off Sempronius's reinforcing army.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_18.jpg",
+        "image_prompt": "Roman infantry retreating across a wide plain., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Capture of Clastidium",
+        "line": "Hannibal captured Clastidium, drawing large amounts of supplies. Sempronius slipped around Hannibal's watchfulness and joined Scipio near the Trebbia. Hannibal showed masterful military skill at the Trebia in December. He wore down Roman infantry before cutting them to pieces with an ambush. Most or all of his war elephants died of injuries or the cold.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_19.jpg",
+        "image_prompt": "Ancient soldiers entering a captured town., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Winter Quarters",
+        "line": "Hannibal quartered his troops for the winter with the Gauls. Fearing assassination, Hannibal wore differently dyed wigs to alter his appearance. In the spring of 217 BC, Hannibal sought a more reliable base farther south. New consuls Servilius and Flaminius took armies to block Hannibal's routes.",
+        "speech": "",
+        "image": "assets/generated/hannibal_a_carthaginian_general_and_statesman_20.jpg",
+        "image_prompt": "Ancient soldiers resting around campfires in a snowy landscape., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Hannibal",
+    "source_url": "https://en.wikipedia.org/wiki/Hannibal"
+  },
+  "long_the_life_and_discoveries_of_louis_pasteur": {
+    "title": "The Life and Discoveries of Louis Pasteur",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Early Life",
+        "line": "Louis Pasteur was born on December 27, 1822, in Dole, France, to a poor tanner's family. His family moved to Marnoz in 1826 and then relocated to Arbois the following year. Louis Pasteur entered primary school in 1831, facing early challenges with reading and writing. He showed early interests in fishing and sketching, drawing portraits of friends and neighbors.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_01.jpg",
+        "image_prompt": "A humble cottage in a French village., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Parisian Venture",
+        "line": "In October 1838, he left for Paris to attend a boarding school but returned home. In 1839, he enrolled at the Collège Royal at Besançon to study philosophy. He earned his Bachelor of Letters degree in 1840 while studying at Besançon. He was appointed a tutor at the Besançon college while continuing his science studies.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_02.jpg",
+        "image_prompt": "A young person looking wistfully out a train window., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Science Degree",
+        "line": "He earned his Bachelor of Science degree in Mathematics from Dijon in 1842. He returned to a Parisian boarding school to prepare for the entrance examination again. In 1843, he passed the entrance test with a high ranking and entered the École Normale Supérieure. He later studied under Jean-Baptiste Boussingault at the Conservatoire national des arts et métiers.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_03.jpg",
+        "image_prompt": "A laboratory with beakers and scientific equipment., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Physics Professor",
+        "line": "He was appointed professor of physics at the Collège de Tournon in 1846. He returned to the École Normale Supérieure as a graduate laboratory assistant. In 1847, he submitted two theses, one in chemistry and one in physics. After briefly serving as professor of physics at the Dijon Lycée in 1848.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_04.jpg",
+        "image_prompt": "A classroom with a blackboard and scientific apparatus., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Strasbourg Appointment",
+        "line": "He became professor of chemistry at the University of Strasbourg in 1848. In 1849, he met and courted Marie Laurent, the university rector's daughter. He became the chair of chemistry at the University of Strasbourg in 1852. In 1854, he was named dean of the new faculty of sciences at the University of Lille.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_05.jpg",
+        "image_prompt": "University students in a chemistry lecture hall., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Move to Paris",
+        "line": "In 1857, he moved to Paris as the director of scientific studies at the École Normale Supérieure. He implemented reforms to improve the standard of scientific work at the school. His rigid decrees sometimes led to student revolts, including one over food. He once threatened to expel students caught smoking, causing many to resign.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_06.jpg",
+        "image_prompt": "The main building of the École Normale Supérieure in Paris., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Beaux-Arts Professor",
+        "line": "In 1863, he became a professor of geology, physics, and chemistry at the École nationale supérieure des Beaux-Arts. In 1867, he became the chair of organic chemistry at the Sorbonne. The laboratory of physiological chemistry was created at his request in 1867. He established the Pasteur Institute in Paris in 1887 and directed it until his death.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_07.jpg",
+        "image_prompt": "An art studio with sculptures and paintings., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Crystallography Work",
+        "line": "Early in his career, he examined the crystallographic properties of tartrates. He worked on a problem concerning the nature of tartaric acid in 1848. Pasteur noticed small faces on the crystals of tartrates during his research. He demonstrated molecular chirality for the first time, explaining optical isomerism.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_08.jpg",
+        "image_prompt": "Microscope slides showing crystal structures., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Fermentation Motivation",
+        "line": "His investigation into fermentation was motivated by a local wine manufacturer's problems. Pasteur confirmed earlier work showing that yeast were living organisms. He sent a paper about lactic acid fermentation to a scientific society in 1857. His memoir on alcoholic fermentation was published in full form in 1858.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_09.jpg",
+        "image_prompt": "Grapevines in a vineyard at sunset., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Disproving Theory",
+        "line": "Pasteur demonstrated that yeast, not decomposition, caused fermentation to produce alcohol. His research showed that microorganisms caused the spoiling of beverages like wine and milk. He invented a process of heating liquids to kill bacteria, known as pasteurization. Beverage contamination led Pasteur to theorize that microorganisms cause animal and human diseases.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_10.jpg",
+        "image_prompt": "A split image showing yeast cells and decaying matter., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Antiseptic Methods",
+        "line": "His ideas about preventing microorganism entry influenced the development of antiseptic surgery. In 1866, Pasteur published Études sur le Vin, discussing wine diseases. He published Études sur la Bière in 1876, focusing on beer diseases. In 1865, Pasteur began studying pébrine, a disease decimating silkworm farms.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_11.jpg",
+        "image_prompt": "A surgeon wearing gloves and a mask in an operating room., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Pébrine Corpuscles",
+        "line": "He initially thought corpuscles found on silkworms were a symptom of pébrine. By 1870, he concluded that these corpuscles were the cause of pébrine. He developed a system to prevent pébrine by examining moths for corpuscles. He also concluded that bacteria caused flacherie, another silkworm disease.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_12.jpg",
+        "image_prompt": "A microscopic image of small particles on a silkworm., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Hygiene Measures",
+        "line": "He suggested using hygiene to prevent the accidental spread of flacherie. His fermentation experiments showed that grape skins were the natural source of yeasts. His findings challenged the prevailing notion of spontaneous generation. He engaged in debate with Félix Archimède Pouchet regarding spontaneous generation.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_13.jpg",
+        "image_prompt": "A cleaner sweeping the floor of a silkworm farm., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Academy Prize",
+        "line": "The French Academy of Sciences offered a prize for experimental proof on the doctrine. Pasteur performed experiments using boiled liquid in sealed and open flasks. He observed that dust entering open flasks caused organisms to grow within them. The number of growing organisms decreased at higher altitudes, showing less dust.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_14.jpg",
+        "image_prompt": "A medal or award resting on a velvet cushion., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Swan Neck Flasks",
+        "line": "He used swan neck flasks, allowing air but trapping dust particles. Organisms only grew when the liquid touched contaminated surfaces inside the flask. Pasteur won the Alhumbert Prize in 1862 for his experimental work. He concluded that microscopic beings always come from pre-existing germs.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_15.jpg",
+        "image_prompt": "A laboratory flask with a long, curved neck., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Silkworm Study Request",
+        "line": "In 1865, Jean-Baptiste Dumas asked Pasteur to study a silkworm disease. Pasteur made five long stays in Alès between 1865 and 1869 for his research. He initially mistook pébrine and flacherie but distinguished them by 1867. He eventually understood the parasitic nature of pébrine after initial doubts.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_16.jpg",
+        "image_prompt": "A scientist receiving a letter from a colleague., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Stopping Infections",
+        "line": "He propagated an effective process to stop pébrine infections in silkworms. His process of sorting 'seeds' helped curb pébrine and saved the silk industry. Despite success against pébrine, he admitted flacherie continued to cause ravages in 1878. Balbiani acknowledged Pasteur's practical process had remedied pébrine by 1884.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_17.jpg",
+        "image_prompt": "A scientist carefully selecting silkworm pupae., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Vaccination Principles",
+        "line": "His discoveries laid the groundwork for the principles of vaccination. His research in chemistry led to understanding disease causes and prevention. His work laid foundations for hygiene, public health, and modern medicine. His developments of vaccines are credited with saving millions of lives.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_18.jpg",
+        "image_prompt": "A doctor administering a vaccine injection., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Bacteriology Founder",
+        "line": "Louis Pasteur is regarded as a founder of modern bacteriology. His body was interred in a vault beneath the Pasteur Institute.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_discoveries_of_louis_pasteur_19.jpg",
+        "image_prompt": "A plaque commemorating a scientific achievement., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Louis Pasteur",
+    "source_url": "https://en.wikipedia.org/wiki/Louis_Pasteur"
+  },
+  "long_saladin_from_vizier_to_sultan": {
+    "title": "Saladin: From Vizier to Sultan",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Birth and Family",
+        "line": "Salah ad-Din Yusuf ibn Ayyub was born into a Kurdish family in Tikrit. His father, Najm al-Din Ayyub, served as the warden of the fortress at Tikrit. His father was banished from Tikrit after his brother killed a friend of the governor. The family later moved to Mosul where his father was appointed commander of a fortress. He studied subjects like Euclid, the Almagest, arithmetic, and law. Sources claim he was more interested in religious studies than military pursuits.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_01.jpg",
+        "image_prompt": "A historical stone fortress on the banks of a river., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Historical Knowledge",
+        "line": "Saladin knew genealogies, biographies, and histories of the Arabs. He spoke Kurdish and Arabic and was knowledgeable in Turkish and Persian. His military career began under his uncle Shirkuh, a commander for Nur al-Din. In 1164, Saladin accompanied his uncle Shirkuh to Fatimid Egypt. Their original purpose was to help restore Shawar as vizier in Egypt. A power struggle ensued between Shirkuh and Shawar after his reinstatement.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_02.jpg",
+        "image_prompt": "An old map spread out on a table with scrolls., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Climbing Ranks",
+        "line": "Saladin rose in the Fatimid government through military success and closeness to the caliph. Following Shawar's assassination and Shirkuh's death, al-Adid appointed Saladin vizier. As vizier, Saladin began to undermine the Fatimid Isma'ili establishment. After al-Adid's death in 1171, he abolished the Fatimid Caliphate. He realigned Egypt with the Sunni Abbasid Caliphate based in Baghdad. Saladin led forays against the Crusader states in Palestine.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_03.jpg",
+        "image_prompt": "A man being saluted by soldiers., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Conquest of Yemen",
+        "line": "He commissioned the successful conquest of Yemen and its port Aden. Saladin staved off pro-Fatimid rebellions within Egypt. After Nur al-Din died, Saladin launched his conquest of Syria. He peacefully entered Damascus at the request of its governor. By mid-1175, Saladin had conquered Hama and Homs. He defeated Zengid lords at the Battle of the Horns of Hama.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_04.jpg",
+        "image_prompt": "Ships arriving at a busy ancient port., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Proclaimed Sultan",
+        "line": "The Abbasid caliph proclaimed Saladin the Sultan of Egypt and Syria. Saladin launched further conquests in northern Syria and Upper Mesopotamia. He escaped two attempts on his life by the Order of Assassins. Saladin returned to Egypt in 1177 to address local issues. By 1182, Saladin had completed the conquest of Syria. He failed to take over the Zengid stronghold of Mosul.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_05.jpg",
+        "image_prompt": "A ruler receiving a royal decree and insignia., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Battle of Hattin",
+        "line": "The Ayyubid army defeated the Crusaders at the decisive Battle of Hattin. Saladin captured Jerusalem, re-establishing Muslim military dominance in the Levant. The 1187 defeat marked a turning point for the Christian military effort. Saladin died in Damascus in 1193. He had given away much of his personal wealth to his subjects. Saladin is buried in a mausoleum adjacent to the Umayyad Mosque.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_06.jpg",
+        "image_prompt": "A large battle unfolding on a hot, dry plain., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Cultural Reverence",
+        "line": "He is revered prominently in Kurdish, Turkic, Arab, and Western cultures. He has frequently been described as the most famous Kurdish figure. His father, Najm al-Din Ayyub, was a Kurdish mercenary commander. His father provided refuge and ferries for Imad al-Din Zengi's defeated army. The military governor reprimanded Ayyub for giving Zengi refuge. Ayyub was banished from Tikrit in 1137 after his brother's actions.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_07.jpg",
+        "image_prompt": "Diverse people gathered in a respectful assembly., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Born During Departure",
+        "line": "Saladin was born the same night his family left Tikrit. In 1139, Imad al-Din Zengi appointed Ayyub commander of his fortress. After Zengi's death, his son Nur al-Din became leader of the Zengids. Saladin, living in Damascus, was reportedly fond of the city. Saladin played a major role commanding the right wing of the Zengid army. Muslim sources claim he had orders to lure the enemy into a trap.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_08.jpg",
+        "image_prompt": "A woman cradling a newborn baby in a moving caravan., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Battle of al-Babein",
+        "line": "The Battle of al-Babein took place on the desert border of the Nile. Commander Hugh of Caesarea was captured while attacking Saladin's unit. Saladin and Shirkuh moved towards Alexandria where they were welcomed. Saladin was left to guard Alexandria during a siege in 1167. He withheld the siege for three months despite numerical inferiority. In 1168, Amalric I of Jerusalem invaded Egypt for the third time.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_09.jpg",
+        "image_prompt": "Armies clashing near a river in a sandy landscape., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Fustat Burned",
+        "line": "Fustat was burnt by Shawar to prevent wealth falling into Crusader hands. Shawar was executed shortly after Shirkuh was appointed vizier. After Shirkuh's death, many ethnic Kurds were considered for vizier. Saladin and associates were wary of Turkish influence in government. Al-Adid appointed Saladin to replace Shawar as vizier. Saladin repented wine-drinking and assumed the dress of religion.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_10.jpg",
+        "image_prompt": "Flames engulfing buildings in an ancient city., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Assassination Plot",
+        "line": "Egyptian soldiers and emirs attempted to assassinate Saladin. By August, Saladin had decisively quelled an uprising of soldiers. Saladin defeated a massive Crusader-Byzantine force near Damietta. He ordered the construction of colleges for Sunni Islam denominations. Saladin launched a campaign against the Crusaders, besieging Darum in 1170. He evaded Crusader forces and captured Gaza.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_11.jpg",
+        "image_prompt": "A hidden dagger being revealed in a crowded room., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Destroying Fortifications",
+        "line": "Saladin destroyed fortifications in Gaza built for the Knights Templar. He attacked and captured the Crusader castle of Eilat. Nur al-Din told Saladin to re-establish Abbasid suzerainty in Egypt. A religious scholar vehemently opposed Shi'a rule in the country. Al-Adid fell ill or was poisoned after Egyptian emirs were killed. Saladin refused al-Adid's request for a visit fearing treachery.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_12.jpg",
+        "image_prompt": "Men dismantling stone walls with tools., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Abbasid Khutba",
+        "line": "The Abbasid khutba was pronounced in Cairo, proclaiming al-Mustadi as caliph. Saladin left Cairo to take part in a joint attack on Kerak. He withdrew back to Cairo upon reports of internal plots. A Nubian army was reported on the Egyptian border preparing for a siege. Saladin's brother, Turan-Shah, was sent with reinforcements. The Nubians departed but returned and were again driven off.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_13.jpg",
+        "image_prompt": "A preacher delivering a sermon in a mosque., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Capturing Nubian Town",
+        "line": "Egyptian forces advanced and captured the Nubian town of Ibrim. Saladin sent Nur al-Din a gift of dinars, goods, and an elephant. While transporting goods, Saladin ravaged the Crusader countryside. He aimed to deprive the Franks of guides by driving out Bedouins. Saladin's father Ayyub was wounded in a horse-riding accident. His father Ayyub ultimately died on 9 August.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_14.jpg",
+        "image_prompt": "Soldiers raising a banner over a conquered town., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Conquering Yemen",
+        "line": "In 1174, Saladin sent Turan-Shah to conquer Yemen. Nur al-Din was mustering an army in apparent preparation against Saladin. Nur al-Din died on 15 May 1174, after falling ill. His power was handed to his eleven-year-old son as-Salih Ismail al-Malik. Nur al-Din's death left Saladin with political independence. Saladin promised as-Salih he would act as a sword against enemies.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_15.jpg",
+        "image_prompt": "An army marching towards a mountainous region., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Syrian Anarchy Fears",
+        "line": "Saladin feared anarchy in Syria could give rise to danger from Crusaders. Gumushtigin assumed guardianship over as-Salih in Aleppo. The emir of Damascus appealed to Sayf al-Din Ghazi for assistance. The Syrians requested the aid of Saladin, who complied. Saladin rode across the desert with 700 picked horsemen. He was joined by emirs, soldiers, and Bedouins.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_16.jpg",
+        "image_prompt": "A map showing a region threatened by external forces., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Arrival in Damascus",
+        "line": "Saladin arrived in Damascus amid general acclamation on November 23. The gates of the Citadel of Damascus were opened to Saladin. He installed himself in the castle and received praise. Saladin proceeded to reduce other cities that had belonged to Nur al-Din. His army conquered Hama with relative ease. Saladin avoided attacking Homs because of the strength of its citadel.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_17.jpg",
+        "image_prompt": "A procession entering a city cheered by crowds., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Besieging Aleppo",
+        "line": "Saladin moved north towards Aleppo, besieging it on December 30. Gumushtigin requested the chief da'i of the Assassins to assassinate Saladin. Thirteen Assassins gained admission into Saladin's camp but were detected. One assassin was killed and the others slain while trying to escape. Saladin's rivals waged a propaganda war, claiming he was ungrateful. Saladin claimed he was defending Islam from the Crusaders.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_18.jpg",
+        "image_prompt": "An army surrounding a large city., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Returning to Hama",
+        "line": "His army returned to Hama to engage a Crusader force. Saladin proclaimed the Crusaders' withdrawal as a victory. Soon after, Saladin entered Homs and captured its citadel.",
+        "speech": "",
+        "image": "assets/generated/saladin_from_vizier_to_sultan_19.jpg",
+        "image_prompt": "An army moving back towards a fortified town., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Saladin",
+    "source_url": "https://en.wikipedia.org/wiki/Saladin"
+  },
+  "long_edward_jenner_pioneer_of_vaccines": {
+    "title": "Edward Jenner: Pioneer of Vaccines",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Birthplace",
+        "line": "Edward Jenner was born on 17 May 1749 in Berkeley, Gloucestershire, England. He was the eighth of nine children, and his father was the vicar of Berkeley. Jenner received a strong basic education, attending schools in Wotton-under-Edge and Cirencester.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_01.jpg",
+        "image_prompt": "A historical house in a rural English village., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Childhood Inoculation",
+        "line": "During his schooling, Jenner was inoculated for smallpox, which affected his health lifelong. At age 13, Jenner began a seven-year apprenticeship with surgeon Daniel Ludlow. In 1770, Jenner apprenticed in surgery and anatomy under John Hunter at St George's Hospital.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_02.jpg",
+        "image_prompt": "A physician administering a rudimentary inoculation., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Return Home",
+        "line": "Jenner returned to his native countryside and became a successful doctor by 1773. Jenner obtained his Doctor of Medicine degree from the University of St Andrews in 1792. Jenner co-founded the Fleece Medical Society, which met to discuss medical subjects.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_03.jpg",
+        "image_prompt": "A countryside doctor's home with a horse-drawn carriage., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Research Topics",
+        "line": "He contributed papers on angina pectoris, ophthalmia, and cardiac valvular disease. Jenner was elected a fellow of the Royal Society in 1788. His election followed a study on the life of the nested cuckoo.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_04.jpg",
+        "image_prompt": "Antique medical texts and anatomical drawings., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Cuckoo Behavior",
+        "line": "Jenner described how the young cuckoo pushed host eggs and chicks from the nest. He noted the baby cuckoo's back had a depression enabling it to push eggs. Jenner's findings on the cuckoo were published in Philosophical Transactions of the Royal Society.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_05.jpg",
+        "image_prompt": "A small bird pushing an egg out of a nest., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Marriage",
+        "line": "Edward Jenner married Catherine Kingscote in March 1788. They had three children: Edward Robert, Catherine Fitzhardinge, and Robert Fitzhardinge. Jenner inoculated his 11-month-old son Robert with his cowpox vaccine.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_06.jpg",
+        "image_prompt": "A couple in 18th-century attire during a wedding ceremony., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Angina Pectoris Research",
+        "line": "Jenner advanced the understanding of angina pectoris through his correspondence. He postulated that cowpox might protect against smallpox. On 14 May 1796, Jenner tested his hypothesis on James Phipps.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_07.jpg",
+        "image_prompt": "A historical medical illustration of the heart., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Inoculation Material",
+        "line": "Jenner scraped pus from cowpox blisters on milkmaid Sarah Nelmes. He inoculated Phipps's arm with cowpox pus through two small cuts. The inoculation caused a mild fever and uneasiness but no full infection.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_08.jpg",
+        "image_prompt": "A close-up of a cowpox blister on a hand., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Smallpox Challenge",
+        "line": "Later, Jenner injected Phipps with smallpox material, and no disease followed. Phipps showed no sign of infection even when challenged again with smallpox. Jenner successfully tested his hypothesis on 23 additional subjects.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_09.jpg",
+        "image_prompt": "A physician holding a vial of clear liquid., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Research Reporting",
+        "line": "Jenner reported his findings to the Royal Society, initially without publication. His revised findings on 23 cases, including his son, were eventually published. The medical establishment deliberated extensively before accepting Jenner's vaccination findings.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_10.jpg",
+        "image_prompt": "A document being presented to a formal committee., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Government Action",
+        "line": "The British government banned variolation and provided cowpox vaccination free of charge. The Balmis Expedition spread the smallpox vaccine to the Americas. Napoleon had his French troops vaccinated and awarded Jenner a medal.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_11.jpg",
+        "image_prompt": "A parliamentary building with flags., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Prisoner Release",
+        "line": "At Jenner's request, Napoleon released two English prisoners of war. Jenner was granted £10,000 for his work on vaccination in 1802. He received another £20,000 five years later after efficacy was confirmed.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_12.jpg",
+        "image_prompt": "Two men being freed from prison gates., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "American Academy",
+        "line": "Jenner became a foreign honorary member of the American Academy of Arts and Sciences. He was also elected a member of the American Philosophical Society in 1804. Jenner became president of the Jennerian Society in London promoting vaccination.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_13.jpg",
+        "image_prompt": "A historic building of a learned society., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Medical Society Membership",
+        "line": "He was a member of the Medical and Chirurgical Society from its founding. Jenner resigned his directorship of the National Vaccine Establishment due to dissatisfaction. Jenner observed smallpox cases after vaccination but noted diminished severity.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_14.jpg",
+        "image_prompt": "A group of doctors in formal attire., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Physician Extraordinary",
+        "line": "In 1821, Jenner was appointed physician extraordinary to King George IV. He was also made mayor of Berkeley and a justice of the peace. In 1823, Jenner presented his 'Observations on the Migration of Birds'.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_15.jpg",
+        "image_prompt": "A royal court with physicians in attendance., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Freemason",
+        "line": "Edward Jenner was a Freemason, holding leadership roles in his lodge. Jenner was found in a state of apoplexy on 25 January 1823. He died the next day, aged 73, from an apparent stroke.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_16.jpg",
+        "image_prompt": "A masonic lodge room with symbols., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Burial",
+        "line": "Jenner was buried in the family vault at the Church of St Mary, Berkeley. Jenner expressed wonder that people were not more grateful to God for the good conveyed. In 1980, the World Health Organization declared smallpox an eradicated disease.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_17.jpg",
+        "image_prompt": "A churchyard with gravestones., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Foundation of Immunology",
+        "line": "Jenner's vaccine laid the foundation for contemporary discoveries in immunology. He was named in the BBC's list of the 100 Greatest Britons in 2002. Jenner was featured on postage stamps in the Royal Mail's World Changers issue.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_18.jpg",
+        "image_prompt": "Microscopic view of biological cells., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Lunar Honor",
+        "line": "The lunar crater Jenner is named in his honor. Jenner's house in Berkeley, Gloucestershire, is now a small museum. A statue of Jenner was erected in Trafalgar Square and later moved.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_19.jpg",
+        "image_prompt": "A view of the moon from Earth., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Hospital Unit",
+        "line": "A section at Gloucestershire Royal Hospital is known as the Edward Jenner Unit. Jenner Road is a street in Stoke Newington, north London. The Jenner Health Centre is located in Forest Hill, London.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_20.jpg",
+        "image_prompt": "A hospital reception area., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Frieze Name",
+        "line": "Jenner's name is featured on the Frieze of the London School of Hygiene & Tropical Medicine. The minor planet 5168 Jenner is named in his honor.",
+        "speech": "",
+        "image": "assets/generated/edward_jenner_pioneer_of_vaccines_21.jpg",
+        "image_prompt": "An inscription on the facade of a building., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Edward Jenner",
+    "source_url": "https://en.wikipedia.org/wiki/Edward_Jenner"
+  },
+  "long_rosa_parks_a_life_of_courage_and_civil_rights": {
+    "title": "Rosa Parks: A Life of Courage and Civil Rights",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Early Life",
+        "line": "Rosa Louise McCauley Parks was born in Tuskegee, Alabama on February 4, 1913. Her mother Leona Edwards was a teacher and her father James McCauley was a carpenter. Her name was a portmanteau of her maternal and paternal grandmothers' names, Rose and Louisa. When she was a baby, Parks moved to live with her father's family in Abbeville.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_01.jpg",
+        "image_prompt": "A historical photo of a small Alabama town., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Relocation",
+        "line": "Her mother then moved with her to Pine Level to live with her mother's family. In Pine Level, Parks attended the African Methodist Episcopal church, a Black denomination. She was baptized at age two and remained a lifelong member of the church. While her mother taught, Parks lived with her grandparents on their family farm.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_02.jpg",
+        "image_prompt": "A modest farmhouse with a porch and rocking chairs., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Farm Work",
+        "line": "They raised chickens and cows and grew fruit, pecan, and walnut trees. At age six or seven, she began working on a plantation picking cotton. Parks learned quilting and sewing from her mother, making her first quilt at 10. She completed her first dress at the age of 11.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_03.jpg",
+        "image_prompt": "A basket overflowing with fresh walnuts and pecans., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Jim Crow South",
+        "line": "Parks grew up in Alabama under Jim Crow segregation and widespread racial violence. Alabama codified Jim Crow segregation into law during a 1901 state convention. The Ku Klux Klan intensified its activity across the United States after World War I. Parks recalled hearing of many Black people found dead under mysterious circumstances.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_04.jpg",
+        "image_prompt": "A sign indicating separate facilities for different races., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "First Schooling",
+        "line": "Parks initially attended a one-room schoolhouse at the Mount Zion AME Zion church. She began attending the Montgomery Industrial School for Girls for vocational training at eleven. After the school closed, she transferred to Booker T. Washington Junior High School. Parks dropped out to care for her ailing grandmother and mother.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_05.jpg",
+        "image_prompt": "A simple wooden schoolhouse with a single window., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Domestic Work",
+        "line": "After leaving school, she worked as a domestic worker in white households. Parks wrote of an incident where a white man named 'Mr. Charlie' tried to assault her. In her account, she claims she verbally resisted Mr. Charlie's racist advances. In 1931, Parks was introduced to her future husband, Raymond Parks, by a friend.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_06.jpg",
+        "image_prompt": "A woman dusting furniture in an ornate living room., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Activist Husband",
+        "line": "She described Raymond as the 'first real activist' she had met. Rosa and Raymond married on December 18, 1932, at Rosa's mother's house. The couple became involved in the Scottsboro Boys case concerning nine Black youths. Rosa and Raymond hosted fundraising meetings for the defense of the accused youths.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_07.jpg",
+        "image_prompt": "People holding signs at a civil rights demonstration., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "High School Diploma",
+        "line": "Parks completed her high school education in 1933 with Raymond's encouragement. Subsequently, she worked as a nurse's aide at St. Margaret's Hospital. In 1941, she began working at Maxwell Air Force Base which was integrated. The base provided an alternative reality to the ugly racial policies of Jim Crow.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_08.jpg",
+        "image_prompt": "A woman receiving a high school diploma., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "NAACP Secretary",
+        "line": "Parks began attending meetings of the Montgomery NAACP chapter in 1943. In December 1943, she was elected secretary of the chapter. She and Raymond were members of the Voter's League focused on registration. Obstacles like poll taxes and literacy tests prevented Black people from registering to vote.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_09.jpg",
+        "image_prompt": "A meeting room with people around a table., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Successful Registration",
+        "line": "Parks attempted to register three times, finally succeeding in 1945. Parks investigated the gang rape of Recy Taylor, a Black woman from Abbeville. She organized 'The Committee for Equal Justice for Mrs. Recy Taylor'. Parks also organized support for Jeremiah Reeves, accused of raping a white woman.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_10.jpg",
+        "image_prompt": "A person looking at a voter registration card., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Seamstress Work",
+        "line": "Beginning in 1954, Parks worked as a seamstress for Clifford and Virginia Durr. The Durrs helped sponsor Parks to attend the Highlander Folk School in 1955. At Highlander, Parks felt no racial hostility and envisioned a unified society. In August 1955, she attended a Montgomery meeting concerning the lynching of Emmett Till.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_11.jpg",
+        "image_prompt": "A woman sewing fabric with a sewing machine., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Bus Ordinance",
+        "line": "Montgomery passed an ordinance segregating streetcar passengers by race in 1900. Black residents conducted boycotts against segregated streetcars between 1900 and 1902. Bus drivers had discretion to enforce racial divisions in the middle rows. In 1943, bus driver James F. Blake confronted Parks about her seating.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_12.jpg",
+        "image_prompt": "An old city ordinance document., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Previous Arrests",
+        "line": "Before 1955, several people were arrested for refusing to give up bus seats. Fifteen-year-old Claudette Colvin was arrested in March 1955 for a similar refusal. Activists considered Colvin and Smith as test cases for a community bus boycott. On December 1, 1955, Parks left work and boarded a bus around 5:30 p.m.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_13.jpg",
+        "image_prompt": "A police officer talking to a person on a bus., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Bus Driver Recognized",
+        "line": "Lost in thought, Parks did not notice that James F. Blake was the driver. She sat in the middle section of the bus, next to a Black man. As the bus traveled, all the white-only seats filled up with white passengers. Blake demanded that Black passengers in the middle row yield their seats.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_14.jpg",
+        "image_prompt": "A bus driver visible through the front windshield., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Parks Remained Seated",
+        "line": "Those seated near Parks complied, but Parks remained seated. When Blake asked if she intended to stand, Parks refused. Blake threatened her with arrest, to which Parks responded, 'You may do that.' She considered physically resisting but decided against it, lacking a way to fight back.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_15.jpg",
+        "image_prompt": "A woman sitting calmly in a bus seat., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Police Called",
+        "line": "Blake left the bus and called his supervisor, who advised him to call the police. Two officers arrived and arrested Parks for violating the Montgomery municipal code. Parks's refusal to move was not premeditated, according to biographer Douglas G. Brinkley. Parks stated, 'The only tired I was, was tired of giving in.'",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_16.jpg",
+        "image_prompt": "A bus driver using a payphone outside., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Taken to Jail",
+        "line": "After her arrest, Parks was taken to Montgomery city hall and then the city jail. She was fingerprinted and photographed after being taken to the city jail. She was granted permission to call home, notifying her mother of her arrest. E. D. Nixon drove to the jail with Clifford and Virginia Durr and paid Parks's bail.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_17.jpg",
+        "image_prompt": "The exterior of a city hall building., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Test Case",
+        "line": "Nixon conferred with Clifford Durr about adopting Parks's arrest as a test case. They favored Parks due to her high standing and firm quiet spirit. Despite concerns about retaliation, Parks ultimately agreed to be a test case. Attorney Fred Gray agreed to represent Parks in court.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_18.jpg",
+        "image_prompt": "Two men in discussion, looking serious., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Boycott Planning",
+        "line": "The Women's Political Council began planning a one-day boycott of Montgomery buses for December 5. Leaflets announcing the boycott were produced using a mimeograph machine. On December 5, 1955, the day of Parks's trial, the boycott began widespread. After Parks was found guilty, the boycott was extended indefinitely.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_19.jpg",
+        "image_prompt": "A group of women planning on a large sheet of paper., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Boycott Sustained",
+        "line": "The Montgomery Improvement Association organized a community transportation network to sustain the boycott. Parks and other boycott leaders faced harassment, ostracization, and legal obstacles. The boycott lasted for 381 days, ending after segregation on buses was deemed unconstitutional. In 1957, Parks relocated to Detroit, Michigan, experiencing hardship and health problems.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_20.jpg",
+        "image_prompt": "Cars and vans forming a line to transport people., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Continued Advocacy",
+        "line": "She continued to advocate for civil rights, supporting various activists. She was an anti-apartheid activist, participating in protests and conferences. In 1987, she co-founded the Rosa and Raymond Parks Institute for Self Development. After her death in 2005, she received public viewings and memorial services.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_21.jpg",
+        "image_prompt": "People shaking hands after a political rally., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Capitol Laying",
+        "line": "She lay in state at the United States Capitol rotunda in Washington, D.C. Rosa Parks was ultimately interred at Woodlawn Cemetery in Detroit. Parks received the Presidential Medal of Freedom and a Congressional Gold Medal. She was the first Black American to be memorialized in the National Statuary Hall.",
+        "speech": "",
+        "image": "assets/generated/rosa_parks_a_life_of_courage_and_civil_rights_22.jpg",
+        "image_prompt": "The rotunda of the U.S. Capitol building., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Rosa Parks",
+    "source_url": "https://en.wikipedia.org/wiki/Rosa_Parks"
+  },
+  "long_frederick_douglass_a_life_of_valor": {
+    "title": "Frederick Douglass: A Life of Valor",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Birth and Early Life",
+        "line": "Frederick Augustus Washington Bailey was born into slavery on the Eastern Shore of Maryland. He had no accurate knowledge of his age, never having seen any authentic birth record. His mother called him her \"Little Valentine\", and he chose February 14 as his birthday. His enslaved mother was of African descent, and his father was apparently of European descent.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_01.jpg",
+        "image_prompt": "Chesapeake Bay shoreline with marsh grasses., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mother's Absence",
+        "line": "He was separated from his mother in infancy and rarely saw her by daylight. Young Frederick lived with his maternal grandmother, Betsy Bailey, who was also enslaved. Children were commonly parted from their mothers at a very early age in that region. His mother visited him only a few times before her death when he was seven years old.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_02.jpg",
+        "image_prompt": "A dark room with faint moonlight from a window., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Plantation Move",
+        "line": "At age six, he was separated from his grandparents and moved to the Wye House plantation. He was sent to serve Hugh Auld and his wife Sophia in the city of Baltimore. Sophia Auld treated him kindly at first, providing food, clothing, and a proper bed. He felt fortunate to be in the city, where enslaved people seemed almost freemen.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_03.jpg",
+        "image_prompt": "A large colonial-era plantation house from a distance., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Learning to Read",
+        "line": "Sophia Auld began teaching him the alphabet when he was about twelve years old. Her husband disapproved, stating that literacy would encourage enslaved people to desire freedom. Douglass understood that knowledge was the direct pathway from slavery to freedom. Sophia Auld stopped teaching him and hid her Bible and other reading materials.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_04.jpg",
+        "image_prompt": "A child's hand tracing letters in a book., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Self-Education",
+        "line": "He learned to read from neighborhood children and by observing the writings of men at work. Douglass continued to teach himself to read and write in secret. Reading newspapers and books led him to question and condemn the institution of slavery. The Columbian Orator, an anthology, helped clarify his views on freedom and human rights.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_05.jpg",
+        "image_prompt": "A group of children sharing a book on a stoop., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mother's Legacy",
+        "line": "He later learned his mother had also been literate, attributing his love of letters to her. Douglass gathered over thirty male slaves to teach them reading on Sundays. Thomas Auld took Douglass back and sent him to the Mount Misery plantation. Edward Covey, known as a \"slave-breaker\", tried to break Douglass's spirit with frequent whippings.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_06.jpg",
+        "image_prompt": "A silhouette of a woman holding a book., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Physical Resistance",
+        "line": "The sixteen-year-old Douglass rebelled and fought back against his brutal treatment. After their physical confrontation, Covey never tried to beat Douglass again. He described his fight as the moment a slave was made a man. Douglass was hired out as a ship caulker in a Baltimore shipyard.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_07.jpg",
+        "image_prompt": "Two figures grappling in a dusty clearing., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Abuse from Workers",
+        "line": "He suffered abuse from white workers who feared competition from slave labor. Douglass first tried to escape from William Freeland but was unsuccessful. He met and fell in love with Anna Murray, a free Black woman. Anna Murray's free status strengthened his belief in his own possibility of freedom.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_08.jpg",
+        "image_prompt": "Workers arguing near a shipyard., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Successful Escape",
+        "line": "On September 3, 1838, Douglass successfully escaped slavery by boarding a northbound train. Dressed in a sailor's uniform, he carried identification papers for his journey. He crossed the Susquehanna River by steam-ferry and continued by train through Delaware. He traveled by steamboat to Philadelphia, Pennsylvania, an anti-slavery stronghold.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_09.jpg",
+        "image_prompt": "Steam rising from a vintage train engine., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "New York City",
+        "line": "Douglass continued his journey to the safe house of abolitionist David Ruggles in New York City. He felt he lived more in one day of freedom than in a year of slave life. His arrival in freedom was a time of joyous excitement that words could barely describe. Anna Murray followed him to New York, and they married eleven days later.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_10.jpg",
+        "image_prompt": "A bustling 19th-century New York City street., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Adopting a Name",
+        "line": "Initially, they adopted the married name Johnson to divert attention from their past. He was about thirteen when he heard a sermon that made him feel God was a protector. A man named Charles Lawson advised him to pray and cast his care upon God. After weeks of mourning, Douglass found his burden lightened and his heart relieved.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_11.jpg",
+        "image_prompt": "A handwritten document with names being crossed out., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Love for Mankind",
+        "line": "He loved all mankind, slaveholders not excepted, though he abhorred slavery more than ever. His desire to learn increased, especially his wish for a thorough acquaintance with the Bible. Early in his activism, he often included biblical allusions and religious metaphors in speeches. Douglass strongly criticized religious hypocrisy and accused slaveholders of wickedness.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_12.jpg",
+        "image_prompt": "Hands of diverse people reaching towards each other., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Christianity Defined",
+        "line": "He distinguished between the \"Christianity of Christ\" and the \"Christianity of America.\" He sharply criticized religious people who remained silent about the issue of slavery. He called religious people to embrace abolitionism and array their powers against slavery. Douglass asked British Christians never to support American churches that permitted slavery.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_13.jpg",
+        "image_prompt": "A split image showing a serene cross and a shadowy figure., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Founding a Newspaper",
+        "line": "Upon returning to the United States, Douglass founded the weekly publication The North Star. The North Star's motto was \"Right is of no sex, Truth is of no color, God is the Father of us all, and all we are Brethren.\" In a letter to his former slaveholder, Douglass denounced the cruelty of keeping families illiterate. Douglass was a deeply spiritual man, linking individual experience with social reform.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_14.jpg",
+        "image_prompt": "An old printing press in operation., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Moral Abstinence",
+        "line": "He tried to live righteously, abstaining from tobacco and alcohol. Douglass praised the agnostic orator Robert G. Ingersoll, meeting him in Illinois. Frederick Douglass and Anna Murray had five children: Rosetta, Lewis, Frederick Jr., Charles, and Annie. Charles and Rosetta assisted in producing his newspapers.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_15.jpg",
+        "image_prompt": "A hand pushing away a glass of alcohol., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Anna's Loyalty",
+        "line": "Anna Douglass remained a loyal supporter of her husband's public work throughout his life. His professional involvement with Julia Griffiths and Ottilie Assing caused speculation. Ottilie Assing, a German journalist, sought permission to translate his autobiography. Assing stayed at his house for months at a time as his intellectual and emotional companion.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_16.jpg",
+        "image_prompt": "A woman looking proudly at a man speaking., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Social Reformer",
+        "line": "Frederick Douglass was an American social reformer, abolitionist, orator, writer, and statesman. After escaping slavery, he became a national leader of the abolitionist movement. Douglass gained fame for his powerful oratory and his insightful antislavery writings. He served as a living counterexample to claims that enslaved people lacked intellectual capacity.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_17.jpg",
+        "image_prompt": "A distinguished older man addressing a large crowd., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Autobiographies Published",
+        "line": "Douglass wrote three autobiographies detailing his experiences and life. Following the Civil War, he actively campaigned for the rights of freed slaves. Douglass actively supported the cause of women's suffrage. In 1872, he was nominated for vice president of the United States without his knowledge.",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_18.jpg",
+        "image_prompt": "A shelf displaying three different book spines., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Building Alliances",
+        "line": "Douglass believed in making alliances across racial and ideological divides. He believed in an anti-slavery interpretation of the U.S. Constitution. Douglass stated, \"I would unite with anybody to do right and with nobody to do wrong.\"",
+        "speech": "",
+        "image": "assets/generated/frederick_douglass_a_life_of_valor_19.jpg",
+        "image_prompt": "People of different backgrounds joining hands., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Frederick Douglass",
+    "source_url": "https://en.wikipedia.org/wiki/Frederick_Douglass"
+  },
+  "long_nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist": {
+    "title": "Nelson Mandela: Anti-apartheid Revolutionary, Politician, and Philanthropist",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Early Life",
+        "line": "Nelson Rolihlahla Mandela was a South African anti-apartheid revolutionary, politician, and philanthropist. He was born on 18 July 1918, in the village of Mvezo in Umtata, then part of Cape Province.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_01.jpg",
+        "image_prompt": "A person studying at a desk., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Given Name",
+        "line": "He was given the forename Rolihlahla, a Xhosa term colloquially meaning 'troublemaker'. His great-grandfather, Ngubengcuka, was ruler of the Thembu Kingdom in the Transkeian Territories.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_02.jpg",
+        "image_prompt": "A traditional Xhosa settlement., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Surname Origin",
+        "line": "Nelson's grandfather, a son of Ngubengcuka, was named Mandela and was the source of his surname. His father, Gadla Henry Mphakanyiswa Mandela, was a local chief and councillor to the monarch.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_03.jpg",
+        "image_prompt": "A family tree diagram., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Father's Dismissal",
+        "line": "In 1926, Gadla was sacked for corruption, but Nelson was told his father stood up to a magistrate. Gadla was a polygamist with four wives, four sons, and nine daughters, who lived in different villages.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_04.jpg",
+        "image_prompt": "An old official document., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mother's Identity",
+        "line": "Nelson's mother, Nosekeni Fanny, was Gadla's third wife and a member of the amaMpemvu clan. Mandela later stated that his early life was dominated by traditional Xhosa custom and taboo.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_05.jpg",
+        "image_prompt": "A woman working outdoors., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Childhood in Qunu",
+        "line": "He grew up with two sisters in his mother's kraal in Qunu, where he tended herds with other boys. Both his parents were illiterate, but his mother, a devout Christian, sent him to a local Methodist school.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_06.jpg",
+        "image_prompt": "Boys herding cattle in a field., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Father's Death",
+        "line": "When Mandela was about nine, his father came to stay at Qunu, where he died of an undiagnosed ailment. Mandela's mother took him to the 'Great Place' palace at Mqhekezweni, where he was entrusted to guardianship.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_07.jpg",
+        "image_prompt": "An old, rustic grave site., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "New Family",
+        "line": "He was raised alongside Chief Jongintaba Dalindyebo's children, feeling that they treated him as their own. Mandela attended church services every Sunday with his guardians, and Christianity became a significant part of his life.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_08.jpg",
+        "image_prompt": "Children playing together in a rural setting., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mission School",
+        "line": "He attended a Methodist mission school next to the palace, studying English, Xhosa, history and geography. He developed a love of African history, listening to the tales told by elderly visitors to the palace.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_09.jpg",
+        "image_prompt": "An old mission school building., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Circumcision Ritual",
+        "line": "Aged 16, he underwent the ulwaluko circumcision ritual, which symbolically marked his transition from boy to man. He began secondary education in 1933 at Clarkebury Methodist High School, the largest school for black Africans.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_10.jpg",
+        "image_prompt": "Young men participating in a traditional ceremony., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Social Change",
+        "line": "He claimed that he lost his 'stuck up' attitude, becoming best friends with a girl for the first time. He completed his Junior Certificate in two years, and developed his lifelong love of gardening.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_11.jpg",
+        "image_prompt": "Students walking together on a school path., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Healdtown College",
+        "line": "In 1937, he moved to Healdtown, the Methodist college in Fort Beaufort attended by most Thembu royalty. Mandela spent much of his spare time at Healdtown as a long-distance runner and also a boxer.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_12.jpg",
+        "image_prompt": "A historic college campus., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "University Studies",
+        "line": "In 1939, Mandela began work on a BA degree at the University of Fort Hare, an elite black institution. He studied English, anthropology, politics, 'native administration' and Roman-Dutch law in his first year.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_13.jpg",
+        "image_prompt": "A university building with students., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Friendship with Tambo",
+        "line": "He befriended Oliver Tambo, who became a close friend and comrade for decades to come. He became involved in a students' representative council (SRC) boycott against the quality of food.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_14.jpg",
+        "image_prompt": "Two young men talking outdoors., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Arranged Marriage",
+        "line": "Returning to Mqhekezweni in December 1940, Mandela found that Jongintaba had arranged marriages for him. Dismayed, he and his cousin Justice fled to Johannesburg via Queenstown, arriving in April 1941.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_15.jpg",
+        "image_prompt": "A traditional wedding ceremony., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Night Watchman Job",
+        "line": "Mandela found work as a night watchman at Crown Mines but was fired when discovered as a runaway. Walter Sisulu secured Mandela a job as an articled clerk at the law firm of Witkin, Sidelsky and Eidelman.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_16.jpg",
+        "image_prompt": "A security guard patrolling a mine site at night., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "New Friends",
+        "line": "At the firm, Mandela befriended Gaur Radebe, an ANC and Communist Party member, and Nat Bregman. He attended Communist Party gatherings, impressed that Europeans, Africans, Indians, and Coloureds mixed as equals.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_17.jpg",
+        "image_prompt": "Colleagues collaborating in an office., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Faith Conflict",
+        "line": "He later stated he did not join the party because its atheism conflicted with his Christian faith. Mandela signed up to a University of South Africa correspondence course, working on his bachelor's degree at night.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_18.jpg",
+        "image_prompt": "A person reading a bible., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Political Path",
+        "line": "After he passed his BA exams in early 1943, Mandela returned to Johannesburg to follow a political path. He began studying law at the University of the Witwatersrand, where he was the only black African student.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_19.jpg",
+        "image_prompt": "A person walking purposefully in a city., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Bus Boycott",
+        "line": "In August 1943, Mandela marched in support of a successful bus boycott to reverse fare rises. Joining the ANC, he was increasingly influenced by Sisulu, spending time with other activists at Sisulu's house.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_20.jpg",
+        "image_prompt": "People marching alongside a bus., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "ANCYL Founding",
+        "line": "The African National Congress Youth League (ANCYL) was founded on Easter Sunday 1944 at the Bantu Men's Social Centre. He met Evelyn Mase, a trainee nurse and ANC activist, entering a relationship and marrying in October 1944.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_21.jpg",
+        "image_prompt": "A community hall with people gathered., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "First Child",
+        "line": "Their first child, Madiba 'Thembi' Thembekile, was born in February 1945 to the couple. In July 1947, Mandela rushed Anton Lembede, who was ill, to hospital, where he eventually died.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_22.jpg",
+        "image_prompt": "A baby in a crib., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "ANC Committee",
+        "line": "Mandela was elected to the executive committee of the ANC's Transvaal Province branch in 1947. In 1948, the Afrikaner-dominated Herenigde Nasionale Party took power, codifying new apartheid legislation.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_23.jpg",
+        "image_prompt": "People voting in a committee meeting., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Direct Action",
+        "line": "Mandela and his party cadre allies began advocating direct action against apartheid, such as boycotts and strikes.",
+        "speech": "",
+        "image": "assets/generated/nelson_mandela_anti_apartheid_revolutionary_politician_and_philanthropist_24.jpg",
+        "image_prompt": "A street protest with banners., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Nelson Mandela",
+    "source_url": "https://en.wikipedia.org/wiki/Nelson_Mandela"
+  },
+  "long_norman_borlaug_s_life_and_achievements": {
+    "title": "Norman Borlaug's Life and Achievements",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Early Life",
+        "line": "Norman Ernest Borlaug was an American agronomist known for his contributions to agriculture. He received his B.S. in forestry in 1937 from the University of Minnesota. Norman Borlaug earned a PhD in plant pathology and genetics in 1942. He took up an agricultural research position with CIMMYT in Mexico.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_01.jpg",
+        "image_prompt": "A historic farm field with rows of crops under a vast sky., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Wheat Development",
+        "line": "Borlaug developed semi-dwarf, high-yield, disease-resistant wheat varieties. He led the introduction of high-yielding varieties to Mexico, Pakistan, and India. As a result, Mexico became a net exporter of wheat by 1963. Between 1965 and 1970, wheat yields nearly doubled in Pakistan and India.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_02.jpg",
+        "image_prompt": "Close-up of wheat stalks with some shorter than others., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Green Revolution",
+        "line": "Borlaug is often called \"the father of the Green Revolution\". He is credited with saving over a billion people worldwide from starvation. He was awarded the 1970 Nobel Peace Prize for his contributions. Later in his life, he helped apply methods to increase food production in Africa.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_03.jpg",
+        "image_prompt": "A stylized graphic representing agricultural growth and abundance., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Wrestling Pioneer",
+        "line": "He was also an accomplished wrestler and a pioneer of wrestling in the United States. Borlaug was the great-grandchild of Norwegian immigrants to the United States. The family eventually moved to the Norwegian-American community of Saude, Iowa. Borlaug was the first of four children born on his grandparents' farm in Saude.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_04.jpg",
+        "image_prompt": "A vintage wrestling ring with two figures in action., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Childhood Labor",
+        "line": "From age seven to nineteen, he worked on the 106-acre family farm. He attended a one-teacher, one-room rural school through eighth grade. At Cresco High School, Borlaug was a member of football, baseball, and wrestling teams. His grandfather encouraged him to learn if he wanted to eat later.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_05.jpg",
+        "image_prompt": "A boy guiding a horse-drawn plow in a field., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "University Application",
+        "line": "When Borlaug applied to the University of Minnesota in 1933, he failed the entrance exam. He was accepted at the school's newly created two-year General College. After two quarters, he transferred to the College of Agriculture's forestry program. As a member of the University of Minnesota men's wrestling team, he reached the Big Ten semifinals.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_06.jpg",
+        "image_prompt": "A university admissions office with a rejection letter., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Promoting Wrestling",
+        "line": "He promoted wrestling to Minnesota high schools in exhibition matches. To finance his studies, Borlaug worked as a leader in the Civilian Conservation Corps in 1935. Many people who worked for him were starving, which left scars on him. From 1935 to 1938, he worked for the United States Forest Service.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_07.jpg",
+        "image_prompt": "A group of high school students watching a wrestling demonstration., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Isolated Wilderness",
+        "line": "He spent one summer in the most isolated piece of wilderness in Idaho. Borlaug attended a lecture by plant pathologist Elvin Charles Stakman about crop diseases. Stakman's research on rust-resistant plants greatly interested Borlaug. Stakman advised Borlaug to focus on plant pathology instead of forest pathology.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_08.jpg",
+        "image_prompt": "A remote mountain river flowing through a dense forest., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Graduate Degrees",
+        "line": "Borlaug earned a Master of Science degree in 1940 and a Ph.D. in 1942. While in college, he met his future wife, Margaret Gibson, at a coffee shop. They were married in 1937 and had three children. From 1942 to 1944, Borlaug was employed as a microbiologist at DuPont.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_09.jpg",
+        "image_prompt": "A university diploma or academic scroll., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Wartime Research",
+        "line": "His lab was tasked with research for the United States armed forces during the war. He developed glue that could withstand the warm salt water of the South Pacific. This adhesive allowed food and supplies to reach stranded Marines. Other tasks included work with camouflage, canteen disinfectants, and malaria control.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_10.jpg",
+        "image_prompt": "Scientists working in a laboratory with military insignia., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mexican Agricultural Project",
+        "line": "The Rockefeller Foundation contacted E.C. Stakman about agricultural development in Mexico. A proposal was developed for a new organization focused on Mexican agriculture. Dr. Jacob George Harrar was chosen as the project leader in Mexico. Harrar hired Borlaug to head the Cooperative Wheat Research and Production Program in Mexico.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_11.jpg",
+        "image_prompt": "A formal meeting room with men in suits around a table., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Relocating to Mexico",
+        "line": "In July 1944, Borlaug flew to Mexico City to head the new program. In 1964, Borlaug directed the International Wheat Improvement Program at CIMMYT in Mexico. Borlaug felt pesticides had more benefits and advocated for their continued use. He continued to support pesticide use despite severe public criticism.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_12.jpg",
+        "image_prompt": "An early propeller airplane on a tarmac., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Retirement and Consultancy",
+        "line": "Borlaug officially retired in 1979 but remained a CIMMYT senior consultant. In 1984, Borlaug began teaching and conducting research at Texas A&M University. He publicly advocated for agricultural biotechnology, facing heavy criticism. Borlaug served on the faculty of several universities, including Minnesota and Cornell.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_13.jpg",
+        "image_prompt": "An older scientist advising younger researchers in a field., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Project Goals",
+        "line": "The project's goal was to boost wheat production in Mexico, which imported much of its grain. Plant pathologist George Harrar recruited a wheat research team in late 1944. During sixteen years with the project, Borlaug bred remarkably successful wheat. Borlaug's first few years in Mexico were difficult due to lack of scientists and equipment.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_14.jpg",
+        "image_prompt": "Ships docked at a harbor laden with grain sacks., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Farmer Hostility",
+        "line": "Local farmers were hostile toward the wheat program because of past crop losses. He spent the first ten years breeding wheat cultivars resistant to disease, including rust. In that time, his group made 6,000 individual wheat crossings. Initially, Borlaug's work concentrated in the central highlands near Texcoco.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_15.jpg",
+        "image_prompt": "Farmers looking concernedly at damaged crops., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Speeding Up Breeding",
+        "line": "He realized he could speed up breeding by taking advantage of two growing seasons. In the summer, he would breed wheat in the central highlands as usual. Then he would take seeds north to the Valle del Yaqui research station. This process of breeding wheat at locations hundreds of miles apart was called 'shuttle breeding'.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_16.jpg",
+        "image_prompt": "A calendar marked with two distinct planting seasons., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Photoperiodism Benefit",
+        "line": "As an unexpected benefit, the new breeds did not have problems with photoperiodism. Soon, he had varieties that fit a whole range of environmental conditions. Multiline varieties were developed as mixtures of pure lines with different resistance genes. In 1953, Borlaug extended this technique using backcross methods.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_17.jpg",
+        "image_prompt": "Wheat plants at different stages of growth under varying light., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Transferring Genes",
+        "line": "His method transferred disease-resistant genes from several donor parents into one recurrent parent. Crop loss was kept to a minimum because only a few lines might become susceptible. Dwarfing is an important agronomic quality for wheat plants. Taller wheat grasses tended to collapse under the weight of extra grain, a trait called lodging.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_18.jpg",
+        "image_prompt": "Animated depiction of genes moving between plant cells., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Japanese Dwarf Variety",
+        "line": "In 1953, he acquired a Japanese dwarf variety of wheat called Norin 10. Norin 10/Brevor 14 is semi-dwarf and produces more stalks and grain per plant. Borlaug crossbred the semi-dwarf cultivar with his disease-resistant cultivars. His new varieties, Pitic 62 and Penjamo 62, dramatically changed wheat yield potential.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_19.jpg",
+        "image_prompt": "A small, sturdy wheat plant compared to a tall one., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mexico's Self-Sufficiency",
+        "line": "By 1963, 95% of Mexico's wheat crops used the semi-dwarf varieties. Mexico had become fully self-sufficient in wheat production and was a net exporter. Four other high-yield varieties were released in 1964. In 1961–1962, Borlaug's dwarf spring wheat strains were sent for testing.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_20.jpg",
+        "image_prompt": "A scale measuring a large quantity of wheat., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Indian Trials",
+        "line": "In March 1962, some strains were grown in fields in New Delhi, India. M. S. Swaminathan requested Borlaug's visit and a range of dwarf wheat seed. The Indian Ministry of Agriculture arranged for Borlaug's visit. In March 1963, Borlaug and Dr Robert Glenn Anderson were sent to India.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_21.jpg",
+        "image_prompt": "Wheat growing in experimental plots near a research institute., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Supplying Seeds",
+        "line": "He supplied 100 kg of seed from four promising strains to the IARI. Test plots were subsequently planted at multiple locations across India. Anderson stayed as head of the Rockefeller Foundation Wheat Program in New Delhi until 1975.",
+        "speech": "",
+        "image": "assets/generated/norman_borlaug_s_life_and_achievements_22.jpg",
+        "image_prompt": "Sacks of wheat seeds being delivered to an agricultural institute., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Norman Borlaug",
+    "source_url": "https://en.wikipedia.org/wiki/Norman_Borlaug"
+  },
+  "long_george_washington_carver_agricultural_scientist_and_inventor": {
+    "title": "George Washington Carver: Agricultural Scientist and Inventor",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Agricultural Scientist",
+        "line": "George Washington Carver was an American agricultural scientist and inventor who promoted alternative crops to cotton and methods for soil health. He was recognized as one of the most prominent Black scientists during the early part of the 20th century.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_01.jpg",
+        "image_prompt": "Scientist working in a field, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Tuskegee Professor",
+        "line": "As a professor at Tuskegee Institute, Carver developed techniques to improve soils depleted by repeated cotton plantings. He encouraged poor farmers to grow other crops like peanuts and sweet potatoes for food and better quality of life.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_02.jpg",
+        "image_prompt": "Soil scientist examining soil samples, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Crop Selection",
+        "line": "These specific crops were chosen by Carver because of the prevailing soil conditions in the region. Under his leadership, the Tuskegee Experiment Station published over forty practical bulletins for farmers, including recipes.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_03.jpg",
+        "image_prompt": "Soil sample next to plant seedlings, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Farmer Guidance",
+        "line": "Bulletins offered poor farmers advice on combating soil depletion with limited means, producing bigger crops, and preserving food. Beyond his work with farmers, Carver was a significant leader in actively promoting the principles of environmentalism.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_04.jpg",
+        "image_prompt": "Hands planting seeds in soil, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Received Honors",
+        "line": "He received numerous honors for his important work, including the Spingarn Medal from the NAACP organization. During an era of significant racial polarization, his fame extended well beyond the Black community boundaries.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_05.jpg",
+        "image_prompt": "A display case with a medal, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Praised Widely",
+        "line": "He was widely recognized and praised by the white community for his many achievements and notable talents. Carver was born into slavery in Diamond Grove, Missouri, near Crystal Palace, sometime in the early 1860s.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_06.jpg",
+        "image_prompt": "A diverse group of people listening to a speaker, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Unknown Birthdate",
+        "line": "His birth date was uncertain and unknown to Carver, as it occurred before slavery was abolished in Missouri. Moses Carver, his enslaver, purchased George’s parents, Mary and Giles, on October 9, 1855, for $700.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_07.jpg",
+        "image_prompt": "Calendar page showing January 1865, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Family Kidnapped",
+        "line": "Giles died before George was born, and at one week old, George, his sister, and mother were kidnapped. George’s brother, James, was quickly rushed to a place of safety away from the kidnappers.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_08.jpg",
+        "image_prompt": "A dark rural path at night, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Sold In Kentucky",
+        "line": "The kidnappers sold George, his sister, and his mother as a trio in Kentucky. Moses Carver hired John Bentley to find them, but Bentley only found the infant George.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_09.jpg",
+        "image_prompt": "A map showing Kentucky, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Return Negotiated",
+        "line": "Moses negotiated with the raiders to secure the boy's return and provided a reward to Bentley. After slavery was abolished, Moses and Susan Carver raised George and his older brother, James, as their own.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_10.jpg",
+        "image_prompt": "Two people in discussion, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Early Education",
+        "line": "They encouraged George’s intellectual pursuits, and \"Aunt Susan\" taught him the fundamental basics of reading and writing. Black people were not permitted to attend the public school located in Diamond Grove at that time.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_11.jpg",
+        "image_prompt": "A child reading a book with an adult, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Seeking School",
+        "line": "George decided to travel 10 miles (16 km) south to Neosho for a school for Black children. Upon reaching Neosho, he found the school closed for the night and slept in a nearby barn.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_12.jpg",
+        "image_prompt": "A path leading towards a distant town, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Met Mariah Watkins",
+        "line": "By his own account, the next morning he met a kind woman, Mariah Watkins. When he identified as \"Carver's George,\" she replied his name from now on was \"George Carver.\"",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_13.jpg",
+        "image_prompt": "A woman greeting someone at a farmhouse door, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Inspired By Words",
+        "line": "George liked Mariah Watkins and her words made a great impression on him. At age 13, he moved to Fort Scott, Kansas, to attend an academy, residing with a foster family.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_14.jpg",
+        "image_prompt": "A person studying diligently, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Witnessed Tragedy",
+        "line": "After witnessing a killing of a Black man by white people, Carver decided to leave the city. He attended a series of schools and eventually earned his diploma at Minneapolis High School in Kansas.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_15.jpg",
+        "image_prompt": "A somber historical street scene, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Mail Confusion",
+        "line": "In Minneapolis, another George Carver lived in town, causing confusion with his incoming mail. Carver chose a middle initial randomly and requested his mail be addressed to George W. Carver.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_16.jpg",
+        "image_prompt": "Old letters on a table, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "The W Initial",
+        "line": "When asked if \"W\" stood for Washington, Carver grinned and simply replied, \"Why not?\" He never used Washington as his middle name, signing as George W. Carver or simply George Carver.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_17.jpg",
+        "image_prompt": "A person smiling thoughtfully, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "College Application",
+        "line": "Carver applied to several colleges and was accepted at Highland University in Highland, Kansas. Upon his arrival, the university refused his attendance solely because of his race.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_18.jpg",
+        "image_prompt": "A university entrance gate, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Traveled By Wagon",
+        "line": "In August 1886, Carver traveled by wagon with J. F. Beeler to Eden Township in Ness County, Kansas. He homesteaded near Beeler, maintaining a small conservatory of plants and flowers, plus a geological collection.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_19.jpg",
+        "image_prompt": "A horse-drawn wagon on a dirt road, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Farm Cultivation",
+        "line": "He manually plowed 17 acres, planting rice, corn, Indian corn, garden produce, fruit trees, forest trees, and shrubbery. He also earned money through odd jobs in town and by working as a ranch hand.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_20.jpg",
+        "image_prompt": "Hands guiding a plow in a field, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Education Loan",
+        "line": "In early 1888, Carver obtained a $300 loan for education, and by June, he left the Ness City area. In 1890, Carver began studying art and piano at Simpson College located in Indianola, Iowa.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_21.jpg",
+        "image_prompt": "An old bank building, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Botanical Talent",
+        "line": "His art teacher, Etta Budd, recognized his talent for painting plants and encouraged him to study botany. When he began studying at Iowa State in 1891, he was their first Black student.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_22.jpg",
+        "image_prompt": "A botanical drawing of a flower, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Bachelor's Thesis",
+        "line": "Carver's 1894 bachelor's thesis for an Agriculture degree was titled \"Plants as Modified by Man.\" Professors Joseph Budd and Louis Pammel convinced Carver to continue at Iowa State for his master's degree.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_23.jpg",
+        "image_prompt": "An open old book or document, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Experiment Station",
+        "line": "Carver conducted research at the Iowa Experiment Station under Pammel for the following two years. His work at the experiment station gained national recognition and respect as a botanist.",
+        "speech": "",
+        "image": "assets/generated/george_washington_carver_agricultural_scientist_and_inventor_24.jpg",
+        "image_prompt": "A lab technician looking through a microscope, cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "George Washington Carver",
+    "source_url": "https://en.wikipedia.org/wiki/George_Washington_Carver",
+    "country": "USA"
+  },
+  "long_the_life_and_inventions_of_nikola_tesla": {
+    "title": "The Life and Inventions of Nikola Tesla",
+    "category": "Heroic History",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Early Life",
+        "line": "Nikola Tesla was a Serbian-American engineer, futurist, and inventor born on July 10, 1856. He studied engineering and physics in the Austro-Hungarian Empire during the 1870s without earning a degree. Tesla gained experience in telephony and the electric power industry working for Continental Edison in the early 1880s. In 1884, he migrated to the United States and later became a naturalized citizen. He worked for a brief period at the Edison Machine Works in New York City.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_01.jpg",
+        "image_prompt": "A historical portrait of a man in formal attire., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Independent Ventures",
+        "line": "Tesla then established his own laboratories and companies in New York to develop electrical devices. His AC induction motor and related polyphase patents were licensed by Westinghouse Electric in 1888. These patents earned him a considerable amount of money and became foundational to the polyphase system. Tesla conducted experiments with mechanical oscillators, electrical discharge tubes, and early X-ray imaging. He built a wirelessly controlled boat, one of the first such vehicles ever produced.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_02.jpg",
+        "image_prompt": "A busy street scene in early 20th century New York City., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Public Demonstrations",
+        "line": "Tesla became known as an inventor and demonstrated his achievements to celebrities and patrons. He was noted for his showmanship at public lectures to demonstrate his inventions. Throughout the 1890s, Tesla pursued ideas for wireless lighting and power distribution. These experiments involved high-voltage, high-frequency power in New York and Colorado Springs. In 1893, he made statements about the possibility of wireless communication with his devices.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_03.jpg",
+        "image_prompt": "A group of formally dressed people observing an experiment., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Wardenclyffe Tower",
+        "line": "Tesla tried to realize these wireless ideas with his unfinished Wardenclyffe Tower project. He ran out of funding before he could complete the intercontinental wireless communication transmitter. After Wardenclyffe, Tesla experimented with many inventions throughout the 1910s and 1920s. Having spent most of his money, Tesla lived in a series of New York hotels. He left behind unpaid bills at these hotels during his later years.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_04.jpg",
+        "image_prompt": "A large, unfinished tower structure against a sky., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Death",
+        "line": "Nikola Tesla died in New York City in January 1943. Tesla's work fell into obscurity until 1960 when a unit was named in his honor. The SI measurement of magnetic flux density was named the tesla in his honor. There has been a resurgence of popular interest in Tesla's life since the 1990s. In 2013, Time magazine named him one of the 100 most significant figures of all time.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_05.jpg",
+        "image_prompt": "A dark, quiet room with furniture covered in sheets., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Birthplace",
+        "line": "Tesla was born on July 10, 1856, in the village of Smiljan. His father, Milutin Tesla, was a priest of the Eastern Orthodox Church. Tesla credited his eidetic memory and creative abilities to his mother's influence. In 1861, Tesla attended primary school in Smiljan studying German, arithmetic, and religion. The Tesla family moved to the town of Gospić in 1862, where his father worked.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_06.jpg",
+        "image_prompt": "A small, rustic village with traditional houses., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "High School",
+        "line": "In 1870, Tesla moved to Karlovac to attend high school where classes were in German. He became interested in electricity after his physics professor's demonstrations. Tesla could perform integral calculus in his head, leading teachers to suspect cheating. He studied three years at the gymnasium, graduating in 1873 at age 17. After graduating, Tesla returned to Smiljan and contracted cholera, being bedridden for nine months.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_07.jpg",
+        "image_prompt": "A young student reading a German textbook., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Father's Promise",
+        "line": "His father promised to send him to engineering school if he recovered from the illness. In 1875, Tesla evaded conscription by running away to the village of Tomingaj. He explored the mountains wearing hunter's garb, feeling stronger physically and mentally. Tesla enrolled at the Imperial-Royal Technical College in Graz in 1875 on scholarship. He passed nine exams, receiving a commendation from the dean calling him 'a star of first rank'.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_08.jpg",
+        "image_prompt": "A concerned parent looking at a sick child., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Leaving Graz",
+        "line": "By his third year, he was failing in school and left Graz in December 1878. In January 1879, a classmate found Tesla working as a draftsman in Maribor. Tesla returned to Gospić and was deported for not having a residence permit. His father, Milutin Tesla, died the following month on April 17, 1879. In January 1880, uncles paid for him to leave for Prague to study.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_09.jpg",
+        "image_prompt": "A train station with a departing steam locomotive., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "University Auditing",
+        "line": "He arrived too late to enroll, but attended lectures in philosophy as an auditor. Tesla moved to Budapest in 1881 to work at the Budapest Telephone Exchange. He worked as a draftsman in the Central Telegraph Office before becoming chief electrician. In 1882, he got a job in Paris with the Continental Edison Company installing lighting. Management noticed his advanced knowledge and had him design improved generators and motors.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_10.jpg",
+        "image_prompt": "Students listening intently in a university lecture hall., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "US Transfer",
+        "line": "In 1884, an Edison manager brought Tesla to the United States to manage the Edison Machine Works. Tesla began working at the Machine Works on Manhattan's Lower East Side. As in Paris, Tesla was troubleshooting installations and improving generators. One project involved developing an arc lamp-based street lighting system. Tesla quit after six months, possibly over a bonus he did not receive.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_11.jpg",
+        "image_prompt": "A dockside scene with workers loading cargo., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Diary Entry",
+        "line": "His diary contained a note saying 'Good By to the Edison Machine Works' in December 1884. In March 1885, he met with a patent attorney to help with submitting patents. He formed the Tesla Electric Light and Manufacturing Company with financiers. He obtained US patents for an improved DC generator, the first issued to him. Investors showed little interest in his alternating current motor ideas.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_12.jpg",
+        "image_prompt": "An open diary with handwritten script., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Penniless Inventor",
+        "line": "The investors abandoned his company, leaving him penniless and working as a ditch digger. In late 1886, he met Alfred S. Brown and Charles Fletcher Peck, who backed him. They formed the Tesla Electric Company in April 1887 to promote inventions. They set up a laboratory for Tesla at 89 Liberty Street in Manhattan. In 1887, Tesla developed an induction motor that ran on alternating current (AC).",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_13.jpg",
+        "image_prompt": "A man digging a trench with a shovel., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Polyphase Current",
+        "line": "This motor used polyphase current, generating a rotating magnetic field to turn the motor. The innovative motor was simple, self-starting, and did not need a commutator. Peck and Brown arranged for the motor patent to be publicized. Tesla demonstrated his AC motor on May 16, 1888, at the American Institute of Electrical Engineers. Westinghouse Electric engineers reported to George Westinghouse that Tesla had a viable AC motor.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_14.jpg",
+        "image_prompt": "Abstract visualization of rotating magnetic fields., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Licensing Deal",
+        "line": "In July 1888, Westinghouse licensed Tesla's polyphase induction motor and transformer designs. Westinghouse also hired Tesla for one year as a consultant at their Pittsburgh labs. During that year, Tesla helped create an alternating current system to power city streetcars. He found it frustrating due to conflicts with other engineers over implementing AC power. They settled on a 60-cycle AC system proposed by Tesla to match his motor.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_15.jpg",
+        "image_prompt": "Businessmen signing a large document., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Streetcar Motor Issue",
+        "line": "They later found the system would not work for streetcars as Tesla's motor had constant speed. The 1888 patents and demonstrations occurred during extreme competition between electric companies. There was a propaganda campaign called the \"war of currents\" regarding AC vs DC power. Two years after signing the contract, Westinghouse Electric faced financial difficulties due to a market panic. New lenders demanded Westinghouse cut back on spending, including the royalty payments to Tesla.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_16.jpg",
+        "image_prompt": "A streetcar stalled on its tracks., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Motor Development Stalled",
+        "line": "The Tesla induction motor had been unsuccessful and its development was stalled. In early 1891, Tesla agreed to release Westinghouse from the royalty payment clause. Six years later, Westinghouse purchased Tesla's patent for a lump sum payment. The money from licensing his AC patents made Tesla independently wealthy. For the next dozen years, he worked out of a series of workshop/laboratory spaces in Manhattan.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_17.jpg",
+        "image_prompt": "A dusty, unused piece of machinery., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Exposition Universelle",
+        "line": "In the summer of 1889, Tesla traveled to the 1889 Exposition Universelle in Paris. He learned of Heinrich Hertz's experiments proving the existence of electromagnetic radiation. Tesla found high-frequency current from his alternator overheated coils and melted insulation. To fix this, Tesla created his 'oscillating transformer', later called the Tesla coil. This coil produced high-voltage, low-current, high-frequency alternating-current electricity.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_18.jpg",
+        "image_prompt": "A large exposition hall with flags and displays., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      },
+      {
+        "label": "Wireless Power Work",
+        "line": "He would use this resonant transformer circuit in his later wireless power experiments.",
+        "speech": "",
+        "image": "assets/generated/the_life_and_inventions_of_nikola_tesla_19.jpg",
+        "image_prompt": "A schematic diagram of a power transmission system., cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K"
+      }
+    ],
+    "verified": true,
+    "source_title": "Nikola Tesla",
+    "source_url": "https://en.wikipedia.org/wiki/Nikola_Tesla",
+    "country": "USA"
+  }
+}
