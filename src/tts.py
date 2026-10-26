@@ -59,19 +59,34 @@ def _with_retries(action, label: str):
             time.sleep(pause)
 
 
-async def _speak(text: str, output_path: Path, voice: str) -> None:
-    communicate = edge_tts.Communicate(
+def prosody_for(channel) -> dict:
+    """Speaking rate and pitch for a channel: the cinematic motivation look
+    reads slower and deeper, with room between the lines."""
+    from .video import is_cinematic
+
+    if is_cinematic(channel):
+        return {"rate": "-12%", "pitch": "-6Hz"}
+    return {}
+
+
+def _communicate(text: str, voice: str, rate: str | None, pitch: str | None):
+    return edge_tts.Communicate(
         text=text,
         voice=voice,
-        rate=settings.edge_rate,
+        rate=rate or settings.edge_rate,
+        pitch=pitch or "+0Hz",
         volume=settings.edge_volume,
     )
-    await communicate.save(str(output_path))
 
 
-def generate_voice(text: str, output_path: Path, voice: str | None = None) -> Path:
+async def _speak(text: str, output_path: Path, voice: str, rate: str | None = None, pitch: str | None = None) -> None:
+    await _communicate(text, voice, rate, pitch).save(str(output_path))
+
+
+def generate_voice(text: str, output_path: Path, voice: str | None = None,
+                   rate: str | None = None, pitch: str | None = None) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    _with_retries(lambda: asyncio.run(_speak(text, output_path, voice or settings.edge_voice)), output_path.name)
+    _with_retries(lambda: asyncio.run(_speak(text, output_path, voice or settings.edge_voice, rate, pitch)), output_path.name)
     return output_path
 
 
@@ -99,13 +114,8 @@ def _split_boundary_into_words(text: str, start: float, length: float) -> list[W
     return marks
 
 
-async def _speak_with_marks(text: str, output_path: Path, voice: str) -> list[WordMark]:
-    communicate = edge_tts.Communicate(
-        text=text,
-        voice=voice,
-        rate=settings.edge_rate,
-        volume=settings.edge_volume,
-    )
+async def _speak_with_marks(text: str, output_path: Path, voice: str, rate: str | None = None, pitch: str | None = None) -> list[WordMark]:
+    communicate = _communicate(text, voice, rate, pitch)
     marks: list[WordMark] = []
     with open(output_path, "wb") as audio_file:
         async for chunk in communicate.stream():
@@ -125,7 +135,8 @@ async def _speak_with_marks(text: str, output_path: Path, voice: str) -> list[Wo
 
 
 def generate_voice_with_marks(
-    text: str, output_path: Path, voice: str | None = None
+    text: str, output_path: Path, voice: str | None = None,
+    rate: str | None = None, pitch: str | None = None,
 ) -> tuple[Path, list[WordMark]]:
     """Generate the voice-over AND capture per-word timings for karaoke captions.
 
@@ -135,15 +146,15 @@ def generate_voice_with_marks(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         marks = _with_retries(
-            lambda: asyncio.run(_speak_with_marks(text, output_path, voice or settings.edge_voice)),
+            lambda: asyncio.run(_speak_with_marks(text, output_path, voice or settings.edge_voice, rate, pitch)),
             output_path.name,
         )
     except Exception:
         # Never let caption timing break audio generation — fall back to a plain save.
-        generate_voice(text, output_path, voice)
+        generate_voice(text, output_path, voice, rate, pitch)
         return output_path, []
     if not output_path.exists() or output_path.stat().st_size == 0:
-        generate_voice(text, output_path, voice)
+        generate_voice(text, output_path, voice, rate, pitch)
         return output_path, []
     return output_path, marks
 

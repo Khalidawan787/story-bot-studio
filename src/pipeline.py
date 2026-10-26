@@ -12,7 +12,7 @@ from .music import add_background_music
 from .quality import inspect_video
 from .seo import build_metadata
 from .subtitles import generate_subtitles
-from .tts import generate_voice, generate_voice_with_marks
+from .tts import generate_voice, generate_voice_with_marks, prosody_for
 from .video import render_video, validate_rendered_video
 from .visuals import create_thumbnail, resolve_scene_image
 
@@ -229,6 +229,7 @@ def run_pipeline(
     from .language import display_marks, voice_for
 
     voice = voice_for(channel) if channel is not None else None
+    prosody = prosody_for(channel)
     channel_id = channel.id if channel is not None else "kids"
     # Which of the channel's connected YouTube accounts this video is for. The
     # caller passes an account-specific channel object, so the upload below
@@ -262,16 +263,16 @@ def run_pipeline(
         if out.exists() and completed_clip.exists() and completed_clip.stat().st_size > 100_000:
             path, marks = out, None
         elif settings.enable_karaoke_captions:
-            path, marks = generate_voice_with_marks(scene.speech or scene.line, out, voice=voice)
+            path, marks = generate_voice_with_marks(scene.speech or scene.line, out, voice=voice, **prosody)
             if scene.speech and scene.speech != scene.line:
                 # The voice read Urdu script; the caption shows Roman Urdu.
                 marks = display_marks(marks, scene.line)
         else:
-            path, marks = generate_voice(scene.speech or scene.line, out, voice=voice), None
+            path, marks = generate_voice(scene.speech or scene.line, out, voice=voice, **prosody), None
         scene_audio_paths.append(path)
         scene_marks.append(marks)
     full_voice = run_dir / "voice.mp3"
-    audio_path = full_voice if full_voice.exists() and full_voice.stat().st_size > 10_000 else generate_voice(lesson.spoken_narration, full_voice, voice=voice)
+    audio_path = full_voice if full_voice.exists() and full_voice.stat().st_size > 10_000 else generate_voice(lesson.spoken_narration, full_voice, voice=voice, **prosody)
     video_path = render_video(
         lesson, audio_path, run_dir / "video.mp4", run_dir,
         scene_audio_paths=scene_audio_paths, channel=channel,

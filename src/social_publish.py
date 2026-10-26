@@ -206,7 +206,11 @@ def facebook_from_user_token(channel_id: str, user_token: str, page_id: str = ""
             "and add pages_show_list, pages_read_engagement and pages_manage_posts."
         )
     wanted = str(page_id or "").strip()
-    page = next((p for p in pages if p.get("id") == wanted), None) if wanted else (pages[0] if len(pages) == 1 else None)
+    # The saved ID may be the person's own user ID from an earlier wrong
+    # setup; it matches no Page, so a lone Page still wins.
+    page = next((p for p in pages if p.get("id") == wanted), None) if wanted else None
+    if page is None and len(pages) == 1:
+        page = pages[0]
     if page is None:
         listing = "; ".join(f"{p.get('name')} = {p.get('id')}" for p in pages)
         raise RuntimeError(f"This account manages several Pages. Put the right one's ID in Facebook Page ID and press again: {listing}")

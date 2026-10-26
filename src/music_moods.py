@@ -61,6 +61,10 @@ MOODS = {
                "pad": 0.35, "arp": 0.28, "bass": "pulse", "drum": "kick", "lead": 0.0},
     "calm":   {"root": 196.00, "bpm": 76,  "chords": [(0, _MAJOR), (5, _MAJOR), (9, _MINOR), (7, _MAJOR)],
                "pad": 0.40, "arp": 0.24, "bass": "", "drum": "", "lead": 0.0},
+    # Cinematic motivation: starts as a bare minor piano chord and grows, the
+    # tune, then the bass, then the drums coming in ("build" below).
+    "rise":   {"root": 110.00, "bpm": 96,  "chords": [(0, _MINOR), (8, _MAJOR), (3, _MAJOR), (10, _MAJOR)],
+               "pad": 0.45, "arp": 0.30, "bass": "pulse", "drum": "taiko", "lead": 0.16, "build": True},
     "news":   {"root": 146.83, "bpm": 104, "chords": [(0, _MINOR), (5, _MAJOR), (0, _MINOR), (10, _MAJOR)],
                "pad": 0.40, "arp": 0.12, "bass": "pulse", "drum": "tick", "lead": 0.0},
 }
@@ -74,9 +78,13 @@ def _count(word: str, text: str) -> int:
 
 def mood_for(channel=None, lesson=None) -> str:
     """The mood for one video: the channel's own, unless the script clearly says otherwise."""
+    from .video import is_cinematic
+
     genre = str(getattr(channel, "genre", "") or "kids").lower()
     if getattr(channel, "builtin", False) or genre == "kids":
         return "kids"
+    if is_cinematic(channel):
+        return "rise"
     channel_text = f"{genre} {getattr(channel, 'tone', '')} {getattr(channel, 'name', '')}".lower()
     script_text = ""
     if lesson is not None:
@@ -125,6 +133,11 @@ def _voice(np, freq: float, t, harmonics: tuple[float, ...]):
     return out
 
 
+def _ramp(x: float, begin: float, full: float) -> float:
+    """0 before `begin`, 1 after `full`, a straight line between."""
+    return min(1.0, max(0.0, (x - begin) / (full - begin)))
+
+
 def write_mood_music(output_path: Path, duration: float, mood: str, seed_text: str) -> Path:
     """Synthesise `duration` seconds of `mood` music; each video gets its own variation."""
     import numpy as np
@@ -145,17 +158,23 @@ def write_mood_music(output_path: Path, duration: float, mood: str, seed_text: s
         notes = [root * 2 ** ((shift + step) / 12) for step in shape]
         t = np.arange(chord_len) / SAMPLE_RATE
         part = np.zeros(chord_len)
+        x = start / total
+        if spec.get("build"):
+            gain = {"pad": 0.7 + 0.3 * x, "arp": _ramp(x, 0.0, 0.15), "bass": _ramp(x, 0.10, 0.25),
+                    "drum": _ramp(x, 0.20, 0.35), "lead": _ramp(x, 0.45, 0.60)}
+        else:
+            gain = {"pad": 1.0, "arp": 1.0, "bass": 1.0, "drum": 1.0, "lead": 1.0}
 
         # Held chord: the "strings" under everything.
         pad = sum(_voice(np, note, t, (1.0, 0.45, 0.22, 0.10)) for note in notes) / len(notes)
         if mood == "dark":
             pad *= 0.75 + 0.25 * np.sin(2.0 * np.pi * 0.23 * t)           # slow uneasy swell
-        part += spec["pad"] * pad * _envelope(np, chord_len, 0.9, 1.1)
+        part += gain["pad"] * spec["pad"] * pad * _envelope(np, chord_len, 0.9, 1.1)
 
         beat_len = int(beat * SAMPLE_RATE)
         bass_note = notes[0] / 2
         if spec["bass"] == "held":
-            part += 0.5 * _voice(np, bass_note, t, (1.0, 0.3)) * _envelope(np, chord_len, 0.3, 0.8)
+            part += gain["bass"] * 0.5 * _voice(np, bass_note, t, (1.0, 0.3)) * _envelope(np, chord_len, 0.3, 0.8)
         for step in range(8):
             at = step * beat_len
             seg = slice(at, min(chord_len, at + beat_len))
@@ -165,17 +184,17 @@ def write_mood_music(output_path: Path, duration: float, mood: str, seed_text: s
                 # Two pushes a beat: the restless drive of a chase or a headline.
                 half = len(ts) // 2
                 pulse = np.concatenate([np.exp(-ts[:half] * 9.0), np.exp(-ts[: len(ts) - half] * 9.0)])
-                part[seg] += 0.45 * _voice(np, bass_note, ts, (1.0, 0.4)) * pulse
+                part[seg] += gain["bass"] * 0.45 * _voice(np, bass_note, ts, (1.0, 0.4)) * pulse
             if spec["arp"]:
                 note = notes[arp_order[step % 4] % len(notes)] * 2
-                part[seg] += spec["arp"] * _voice(np, note, ts, (1.0, 0.25, 0.08)) * decay * np.minimum(1.0, ts * 200)
+                part[seg] += gain["arp"] * spec["arp"] * _voice(np, note, ts, (1.0, 0.25, 0.08)) * decay * np.minimum(1.0, ts * 200)
             if spec["drum"] == "taiko" and step in (0, 3, 4):
                 sweep = 2.0 * np.pi * (48.0 * ts + 22.0 * (1 - np.exp(-ts * 18.0)) / 18.0)
-                part[seg] += 0.85 * np.sin(sweep) * np.exp(-ts * 4.5)
-                part[seg] += 0.10 * noise.standard_normal(len(ts)) * np.exp(-ts * 30.0)
+                part[seg] += gain["drum"] * 0.85 * np.sin(sweep) * np.exp(-ts * 4.5)
+                part[seg] += gain["drum"] * 0.10 * noise.standard_normal(len(ts)) * np.exp(-ts * 30.0)
             elif spec["drum"] == "kick":
                 sweep = 2.0 * np.pi * (52.0 * ts + 40.0 * (1 - np.exp(-ts * 30.0)) / 30.0)
-                part[seg] += 0.50 * np.sin(sweep) * np.exp(-ts * 9.0)
+                part[seg] += gain["drum"] * 0.50 * np.sin(sweep) * np.exp(-ts * 9.0)
             elif spec["drum"] == "tick":
                 part[seg] += 0.05 * noise.standard_normal(len(ts)) * np.exp(-ts * 60.0)
                 half = len(ts) // 2
@@ -189,7 +208,7 @@ def write_mood_music(output_path: Path, duration: float, mood: str, seed_text: s
                 at = step * beat_len
                 seg = slice(at, min(chord_len, at + 2 * beat_len))
                 ts = np.arange(seg.stop - seg.start) / SAMPLE_RATE
-                part[seg] += spec["lead"] * _voice(np, note, ts, (1.0, 0.5, 0.2)) * _envelope(np, len(ts), 0.12, 0.5)
+                part[seg] += gain["lead"] * spec["lead"] * _voice(np, note, ts, (1.0, 0.5, 0.2)) * _envelope(np, len(ts), 0.12, 0.5)
 
         mix[start:start + chord_len] += part
 

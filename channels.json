@@ -14,7 +14,8 @@
       "image_style": "cute colorful cartoon for kids, bright, friendly",
       "client_secret": "client_secret_kids.json",
       "token": "token.json",
-      "topics_per_day": 2
+      "topics_per_day": 2,
+      "slot": 1
     },
     {
       "id": "crime",
@@ -28,9 +29,12 @@
       "category_id": "24",
       "seo_suffix": "| True Crime Story",
       "image_style": "dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore",
-      "client_secret": "client_secret.json",
+      "client_secret": "client_secret_crime.json",
       "token": "token_crime.json",
-      "topics_per_day": 2
+      "topics_per_day": 2,
+      "slot": 4,
+      "verified_facts": true,
+      "tone": "calm, factual documentary narrator; suspenseful but respectful"
     },
     {
       "id": "love",
@@ -46,7 +50,8 @@
       "image_style": "romantic cinematic illustration, warm soft golden light, beautiful, tasteful",
       "client_secret": "client_secret.json",
       "token": "token_love.json",
-      "topics_per_day": 2
+      "topics_per_day": 2,
+      "slot": 1
     },
     {
       "id": "horror",
@@ -62,7 +67,8 @@
       "image_style": "spooky dark atmospheric illustration, eerie moody lighting, cinematic, not gory",
       "client_secret": "client_secret.json",
       "token": "token_horror.json",
-      "topics_per_day": 2
+      "topics_per_day": 2,
+      "slot": 0
     },
     {
       "id": "motivation",
@@ -70,15 +76,16 @@
       "genre": "motivation",
       "builtin": false,
       "lessons_file": "data/motivation_lessons.json",
-      "voice": "en-US-GuyNeural",
+      "voice": "en-US-ChristopherNeural",
       "made_for_kids": false,
       "privacy": "public",
       "category_id": "22",
       "seo_suffix": "| Motivational Story",
-      "image_style": "inspiring cinematic illustration, golden hour light, epic, uplifting",
-      "client_secret": "client_secret.json",
+      "image_style": "dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic",
+      "client_secret": "client_secret_motivation.json",
       "token": "token_motivation.json",
-      "topics_per_day": 2
+      "topics_per_day": 2,
+      "slot": 5
     },
     {
       "id": "trending",
@@ -92,9 +99,137 @@
       "category_id": "25",
       "seo_suffix": "| Trending World News Explained",
       "image_style": "photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos",
-      "client_secret": "client_secret.json",
+      "client_secret": "client_secret_trending.json",
       "token": "token_trending.json",
-      "topics_per_day": 2
+      "topics_per_day": 2,
+      "slot": 2
+    },
+    {
+      "id": "kitchen_novice",
+      "name": "Kitchen Novice",
+      "genre": "cooking",
+      "builtin": false,
+      "lessons_file": "data/kitchen_novice_lessons.json",
+      "voice": "en-US-AriaNeural",
+      "made_for_kids": false,
+      "privacy": "public",
+      "category_id": "26",
+      "seo_suffix": "| Simple Recipes",
+      "image_style": "Clean, brightly lit, top-down shots of ingredients and finished dishes, with occasional close-ups of techniques.",
+      "client_secret": "client_secret.json",
+      "token": "token_kitchen_novice.json",
+      "topics_per_day": 1,
+      "tone": "Friendly and encouraging, breaking down complex cooking steps into simple, actionable advice for absolute beginners.",
+      "keywords": [
+        "easy recipes for beginners",
+        "how to cook basics",
+        "simple meal ideas",
+        "beginner cooking tips",
+        "learn to cook at home",
+        "quick and easy dinners",
+        "basic cooking techniques",
+        "what to cook when you're new",
+        "easy pantry recipes",
+        "first time cooking"
+      ],
+      "visuals": "stock",
+      "ideas": [
+        "The Absolute Easiest Way to Cook Pasta",
+        "Scrambled Eggs: The Secret to Perfect Texture Every Time",
+        "5 Essential Knife Skills for Beginners",
+        "How to Bake Chicken Breasts (Juicy Every Time!)",
+        "Your First Homemade Sauce: Simple Tomato Magic"
+      ],
+      "topic": "cooking for beginners",
+      "created_by": "factory",
+      "created_at": "2026-10-12T07:40:27",
+      "slot": 2
+    },
+    {
+      "id": "world_valor_chronicles",
+      "name": "World Valor Chronicles",
+      "genre": "heroic history",
+      "builtin": false,
+      "lessons_file": "data/world_valor_chronicles_lessons.json",
+      "voice": "en-US-AndrewNeural",
+      "made_for_kids": false,
+      "privacy": "public",
+      "category_id": "27",
+      "seo_suffix": "| Echoes of Greatness",
+      "image_style": "cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K",
+      "client_secret": "client_secret_world_valor_chronicles.json",
+      "token": "token_world_valor_chronicles.json",
+      "topics_per_day": 1,
+      "slot": 3,
+      "language": "en",
+      "tone": "Inspiring and authoritative: the true life stories of heroes, sports legends, cricketers, scientists, great leaders and film and music stars, told with wonder and respect.",
+      "keywords": [
+        "true story",
+        "biography",
+        "life story",
+        "real heroes",
+        "cricket legends",
+        "sports legends",
+        "famous scientists",
+        "great leaders",
+        "bollywood stars",
+        "hollywood stars"
+      ],
+      "visuals": "stock",
+      "ideas": [
+        "The Untold Life of a Cricket Legend",
+        "How a Scientist Changed the World",
+        "From Nothing to a Film Superstar",
+        "The Leader Who Built a Nation",
+        "Real Heroes Who Saved Lives"
+      ],
+      "topic": "WorldValorX",
+      "verified_facts": true,
+      "created_by": "factory",
+      "created_at": "2026-10-12T13:35:46",
+      "focus_country": "world"
+    },
+    {
+      "id": "snugglemoon_stories",
+      "name": "SnuggleMoon Stories",
+      "genre": "bedtime stories",
+      "builtin": false,
+      "lessons_file": "data/snugglemoon_stories_lessons.json",
+      "voice": "en-US-AvaNeural",
+      "made_for_kids": false,
+      "privacy": "public",
+      "category_id": "1",
+      "seo_suffix": "| Calming Bedtime Stories",
+      "image_style": "Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting",
+      "client_secret": "client_secret_snugglemoon_stories.json",
+      "token": "token_snugglemoon_stories.json",
+      "topics_per_day": 1,
+      "slot": 6,
+      "language": "en",
+      "tone": "Each script should create a calming, imaginative, and comforting atmosphere, perfect for winding down and drifting off to sleep.",
+      "keywords": [
+        "bedtime stories for kids",
+        "sleep stories for children",
+        "calming stories",
+        "goodnight tales",
+        "children's audio stories",
+        "relaxing kids stories",
+        "story time for sleep",
+        "dreamy children's stories",
+        "preschool bedtime stories",
+        "gentle fantasy stories"
+      ],
+      "visuals": "cartoon",
+      "ideas": [
+        "The Star-Gazing Bunny's Big Adventure",
+        "The Sleepy Cloud Who Painted Dreams",
+        "When the Moon Whispered a Secret",
+        "The Little Firefly Who Found His Glow",
+        "Journey to the Land of Soft Pillows"
+      ],
+      "topic": "SnuggleMoon Stories",
+      "created_by": "factory",
+      "created_at": "2026-10-15T09:27:32"
     }
   ]
 }

@@ -148,13 +148,21 @@ def add_background_music(video_path: Path, run_dir: Path, seed_text: str = "",
     mixed_path = run_dir / "video_with_music.mp4"
 
     volume = settings.background_music_volume
+    from .video import is_cinematic
+
+    if is_cinematic(channel):
+        # Motivation music drives the video: louder under the voice too.
+        volume *= 1.5
+    # An owner's tracks are mastered songs, each as loud as its maker liked:
+    # bring every one to the same loudness first so no video blares.
+    level = "loudnorm=I=-16:TP=-2," if looped else ""
     if settings.enable_music_ducking:
         # Duck the music whenever the narrator speaks: the voice ([0:a]) drives a
         # sidechain compressor on the music so speech stays clear, then the music
         # swells back up in the gaps. asplit keeps one clean copy of the voice for
         # the final mix and one to trigger the compressor.
         filter_complex = (
-            f"[1:a]volume={volume}[music];"
+            f"[1:a]{level}volume={volume}[music];"
             "[0:a]asplit=2[voice][key];"
             # Ratio 6 (was 12): the music stays audible under the voice.
             "[music][key]sidechaincompress=threshold=0.015:ratio=6:attack=5:release=350,"
@@ -167,7 +175,7 @@ def add_background_music(video_path: Path, run_dir: Path, seed_text: str = "",
         )
     else:
         filter_complex = (
-            f"[1:a]volume={volume},{_INTRO_LIFT}[music];"
+            f"[1:a]{level}volume={volume},{_INTRO_LIFT}[music];"
             "[0:a][music]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,"
             "loudnorm=I=-14:TP=-1.5:LRA=11[a]"
         )

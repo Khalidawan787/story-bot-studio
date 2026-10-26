@@ -454,7 +454,7 @@ _GENRE_STOCK_HINT = {
     "crime": "dark moody night investigation",
     "horror": "dark fog eerie night",
     "love": "warm romantic golden hour",
-    "motivation": "sunrise determined success",
+    "motivation": "silhouette dark mountain night rain city",
     "trending": "news documentary photography",
     "kids": "colorful cartoon illustration children",
     "bedtime stories": "calm night moon stars",

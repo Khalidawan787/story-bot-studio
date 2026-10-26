@@ -96,8 +96,33 @@ def _audio_encode_args() -> list[str]:
     return ["-c:a", "aac", "-b:a", settings.audio_bitrate, "-ar", "48000"]
 
 
-def _polish_filters() -> list[str]:
+FONTS_DIR = settings.root / "fonts"
+CINEMATIC_FONT = "DM Serif Display"
+# Muted colour, crushed blacks, cool shadows and a heavy vignette: the dark
+# film look of the big motivation channels.
+_CINEMATIC_GRADE = [
+    "eq=saturation=0.68:contrast=1.16:brightness=-0.07",
+    "colorbalance=rs=-0.04:bs=0.06:rh=0.04:bh=-0.02",
+    "vignette=angle=PI/4",
+]
+# A new picture every few seconds, as in those videos; a scene's narration
+# is often 6-20 s, which on one picture reads as a slideshow.
+_CUT_SECONDS = 3.6
+_MAX_CUTS = 4
+
+
+def is_cinematic(channel) -> bool:
+    """The dark cinematic look: centred serif captions, fast cuts, dark grade."""
+    if channel is None:
+        return False
+    return getattr(channel, "look", "") == "cinematic" or str(getattr(channel, "genre", "") or "").lower() == "motivation"
+
+
+def _polish_filters(cinematic: bool = False) -> list[str]:
     """Sharpen and grade the frame after the camera move."""
+    if cinematic:
+        sharpen = ["unsharp=5:5:0.9:5:5:0.3"] if settings.enable_image_polish and _quality()["polish"] else []
+        return [*sharpen, *_CINEMATIC_GRADE]
     if not (settings.enable_image_polish and _quality()["polish"]):
         return ["eq=saturation=1.12:contrast=1.05"]
     return [
@@ -226,14 +251,94 @@ def _write_karaoke_ass(marks: list[tuple[str, float, float]], duration: float, o
     return out_path
 
 
+# Words never picked as the big word of a caption group.
+_SMALL_WORDS = {
+    "about", "after", "again", "because", "before", "being", "could", "every", "other",
+    "should", "their", "there", "these", "thing", "things", "those", "through", "until",
+    "where", "which", "while", "would", "you're", "they're", "don't", "can't",
+}
+
+
+def _write_cinematic_ass(marks: list[tuple[str, float, float]], duration: float, out_path: Path, content_type: str = "short") -> Path | None:
+    """White serif words low in the frame, only the two or three being
+    spoken, each fading in as it is said; the strongest word is set larger."""
+    words = [(w.strip(), s, d) for (w, s, d) in marks if w and w.strip()]
+    if not words:
+        return None
+
+    W, H = _dimensions(content_type)
+    groups: list[list[tuple[str, float, float]]] = [[]]
+    for item in words:
+        groups[-1].append(item)
+        pause = item[0].rstrip("\"')").endswith((".", "!", "?", ",", ";", ":"))
+        if len(groups[-1]) >= 3 or pause:
+            groups.append([])
+    groups = [group for group in groups if group]
+
+    size = 58 if content_type == "long" else 70
+    big = int(size * 1.35)
+    events: list[tuple[float, float, str]] = []
+    for g, group in enumerate(groups):
+        group_end = max(groups[g + 1][0][1] if g + 1 < len(groups) else duration, group[0][1] + 0.1)
+        clean = [w.replace("{", "(").replace("}", ")").replace("\\", "") for w, _s, _d in group]
+        bare = [w.strip(".,!?;:\"'").lower() for w in clean]
+        options = [i for i, w in enumerate(bare) if len(w) >= 4 and w not in _SMALL_WORDS]
+        key = max(options, key=lambda i: len(bare[i])) if options else -1
+        for i, (_word, start, _dur) in enumerate(group):
+            begin = 0.0 if g == 0 and i == 0 else start
+            end = group[i + 1][1] if i + 1 < len(group) else group_end
+            if end <= begin:
+                continue
+            parts: list[str] = []
+            for j, word in enumerate(clean):
+                # Words still to come are drawn invisible, so the line keeps its
+                # final layout and nothing jumps as words appear.
+                alpha = r"\alpha&H00&" if j < i else (r"\alpha&HFF&\t(0,180,\alpha&H00&)" if j == i else r"\alpha&HFF&")
+                fs = big if j == key else size
+                parts.append(f"{{{alpha}\\fs{fs}}}{word}")
+            fade = r"{\fad(0,160)}" if i + 1 == len(group) else ""
+            events.append((begin, end, fade + " ".join(parts)))
+
+    margin = 200 if content_type == "long" else 110
+    # Above the like/comment buttons and the title YouTube draws on a Short.
+    bottom = 110 if content_type == "long" else 400
+    header = (
+        "[Script Info]\n"
+        "ScriptType: v4.00+\n"
+        "WrapStyle: 0\n"
+        "ScaledBorderAndShadow: yes\n"
+        f"PlayResX: {W}\n"
+        f"PlayResY: {H}\n\n"
+        "[V4+ Styles]\n"
+        "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, "
+        "BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, "
+        "BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
+        # No box; a thin dark outline and soft shadow keep white legible on
+        # bright footage too.
+        f"Style: Film,{CINEMATIC_FONT},{size},&H00FFFFFF,&H00FFFFFF,&H40000000,&H64000000,"
+        f"0,0,0,0,100,100,1,0,1,2.5,3,2,{margin},{margin},{bottom},1\n\n"
+        "[Events]\n"
+        "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
+    )
+    dialogue = "".join(
+        f"Dialogue: 0,{_ass_timestamp(begin)},{_ass_timestamp(end)},Film,,0,0,0,,{text}\n"
+        for begin, end, text in events
+    )
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(header + dialogue, encoding="utf-8")
+    return out_path
+
+
 def _motion_filter(
     duration: float,
     scene: Scene | None = None,
     content_type: str = "short",
     edge_fades: bool = True,
+    cinematic: bool = False,
 ) -> str:
     """Dynamic, per-scene camera motion (free): each scene gets a different
     move — zoom in / zoom out / pan right / pan left / pan up — for variety.
+    The cinematic look only ever pushes slowly in or out.
 
     `edge_fades` is turned off when the scenes are joined with crossfades, so a
     clip does not dip to black right where the next one is already fading in.
@@ -247,7 +352,7 @@ def _motion_filter(
             f"scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,"
             f"crop={W}:{H}"
         )
-        filters = [base, *_polish_filters()]
+        filters = [base, *_polish_filters(cinematic)]
     else:
         # Supersampled working canvas -> smooth (sub-pixel) camera motion.
         work_w, work_h = (W + 160) * scale, (H + 280) * scale
@@ -255,17 +360,19 @@ def _motion_filter(
             f"scale={work_w}:{work_h}:force_original_aspect_ratio=increase:flags=lanczos,"
             f"crop={work_w}:{work_h}"
         )
-        presets = ["zoom_in", "zoom_out", "pan_right", "pan_left", "pan_up"]
+        presets = ["zoom_in", "zoom_out"] if cinematic else ["zoom_in", "zoom_out", "pan_right", "pan_left", "pan_up"]
         key = sum(ord(c) for c in (scene.label if scene else "scene"))
         motion = presets[key % len(presets)]
         # Ease in/out instead of a constant slide: a linear move reads as a
-        # slideshow, an eased one reads as a camera.
-        p = f"(1-cos(PI*min(1,on/{frames})))/2"
+        # slideshow, an eased one reads as a camera. The cinematic push is
+        # linear and small, a slow drift rather than a move.
+        p = f"min(1,on/{frames})" if cinematic else f"(1-cos(PI*min(1,on/{frames})))/2"
+        amount = 0.07 if cinematic else 0.16
         cx, cy = "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"
         if motion == "zoom_in":
-            z, x, y = f"1+0.16*{p}", cx, cy
+            z, x, y = f"1+{amount}*{p}", cx, cy
         elif motion == "zoom_out":
-            z, x, y = f"1.16-0.16*{p}", cx, cy
+            z, x, y = f"{1 + amount}-{amount}*{p}", cx, cy
         elif motion == "pan_right":
             z, x, y = "1.14", f"(iw-iw/zoom)*{p}", cy
         elif motion == "pan_left":
@@ -276,7 +383,7 @@ def _motion_filter(
             f"zoompan=z='{z}':x='{x}':y='{y}':"
             f"d={frames}:s={W}x{H}:fps={settings.video_fps}"
         )
-        filters = [cover, zoompan, *_polish_filters()]
+        filters = [cover, zoompan, *_polish_filters(cinematic)]
 
     if edge_fades and settings.enable_fades and duration > 1.0:
         filters.append("fade=t=in:st=0:d=0.3")
@@ -284,18 +391,38 @@ def _motion_filter(
     return ",".join(filters)
 
 
-def _clip_filter(duration: float, content_type: str = "short", edge_fades: bool = True) -> str:
-    """Fit real footage to the frame. No camera move: the clip already moves."""
+def _fit_clip(duration: float, content_type: str, push: bool) -> list[str]:
+    """Scale and crop footage to the frame; with `push`, a slow zoom in over
+    `duration` (on a supersampled canvas, so the whole-pixel steps of zoompan
+    do not shake)."""
     W, H = _dimensions(content_type)
-    filters = [
-        f"scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos",
-        f"crop={W}:{H}",
+    if not (push and settings.enable_motion):
+        return [
+            f"scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos",
+            f"crop={W}:{H}",
+            f"fps={settings.video_fps}",
+            "setsar=1",
+        ]
+    scale = _quality()["supersample"]
+    frames = max(1, int(duration * settings.video_fps))
+    return [
         f"fps={settings.video_fps}",
+        f"scale={W * scale}:{H * scale}:force_original_aspect_ratio=increase:flags=lanczos",
+        f"crop={W * scale}:{H * scale}",
+        f"zoompan=z='1+0.06*min(1,on/{frames})':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':"
+        f"d=1:s={W}x{H}:fps={settings.video_fps}",
         "setsar=1",
+    ]
+
+
+def _clip_filter(duration: float, content_type: str = "short", edge_fades: bool = True, cinematic: bool = False) -> str:
+    """Fit real footage to the frame. No camera move: the clip already moves,
+    except in the cinematic look, which adds a slow push in."""
+    filters = [
+        *_fit_clip(duration, content_type, push=cinematic),
         # Footage is already sharp, so only the grade and vignette are applied;
         # the sharpening meant for upscaled stills would add halos here.
-        "eq=saturation=1.08:contrast=1.05",
-        "vignette=angle=PI/6",
+        *(_CINEMATIC_GRADE if cinematic else ["eq=saturation=1.08:contrast=1.05", "vignette=angle=PI/6"]),
     ]
     if edge_fades and settings.enable_fades and duration > 1.0:
         filters.append("fade=t=in:st=0:d=0.3")
@@ -337,18 +464,42 @@ def _scene_clip(scene: Scene, duration: float, output_path: Path, run_dir: Path,
         return None
 
 
+def _extra_clips(scene: Scene, duration: float, output_path: Path, run_dir: Path, channel, content_type: str) -> list[Path]:
+    """More clips for one scene, so the cinematic look cuts every few seconds.
+
+    Fewer (or none) is fine: a Pexels limit only means longer shots."""
+    from .stock_video import fetch_scene_clip
+
+    wanted = min(_MAX_CUTS, max(1, round(duration / _CUT_SECONDS))) - 1
+    clips: list[Path] = []
+    for number in range(1, wanted + 1):
+        path = run_dir / f"clip_{output_path.stem}_{number}.mp4"
+        if not (path.exists() and path.stat().st_size > 100_000):
+            try:
+                fetch_scene_clip(
+                    scene, path, run_dir, channel,
+                    landscape=content_type == "long", min_seconds=_CUT_SECONDS,
+                )
+            except Exception as exc:
+                print(f"[video] {output_path.stem}: {len(clips) + 1} shot(s) only ({exc})")
+                break
+        clips.append(path)
+    return clips
+
+
 def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None = None, channel=None, marks: list | None = None, content_type: str = "short", edge_fades: bool = True, reuse_from: Path | None = None) -> Path:
     if reuse_from:
         # Same footage as the original: copy its clip in, where _scene_clip
         # looks for an already downloaded one.
-        earlier = reuse_from / f"clip_{output_path.stem}.mp4"
-        if earlier.exists():
-            import shutil
+        import shutil
 
-            shutil.copy2(earlier, run_dir / earlier.name)
-            meta = earlier.with_suffix(".pexels.json")
-            if meta.exists():
-                shutil.copy2(meta, run_dir / meta.name)
+        for earlier in [reuse_from / f"clip_{output_path.stem}.mp4",
+                        *sorted(reuse_from.glob(f"clip_{output_path.stem}_*.mp4"))]:
+            if earlier.exists():
+                shutil.copy2(earlier, run_dir / earlier.name)
+                meta = earlier.with_suffix(".pexels.json")
+                if meta.exists():
+                    shutil.copy2(meta, run_dir / meta.name)
     # A fact video opens on its subject's real photo, and shows it again where
     # a scene names the subject (archive_images.py); the rest is video.
     real_photo = None
@@ -366,19 +517,24 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
                 real_photo = photo_for_scene(number, scene, run_dir)
             except Exception as exc:
                 print(f"[video] {output_path.stem}: real photo unavailable ({exc})")
+    cinematic = is_cinematic(channel)
     clip_path = None if real_photo else _scene_clip(scene, duration, output_path, run_dir, channel, content_type)
     if clip_path:
+        clips = [clip_path]
+        if cinematic:
+            clips += _extra_clips(scene, duration, output_path, run_dir, channel, content_type)
         try:
             return _encode_scene(
                 scene, duration, output_path, run_dir, audio_path, marks,
-                content_type, edge_fades, clip_path=clip_path,
+                content_type, edge_fades, clip_paths=clips, cinematic=cinematic,
             )
         except subprocess.CalledProcessError as exc:
             # A clip ffmpeg cannot read must not cost the scene: use an image.
             print(f"[video] {output_path.stem}: stock clip failed to render ({exc}); using a still image")
             output_path.unlink(missing_ok=True)
-            clip_path.unlink(missing_ok=True)
-            clip_path.with_suffix(".pexels.json").unlink(missing_ok=True)
+            for path in clips:
+                path.unlink(missing_ok=True)
+                path.with_suffix(".pexels.json").unlink(missing_ok=True)
     image_path = real_photo
     if reuse_from:
         from .dual_language import reused_image
@@ -396,7 +552,7 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
         try:
             return _encode_scene(
                 scene, duration, output_path, run_dir, audio_path, marks,
-                content_type, edge_fades, layers=layers,
+                content_type, edge_fades, layers=layers, cinematic=cinematic,
             )
         except subprocess.CalledProcessError as exc:
             # The plain still render below is always available.
@@ -404,7 +560,7 @@ def _render_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
             output_path.unlink(missing_ok=True)
     return _encode_scene(
         scene, duration, output_path, run_dir, audio_path, marks,
-        content_type, edge_fades, image_path=image_path,
+        content_type, edge_fades, image_path=image_path, cinematic=cinematic,
     )
 
 
@@ -421,7 +577,7 @@ def _scene_layers(image_path: Path, output_path: Path, run_dir: Path, channel, c
         return None
 
 
-def _encode_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None, marks: list | None, content_type: str, edge_fades: bool, image_path: Path | None = None, clip_path: Path | None = None, layers: tuple[Path, Path] | None = None) -> Path:
+def _encode_scene(scene: Scene, duration: float, output_path: Path, run_dir: Path, audio_path: Path | None, marks: list | None, content_type: str, edge_fades: bool, image_path: Path | None = None, clip_paths: list[Path] | None = None, layers: tuple[Path, Path] | None = None, cinematic: bool = False) -> Path:
     line_file = run_dir / f"{output_path.stem}_line.txt"
     line_text = scene.line.split(". ", 1)[1] if ". " in scene.line else scene.line
     wrap_width = 64 if content_type == "long" else 32
@@ -438,18 +594,38 @@ def _encode_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
             scene, duration, layers[0], layers[1], run_dir, W, H,
             settings.video_fps, _quality()["supersample"],
         )
-        finish = _polish_filters()
+        finish = _polish_filters(cinematic)
         if edge_fades and settings.enable_fades and duration > 1.0:
             finish.append("fade=t=in:st=0:d=0.3")
             finish.append(f"fade=t=out:st={max(0.0, duration - 0.3):.2f}:d=0.3")
         base_filter = ",".join(finish)
-    elif clip_path:
+    elif clip_paths and len(clip_paths) > 1:
+        # Several shots in a row, each fitted with its own slow push in, then
+        # graded and captioned as one piece.
+        shot = duration / len(clip_paths)
+        input_args, chains = [], []
+        for index, path in enumerate(clip_paths):
+            # Loop each clip so footage shorter than its shot still fills it.
+            input_args += ["-stream_loop", "-1", "-i", str(path)]
+            length = shot + (0.5 if index == len(clip_paths) - 1 else 0.0)
+            chains.append(
+                f"[{index}:v]{','.join(_fit_clip(length, content_type, push=True))},"
+                f"trim=duration={length:.3f},setpts=PTS-STARTPTS[shot{index}]"
+            )
+        joined = "".join(f"[shot{index}]" for index in range(len(clip_paths)))
+        graph = ";".join(chains) + f";{joined}concat=n={len(clip_paths)}:v=1:a=0[anim]"
+        finish = list(_CINEMATIC_GRADE if cinematic else ["eq=saturation=1.08:contrast=1.05", "vignette=angle=PI/6"])
+        if edge_fades and settings.enable_fades and duration > 1.0:
+            finish.append("fade=t=in:st=0:d=0.3")
+            finish.append(f"fade=t=out:st={max(0.0, duration - 0.3):.2f}:d=0.3")
+        base_filter = ",".join(finish)
+    elif clip_paths:
         # Loop the clip so footage shorter than the narration still fills it.
-        input_args = ["-stream_loop", "-1", "-i", str(clip_path)]
-        base_filter = _clip_filter(duration, content_type, edge_fades=edge_fades)
+        input_args = ["-stream_loop", "-1", "-i", str(clip_paths[0])]
+        base_filter = _clip_filter(duration, content_type, edge_fades=edge_fades, cinematic=cinematic)
     elif image_path:
         input_args = ["-loop", "1", "-i", str(image_path)]
-        base_filter = _motion_filter(duration, scene, content_type, edge_fades=edge_fades)
+        base_filter = _motion_filter(duration, scene, content_type, edge_fades=edge_fades, cinematic=cinematic)
     else:
         input_args = [
             "-f",
@@ -468,9 +644,15 @@ def _encode_scene(scene: Scene, duration: float, output_path: Path, run_dir: Pat
         caption_filter = ""
     elif settings.enable_karaoke_captions and marks:
         ass_file = run_dir / f"{output_path.stem}_caption.ass"
-        if _write_karaoke_ass(marks, duration, ass_file, content_type, pop=bool(layers)):
+        if cinematic:
+            written = _write_cinematic_ass(marks, duration, ass_file, content_type)
+        else:
+            written = _write_karaoke_ass(marks, duration, ass_file, content_type, pop=bool(layers))
+        if written:
             ass_path = escape_filter_path(str(ass_file))
-            fonts_dir = escape_filter_path("C:/Windows/Fonts")
+            # The serif ships with the bot (fonts/), so it renders the same on
+            # GitHub's Linux runner as on Windows.
+            fonts_dir = escape_filter_path(str(FONTS_DIR) if cinematic else "C:/Windows/Fonts")
             caption_filter = f"ass=filename='{ass_path}':fontsdir='{fonts_dir}'"
     if caption_filter is None:
         caption_filter = _drawtext_filter(line_file, duration, content_type)

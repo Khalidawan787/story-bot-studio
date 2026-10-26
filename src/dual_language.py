@@ -92,7 +92,7 @@ def build_copy(lesson: Lesson, channel, run_dir: Path, content_type: str, target
     """Render the `target`-language copy next to the original. Returns (video, title)."""
     from .music import add_background_music
     from .seo import build_metadata
-    from .tts import generate_voice_with_marks
+    from .tts import generate_voice_with_marks, prosody_for
     from .video import render_video, validate_rendered_video
 
     from .verified_facts import is_verified_channel
@@ -108,7 +108,7 @@ def build_copy(lesson: Lesson, channel, run_dir: Path, content_type: str, target
     audios, marks = [], []
     for index, scene in enumerate(translated.scenes, start=1):
         path, scene_marks = generate_voice_with_marks(
-            scene.speech or scene.line, out_dir / f"voice_scene_{index:02}.mp3", voice=voice,
+            scene.speech or scene.line, out_dir / f"voice_scene_{index:02}.mp3", voice=voice, **prosody_for(channel),
         )
         if scene.speech and scene.speech != scene.line:
             scene_marks = display_marks(scene_marks, scene.line)
