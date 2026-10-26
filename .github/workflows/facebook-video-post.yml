@@ -1,0 +1,70 @@
+name: Facebook video post
+
+# Posts one finished video (attached to a GitHub release as video.mp4, with
+# its text as post.txt) to a channel's Facebook Page at once. Posting stays on
+# GitHub with everything else. See scripts/facebook_video_post.py.
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: "Channel id (its Facebook Page must be connected and sent to GitHub)"
+        default: "motivation"
+      release:
+        description: "Release tag holding video.mp4 and post.txt"
+        required: true
+      content_type:
+        description: "short or long"
+        default: "short"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: facebook-video-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Restore the bot's state
+        run: |
+          set -e
+          git fetch --depth=1 origin bot-state
+          git archive origin/bot-state | tar -x -C .
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install ffmpeg and Python packages
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          python -m pip install --upgrade pip -q
+          pip install -q -r requirements.txt
+
+      - name: Restore private files
+        env:
+          BOT_SECRETS_B64: ${{ secrets.BOT_SECRETS_B64 }}
+        run: python scripts/ci_secrets.py unpack
+
+      - name: Download the video
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "${{ github.event.inputs.release }}" --dir post_files
+
+      - name: Post to Facebook
+        run: >-
+          python scripts/facebook_video_post.py
+          --channel "${{ github.event.inputs.channel }}"
+          --video post_files/video.mp4
+          --post post_files/post.txt
+          --content-type "${{ github.event.inputs.content_type }}"
