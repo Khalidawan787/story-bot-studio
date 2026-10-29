@@ -256,7 +256,13 @@
       "news_regions": [
         "US",
         "EU"
-      ]
+      ],
+      "long_days": [
+        "Mon",
+        "Wed",
+        "Fri"
+      ],
+      "long_scenes": 55
     }
   ]
 }

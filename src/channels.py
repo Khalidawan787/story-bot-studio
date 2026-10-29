@@ -58,6 +58,11 @@ class Channel:
     # A news channel's audience: ("US", "EU") reads American, then European
     # sources (trending._REGION_FEEDS). Empty keeps the world mix.
     news_regions: tuple = ()
+    # Long videos only on these weekdays ("Mon", "Wed", "Fri"); empty = every
+    # day. long_scenes sets their length (55 scenes ~ 14-16 minutes); 0 keeps
+    # the daily run's default (~5 minutes).
+    long_days: tuple = ()
+    long_scenes: int = 0
 
     @property
     def client_secret_path(self) -> Path:

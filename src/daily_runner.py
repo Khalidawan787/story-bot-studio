@@ -540,6 +540,17 @@ def run_long_batch(
         release_generation_lock(lock_name)
 
 
+def long_day_today(channel: Channel) -> bool:
+    """True on a day this channel makes its long video (its long_days, in the
+    dashboard's time zone). A channel without long_days makes one every day."""
+    days = {str(day).strip()[:3].lower() for day in (getattr(channel, "long_days", ()) or ())}
+    if not days:
+        return True
+    from .slots import _zone
+
+    return datetime.now(_zone()).strftime("%a").lower() in days
+
+
 def run_daily_long_all(
     upload: bool = True, scenes: int = 20, slot: set[int] | int | None = None,
 ) -> list[tuple[str, str]]:
@@ -560,6 +571,9 @@ def run_daily_long_all(
         if not _can_publish(channel):
             results.append((channel.id, "SKIPPED not connected"))
             continue
+        if not long_day_today(channel):
+            results.append((channel.id, "SKIPPED not one of this channel's long-video days"))
+            continue
         if long_videos_generated_today_count(channel.id) >= 1:
             results.append((channel.id, "SKIPPED today's long video already exists"))
             continue
@@ -569,7 +583,8 @@ def run_daily_long_all(
             continue
         try:
             key, assets = run_long_video(
-                channel, upload=upload, scenes=scenes, queue=False, is_daily=True,
+                channel, upload=upload, scenes=int(getattr(channel, "long_scenes", 0) or scenes),
+                queue=False, is_daily=True,
             )
             results.append((channel.id, f"OK {key} {assets.job_id}"))
         except Exception as exc:

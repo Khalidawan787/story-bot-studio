@@ -492,9 +492,9 @@ def generate_from_prompt(
     tone = getattr(channel, "tone", "") or GENRE_TONE.get(channel.genre, "engaging and well-paced")
     if long_form:
         format_instructions = (
-            f"Write a YouTube long-form script targeting about 5 minutes of narration. "
+            f"Write a YouTube long-form script targeting about {max(1, round(scenes * 40 / 160))} minutes of narration. "
             f"Use exactly {scenes} scenes. Each scene line must contain 38-43 words "
-            f"(about 760-860 narrated words total). Open with a hook: the first sentence is the most gripping moment or question of the story, no scene-setting, "
+            f"(about {scenes * 38}-{scenes * 43} narrated words total). Open with a hook: the first sentence is the most gripping moment or question of the story, no scene-setting, "
             f"keep a clear story or teaching arc, and end with a satisfying takeaway."
         )
     else:

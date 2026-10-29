@@ -32,10 +32,11 @@ def inspect_video(video_path: Path, content_type: str) -> dict[str, object]:
     if size < 150_000:
         issues.append("video file is too small or incomplete")
     if content_type == "long":
-        # Aimed at ~5 minutes, but a script that runs to 8-12 minutes is still a
-        # good long video (more watch time), so only clearly broken lengths fail.
-        if not (270 <= duration <= 720):
-            issues.append(f"long duration is {duration / 60:.1f} minutes; expected 4.5 to 12 minutes")
+        # Aimed at ~5 minutes (12-18 on a channel with long_scenes set), and a
+        # longer script is still a good long video (more watch time), so only
+        # clearly broken lengths fail.
+        if not (270 <= duration <= 1200):
+            issues.append(f"long duration is {duration / 60:.1f} minutes; expected 4.5 to 20 minutes")
         if not (width > height and 1.65 <= (width / max(1, height)) <= 1.90):
             issues.append(f"long video orientation is wrong ({width}x{height})")
     else:
