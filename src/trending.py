@@ -191,7 +191,54 @@ def _reddit_worldnews(subreddit: str = "worldnews", limit: int = 25) -> list[Tre
     return trends
 
 
-def _source_plan() -> list[tuple[str, callable]]:
+# A channel with "news_regions" in channels.json reads these sources instead of
+# the world mix: an American audience wants American news first, then Europe.
+_REGION_FEEDS = {
+    "US": {
+        "geos": ("US",),
+        "feeds": (
+            ("google-news:us-top", "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en", 5.5),
+            ("google-news:us-nation",
+             "https://news.google.com/rss/headlines/section/topic/NATION?hl=en-US&gl=US&ceid=US:en", 5.0),
+            ("npr:news", "https://feeds.npr.org/1001/rss.xml", 4.5),
+            ("bbc:us-canada", "https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml", 4.0),
+        ),
+        "reddit": ("news",),
+    },
+    "EU": {
+        # Britain only: three European search lists together outranked the
+        # American news with tennis players and holiday spots.
+        "geos": ("GB",),
+        "feeds": (
+            ("bbc:europe", "https://feeds.bbci.co.uk/news/world/europe/rss.xml", 4.0),
+            ("google-news:uk", "https://news.google.com/rss?hl=en-GB&gl=GB&ceid=GB:en", 3.5),
+        ),
+        "reddit": ("europe",),
+    },
+}
+
+
+def _region_plan(regions: list[str]) -> list[tuple[str, callable]]:
+    plan: list[tuple[str, callable]] = []
+    for region in regions:
+        spec = _REGION_FEEDS.get(region.upper())
+        if not spec:
+            continue
+        for geo in spec["geos"]:
+            plan.append((f"google-trends:{geo}", lambda g=geo: _google_trends(g)))
+        for name, url, weight in spec["feeds"]:
+            plan.append((name, lambda n=name, u=url, w=weight: _rss_headlines(u, n, weight=w)))
+    # Reddit last, as in the world mix: often blocked from datacenter addresses.
+    for region in regions:
+        for subreddit in (_REGION_FEEDS.get(region.upper()) or {}).get("reddit", ()):
+            plan.append((f"reddit:{subreddit}", lambda s=subreddit: _reddit_worldnews(s)))
+    return plan
+
+
+def _source_plan(channel: Channel | None = None) -> list[tuple[str, callable]]:
+    regions = [str(r) for r in (getattr(channel, "news_regions", ()) or ())]
+    if regions:
+        return _region_plan(regions)
     geos = [g.strip().upper() for g in settings.trending_geos.split(",") if g.strip()]
     plan: list[tuple[str, callable]] = []
     for geo in geos:
@@ -230,7 +277,7 @@ def _source_plan() -> list[tuple[str, callable]]:
 
 # ------------------------------------------------------------------ ranking
 
-def fetch_world_trends(limit: int = 25) -> list[Trend]:
+def fetch_world_trends(limit: int = 25, channel: Channel | None = None) -> list[Trend]:
     """Collect and rank what the world is searching for / reading right now.
 
     A topic that shows up in several independent sources is genuinely trending,
@@ -239,7 +286,7 @@ def fetch_world_trends(limit: int = 25) -> list[Trend]:
     merged: dict[str, Trend] = {}
     failures: list[str] = []
 
-    for name, fetch in _source_plan():
+    for name, fetch in _source_plan(channel):
         try:
             found = fetch()
         except (urllib.error.URLError, urllib.error.HTTPError, ET.ParseError,
@@ -315,7 +362,7 @@ def pick_fresh_trends(channel: Channel, count: int) -> list[Trend]:
             covered.append(signature)
 
     picked: list[Trend] = []
-    for trend in fetch_world_trends(limit=40):
+    for trend in fetch_world_trends(limit=40, channel=channel):
         signature = trend.key
         if len(re.findall(r"[^\W\d_]", trend.title)) < 5 or not re.search(r"[^\W\d_]{3,}", trend.title):
             # A stub search term such as "vz s": nothing a viewer would recognise.
