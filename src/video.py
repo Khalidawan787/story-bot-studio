@@ -445,22 +445,10 @@ def _scene_clip(scene: Scene, duration: float, output_path: Path, run_dir: Path,
             landscape=content_type == "long", min_seconds=duration,
         )
     except Exception as exc:
-        # Usually Pexels' hourly limit. A clip this video already has beats a
-        # still picture: reuse one, not the scene just before (that would look
-        # like a freeze), so the video stays all footage.
-        earlier = sorted(p for p in run_dir.glob("clip_scene_*.mp4")
-                         if p != clip_path and p.stat().st_size > 100_000)
-        if len(earlier) > 1:
-            earlier = earlier[:-1]
-        if earlier:
-            import random
-            import shutil
-
-            reused = random.choice(earlier)
-            shutil.copy2(reused, clip_path)
-            print(f"[video] {output_path.stem}: {exc}; reusing {reused.name}")
-            return clip_path
-        print(f"[video] {output_path.stem}: {exc}; using a still image")
+        # No clip of what this scene is about (or Pexels' hourly limit). Its own
+        # picture, drawn from this very line, beats footage of another scene:
+        # reusing earlier clips made the narration and the picture disagree.
+        print(f"[video] {output_path.stem}: {exc}; using the scene's own picture")
         return None
 
 
@@ -931,6 +919,11 @@ def _render_and_join(lesson: Lesson, audio_path: Path, output_path: Path, run_di
     for the second-language copy of a video (dual_language.py)."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     scene_count = max(1, len(lesson.scenes))
+    from .stock_video import plan_clip_shots, stock_video_enabled
+
+    if stock_video_enabled(channel) and reuse_from is None:
+        # One AI call names what each scene's footage must show (stock_video.py).
+        plan_clip_shots(list(lesson.scenes), run_dir)
 
     # Per-scene on-screen time, decided up front so the crossfade maths below
     # can line every clip up with its own narration.

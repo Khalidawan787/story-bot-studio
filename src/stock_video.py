@@ -52,32 +52,93 @@ def stock_video_wanted(channel=None) -> bool:
     return "all" in settings.stock_video_channels and not kids
 
 
+# ------------------------------------------------------------ search phrases
+# Clips used to be searched with the first words of the scene's title and
+# picture prompt, accepted when their name shared any one word with the whole
+# scene, and replaced by the channel's mood ("dark city") when nothing matched:
+# the narration spoke of one thing while unrelated footage played. Now one AI
+# call per video names, for every scene, a few filmable things and the word a
+# clip's name must contain; a scene with no such clip shows its own picture.
+SHOTS_FILE = "clip_shots.json"
+
+
+def _scene_key(scene: Scene) -> str:
+    return " ".join(str(scene.line or scene.label or "").split())[:160]
+
+
+def plan_clip_shots(scenes: list[Scene], run_dir: Path) -> None:
+    """Ask the script model for stock-footage searches for every scene, once."""
+    path = run_dir / SHOTS_FILE
+    if path.exists() or not scenes:
+        return
+    from .genre_topics import _script_json
+
+    numbered = "\n".join(f"{i}. {_scene_key(scene)}" for i, scene in enumerate(scenes, start=1))
+    prompt = (
+        "You pick stock video footage (Pexels) for a narrated video. For EACH numbered line, give 3 "
+        "search phrases of 2-3 words naming concrete things a camera can film today that show what "
+        "the line is about (e.g. 'cargo ship sea', 'oil tanker', 'navy warship'). No names of people, "
+        "brands or countries' leaders. For history, use things that still exist (old documents, "
+        "castle ruins, museum armour, candle light) rather than modern people. For each phrase also "
+        "give 'must': the one main noun, singular, that the clip's title has to contain.\n"
+        'Return JSON only: {"scenes": [{"n": 1, "shots": [{"q": "cargo ship sea", "must": "ship"}]}]}\n\n'
+        f"Lines:\n{numbered}"
+    )
+    try:
+        raw = _script_json(prompt)
+    except Exception as exc:
+        print(f"[clips] search planning skipped: {exc}")
+        return
+    plan: dict[str, list[dict]] = {}
+    for row in raw.get("scenes") or []:
+        try:
+            scene = scenes[int(row.get("n")) - 1]
+        except (TypeError, ValueError, IndexError):
+            continue
+        shots = [
+            {"q": str(shot.get("q") or "").strip().lower(), "must": str(shot.get("must") or "").strip().lower()}
+            for shot in row.get("shots") or [] if isinstance(shot, dict)
+        ]
+        shots = [shot for shot in shots if shot["q"] and re.fullmatch(r"[a-z]{3,}", shot["must"])]
+        if shots:
+            plan[_scene_key(scene)] = shots[:3]
+    run_dir.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _planned_shots(scene: Scene, run_dir: Path) -> list[dict]:
+    try:
+        plan = json.loads((run_dir / SHOTS_FILE).read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    return list(plan.get(_scene_key(scene)) or [])
+
+
+def _subject_text(scene: Scene, channel=None) -> str:
+    """The scene's title and picture prompt without the channel's style words
+    ("news documentary photography"), which matched any clip at all."""
+    prompt = str(scene.image_prompt or "")
+    style = str(getattr(channel, "image_style", "") or "")
+    if style and style in prompt:
+        prompt = prompt.replace(style, " ")
+    return f"{scene.label} {prompt}"
+
+
 def _scene_queries(scene: Scene, channel=None) -> list[str]:
-    """Search phrases from most to least specific.
+    """Search phrases from most to least specific, used when no AI plan exists.
 
     Video search is much stricter than photo search: five words usually match
-    nothing. So the long phrase is tried first and then shortened, ending on the
-    channel's mood so a scene always gets footage that at least fits the genre.
+    nothing. So the long phrase is tried first and then shortened. There is no
+    general mood search at the end any more: footage that only fits the genre
+    is footage of something else.
     """
-    from .image_assets import _STOCK_STOP_WORDS
-    from .thumbnails import _GENRE_STOCK_HINT
-
-    words: list[str] = []
-    for word in re.findall(r"[A-Za-z]{3,}", f"{scene.label} {scene.image_prompt or ''}"):
-        word = word.lower()
-        if word not in _STOCK_STOP_WORDS and word not in _FILLER_WORDS and word not in words:
-            words.append(word)
-    genre = str(getattr(channel, "genre", "") or "").lower()
-    mood = " ".join(_GENRE_STOCK_HINT.get(genre, "").split()[:2])
-
+    words = _subject_words(scene, channel)
     queries: list[str] = []
     for size in (4, 3, 2):
         if len(words) >= size:
             queries.append(" ".join(words[:size]))
     if words:
         queries.append(words[0])
-    if mood:
-        queries.append(mood)
     seen: list[str] = []
     for query in queries:
         if query and query not in seen:
@@ -85,13 +146,21 @@ def _scene_queries(scene: Scene, channel=None) -> list[str]:
     return seen
 
 
-def _scene_words(scene: Scene) -> set[str]:
+def _subject_words(scene: Scene, channel=None) -> list[str]:
     from .image_assets import _STOCK_STOP_WORDS
 
-    return {
-        word.lower() for word in re.findall(r"[A-Za-z]{3,}", f"{scene.label} {scene.image_prompt or ''} {scene.line}")
-        if word.lower() not in _STOCK_STOP_WORDS and word.lower() not in _FILLER_WORDS
-    }
+    words: list[str] = []
+    for word in re.findall(r"[A-Za-z]{3,}", _subject_text(scene, channel)):
+        word = word.lower()
+        if word not in _STOCK_STOP_WORDS and word not in _FILLER_WORDS and word not in words:
+            words.append(word)
+    return words
+
+
+def _names_must(video: dict, must: str) -> bool:
+    """The clip's page name contains the main noun (or its plural)."""
+    words = _page_words(video)
+    return bool({must, must + "s", must + "es"} & words) or (must.endswith("s") and must[:-1] in words)
 
 
 # ------------------------------------------------------------ archive footage
@@ -319,12 +388,16 @@ def fetch_scene_clip(
             return _commons_clip(scene, output_path, run_dir, landscape, min_seconds)
         except Exception as exc:
             errors.append(f"archive: {exc}")
-    queries = _scene_queries(scene, channel)
-    mood = queries[-1] if queries else ""
-    for query in queries:
-        # The scene's own words must appear in the clip's name; the genre mood
-        # line (last query) is a fallback and only has to match itself.
-        wanted = set(re.findall(r"[a-z]{3,}", query.lower())) if query == mood else _scene_words(scene)
+    # Planned shots first: each names the noun a clip's title must contain.
+    # Without a plan, the clip's title must share a word with the scene's own
+    # title and picture prompt (not its whole narration, where "city" or
+    # "night" matched almost anything).
+    subject: set[str] = set()
+    searches = [(shot["q"], shot["must"]) for shot in _planned_shots(scene, run_dir)]
+    if not searches:
+        subject = set(_subject_words(scene, channel))
+        searches = [(query, "") for query in _scene_queries(scene, channel)]
+    for query, must in searches:
         try:
             videos = _search(query, landscape, key)
         except Exception as exc:
@@ -334,7 +407,9 @@ def fetch_scene_clip(
         candidates = [
             video for video in videos
             if int(video.get("id") or 0) not in used and not _banned(video)
-            and _best_file(video, landscape) and _relevant(video, wanted, fact_channel)
+            and _best_file(video, landscape)
+            and (_names_must(video, must) and _relevant(video, {must}, fact_channel) if must
+                 else _relevant(video, subject, fact_channel))
         ]
         if not candidates:
             errors.append(f"{query}: no usable clip")
