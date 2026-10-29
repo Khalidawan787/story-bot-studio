@@ -163,8 +163,9 @@ def _used_subjects(channel: Channel, long_form: bool) -> set[str]:
     return used | _FAILED.get((channel.id, long_form), set())
 
 
-# A "world" run gives each country this many Shorts before moving on.
-VIDEOS_PER_COUNTRY = 10
+# A "world" run gives each country this many Shorts before moving on: 100
+# American heroes first, then 100 from each next country (owner's rule).
+VIDEOS_PER_COUNTRY = 100
 
 
 def _subjects_data() -> dict:
