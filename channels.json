@@ -237,7 +237,7 @@
       "genre": "trending",
       "builtin": false,
       "lessons_file": "data/ain_news_alert_lessons.json",
-      "voice": "en-GB-SoniaNeural",
+      "voice": "en-US-AriaNeural",
       "made_for_kids": false,
       "privacy": "public",
       "category_id": "25",
