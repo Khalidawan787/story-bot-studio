@@ -347,6 +347,17 @@ def _relevant(video: dict, wanted: set[str], strict_people: bool) -> bool:
     return bool(words & wanted)
 
 
+_CRIME_WORDS = re.compile(
+    r"\b(?:killers?|murder\w*|suspects?|convict\w*|inmates?|fugitives?|accused|arrest\w*|charged|"
+    r"shooters?|gunm[ae]n|offenders?|prison\w*|escap\w*|manhunt|crimes?|criminals?|jail\w*|"
+    r"stabb\w*|kidnap\w*|assault\w*|robber\w*|homicide)\b", re.I)
+
+
+def crime_text(text: str) -> bool:
+    """True for a line about a crime, its suspects or its convicts."""
+    return bool(_CRIME_WORDS.search(str(text or "")))
+
+
 def _banned(video: dict) -> bool:
     from .image_assets import _STOCK_BANNED_WORDS
 
@@ -400,6 +411,9 @@ def fetch_scene_clip(
             return _commons_clip(scene, output_path, run_dir, landscape, min_seconds)
         except Exception as exc:
             errors.append(f"archive: {exc}")
+    # A stranger on screen while the narration names a killer or a suspect
+    # reads as that person, so crime lines get footage without people.
+    no_people = fact_channel or crime_text(f"{scene.label} {scene.line}")
     # Planned shots first: each names the noun a clip's title must contain.
     # Without a plan, the clip's title must share a word with the scene's own
     # title and picture prompt (not its whole narration, where "city" or
@@ -420,8 +434,8 @@ def fetch_scene_clip(
             video for video in videos
             if int(video.get("id") or 0) not in used and not _banned(video)
             and _best_file(video, landscape)
-            and (_names_must(video, must) and _relevant(video, {must}, fact_channel) if must
-                 else _relevant(video, subject, fact_channel))
+            and (_names_must(video, must) and _relevant(video, {must}, no_people) if must
+                 else _relevant(video, subject, no_people))
         ]
         if not candidates:
             errors.append(f"{query}: no usable clip")
