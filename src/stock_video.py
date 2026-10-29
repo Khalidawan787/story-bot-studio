@@ -79,7 +79,10 @@ def plan_clip_shots(scenes: list[Scene], run_dir: Path) -> None:
         "search phrases of 2-3 words naming concrete things a camera can film today that show what "
         "the line is about (e.g. 'cargo ship sea', 'oil tanker', 'navy warship'). No names of people, "
         "brands or countries' leaders. For history, use things that still exist (old documents, "
-        "castle ruins, museum armour, candle light) rather than modern people. For each phrase also "
+        "castle ruins, museum armour, candle light) rather than modern people. Abstract lines get "
+        "real-life scenes, never symbols or graphics: 'reports suggest' -> 'reporter writing notes', "
+        "'mourning' -> 'memorial candles flowers', 'unconfirmed' -> 'newspaper headlines'. Never "
+        "question marks, icons, emoji, animations or text. For each phrase also "
         "give 'must': the one main noun, singular, that the clip's title has to contain.\n"
         'Return JSON only: {"scenes": [{"n": 1, "shots": [{"q": "cargo ship sea", "must": "ship"}]}]}\n\n'
         f"Lines:\n{numbered}"
@@ -350,7 +353,16 @@ def _banned(video: dict) -> bool:
     # The page URL carries the clip's title as a slug; it is the only text the
     # video API returns to judge the content by.
     slug = str(video.get("url") or "").lower().replace("-", " ")
-    return any(term in slug for term in _STOCK_BANNED_WORDS)
+    return any(term in slug for term in _STOCK_BANNED_WORDS) or bool(_page_words(video) & _GRAPHIC_WORDS) or " 3d " in f" {slug} "
+
+
+# Footage only: a news Short once said "reports suggest" over a cartoon pink
+# question mark on a green screen.
+_GRAPHIC_WORDS = {
+    "animation", "animated", "cartoon", "illustration", "render", "rendering", "graphic",
+    "graphics", "icon", "icons", "emoji", "symbol", "chroma", "greenscreen",
+    "infographic", "abstract", "loop", "looping", "mark", "marks",
+}
 
 
 def _used_ids(run_dir: Path) -> set[int]:
