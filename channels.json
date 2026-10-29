@@ -230,6 +230,29 @@
       "topic": "SnuggleMoon Stories",
       "created_by": "factory",
       "created_at": "2026-10-15T09:27:32"
+    },
+    {
+      "id": "ain_news_alert",
+      "name": "Ain News Alert",
+      "genre": "trending",
+      "builtin": false,
+      "lessons_file": "data/ain_news_alert_lessons.json",
+      "voice": "en-GB-SoniaNeural",
+      "made_for_kids": false,
+      "privacy": "public",
+      "category_id": "25",
+      "seo_suffix": "| Ain News Alert",
+      "image_style": "photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos",
+      "client_secret": "client_secret.json",
+      "token": "token_ain_news_alert.json",
+      "topics_per_day": 2,
+      "slot": 0,
+      "language": "en",
+      "tone": "calm, clear female TV news anchor; factual, neutral and serious",
+      "visuals": "stock",
+      "topic": "world news alerts",
+      "created_by": "factory",
+      "created_at": "2026-10-29T08:49:09"
     }
   ]
 }
