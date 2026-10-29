@@ -382,6 +382,29 @@ def pick_fresh_trends(channel: Channel, count: int) -> list[Trend]:
 
 # --------------------------------------------------------------- generation
 
+# A news channel for an American audience (news_regions) wants titles that
+# state the story: "Spain Reels From Rail Tragedy Amidst Political Division"
+# padded it with a headline verb, and "Reels" reads like Facebook Reels.
+PLAIN_TITLE_RULE = (
+    "Title: state the news plainly in its key words, like 'Spain Rail Tragedy Sparks Political "
+    "Divide'. No filler verbs (reels, grapples, braces, amidst) and never the words Reels, "
+    "Shorts or Video."
+)
+# Only "Reels"/"Reeling" is cut afterwards: dropping "Braces For" from "Market
+# Braces For Rate Cut" would lose the meaning, so the prompt handles the rest.
+_FILLER_TITLE = re.compile(r"\b(?:reels|reeling)\s+(?:from|over)\s+", re.I)
+
+
+def plain_title(channel: Channel, title: str) -> str:
+    """Drop headline filler from a news_regions channel's title; others unchanged."""
+    if not getattr(channel, "news_regions", ()):
+        return title
+    title = _FILLER_TITLE.sub("", title)
+    title = re.sub(r"\bamidst\b", "Amid", title, flags=re.I)
+    title = re.sub(r"\b(?:reels?|shorts?)\b", "", title, flags=re.I)
+    return " ".join(title.split()).strip(" -:|")
+
+
 def _news_prompt(channel: Channel, trend: Trend, scenes: int, long_form: bool) -> str:
     """Grounded prompt: the model explains the REAL headlines, not invented ones."""
     context = trend.context() or f"- {trend.title}"
@@ -413,7 +436,8 @@ def _news_prompt(channel: Channel, trend: Trend, scenes: int, long_form: bool) -
         "4. Take no political side, endorse no group, and do not describe "
         "graphic violence. Keep it advertiser-friendly.\n"
         "5. The title must be a clear, non-clickbait description of the story.\n"
-        "Return ONLY JSON: {\"title\": str, \"intro\": str, \"outro\": str, "
+        + (f"   {PLAIN_TITLE_RULE}\n" if getattr(channel, "news_regions", ()) else "")
+        + "Return ONLY JSON: {\"title\": str, \"intro\": str, \"outro\": str, "
         "\"scenes\": [{\"label\": str, \"line\": str, \"image_prompt\": str}]}.\n"
         "'label' = a 2-4 word on-screen caption. 'image_prompt' = a neutral, "
         "photo-real news visual for that scene (setting and objects only — no "
@@ -441,6 +465,7 @@ def generate_trending_topics(channel: Channel, count: int = 2, scenes: int = 12)
             print(f"[trending] {channel.id}: script failed for '{trend.title[:60]}' ({exc})")
             continue
         key, lesson = _build_lesson(channel, raw, fallback_title=trend.title)
+        lesson["title"] = plain_title(channel, str(lesson.get("title") or ""))
         lesson["category"] = "Trending"
         key = f"trend_{key}"
         if key in lessons:
@@ -472,6 +497,7 @@ def trending_long_idea(channel: Channel) -> str | None:
         f"subject: {trend.title}. Real headlines:\n{context}\n"
         "Cover what happened, the background behind it, and why it matters. "
         "Do not invent quotes, numbers, or accusations, and take no political side."
+        + (f" {PLAIN_TITLE_RULE}" if getattr(channel, "news_regions", ()) else "")
     )
 
 
