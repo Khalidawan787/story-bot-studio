@@ -477,6 +477,54 @@ def _complete_long_script(raw: dict, channel: Channel, user_prompt: str, scenes:
     return raw
 
 
+# A free model asked for 55 scenes in one answer wrote 24 (a 6-minute "15-minute"
+# video), so a script longer than this is written in parts that continue
+# each other.
+_PART_SCENES = 24
+
+
+def _long_script_in_parts(prompt: str, scenes: int) -> dict:
+    """One continuous long script from several answers of about 18 scenes each.
+
+    `prompt` is the full single-answer prompt for `scenes` scenes; each part
+    keeps its rules and only changes the scene count and its place in the
+    story. Returns what was written (possibly fewer scenes if a part failed).
+    """
+    parts = -(-scenes // 19)
+    sizes = [scenes // parts + (1 if i < scenes % parts else 0) for i in range(parts)]
+    merged: dict = {"scenes": []}
+    for index, size in enumerate(sizes, start=1):
+        part_prompt = re.sub(r"Use exactly \d+ scenes", f"Use exactly {size} scenes", prompt)
+        part_prompt = re.sub(r"\(about \d+-\d+ narrated words total\)",
+                             f"(about {size * 38}-{size * 43} narrated words in this part)", part_prompt)
+        part_prompt += f"\n\nThis is PART {index} of {parts} of one continuous video script."
+        if index == 1:
+            part_prompt += " Write only the opening part: the hook and the background. Do not conclude yet."
+        else:
+            done = "\n".join(f"- {row.get('label')}: {row.get('line')}" for row in merged["scenes"][-6:])
+            covered = ", ".join(str(row.get("label")) for row in merged["scenes"])
+            part_prompt += (
+                " Continue straight on from the scenes already written; do not greet, re-introduce "
+                f"the topic or repeat a point. Already covered: {covered}.\nThe last scenes so far:\n{done}\n"
+                + ("This is the LAST part: end with the conclusion and the takeaway; 'outro' closes the whole video."
+                   if index == parts else "Do not conclude yet.")
+            )
+        try:
+            answer = _script_json(part_prompt)
+        except Exception as exc:
+            print(f"[script] part {index}/{parts} failed: {exc}")
+            break
+        rows = [row for row in answer.get("scenes") or [] if str(row.get("line") or "").strip()]
+        if not rows:
+            break
+        if index == 1:
+            merged.update({k: answer.get(k) for k in ("title", "intro") if answer.get(k)})
+        merged["outro"] = answer.get("outro") or merged.get("outro")
+        merged["scenes"].extend(rows)
+    print(f"[script] long script in {parts} parts: {len(merged['scenes'])}/{scenes} scenes")
+    return merged
+
+
 def generate_from_prompt(
     channel: Channel,
     user_prompt: str,
@@ -516,6 +564,15 @@ def generate_from_prompt(
         prompt = prompt.replace(
             '\"line\": str, \"image_prompt\"', '\"line\": str, \"speech\": str, \"image_prompt\"',
         )
+    if long_form and scenes > _PART_SCENES:
+        raw = _long_script_in_parts(prompt, scenes)
+        # At least two parts' worth, or the single-answer path below tries.
+        # _complete_long_script is skipped: it trims every script to 24 scenes.
+        if len(raw.get("scenes") or []) > _PART_SCENES:
+            if _looks_like_instruction_title(str(raw.get("title") or "")):
+                raw["title"] = _story_subject(user_prompt, channel.genre)
+            key, lesson = _build_lesson(channel, raw, fallback_title=user_prompt[:60])
+            return _save_custom_lesson(channel, f"long_{key}", lesson)
     raw = None
     best_candidate = None
     # Urdu drafts get a second try: the English filler that tops up short
