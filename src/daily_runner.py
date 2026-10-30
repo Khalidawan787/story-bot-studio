@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import random
 import sqlite3
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -20,6 +21,98 @@ class TopicHistory:
 
 def _resolve(channel: Channel | None) -> Channel:
     return channel if channel is not None else default_channel()
+
+
+class NoFreshTopic(RuntimeError):
+    """Nothing suitable to make today. The run skips instead of making a weak video."""
+
+
+def _channel_pool(channel: Channel) -> dict:
+    """The saved scripts this channel may publish, or take ideas from.
+
+    A fact-only channel only gets scripts written from a source. The news
+    channel only gets scripts written from real headlines (their keys start with
+    "trend_"): the others in its file came from the generic story writer when no
+    trend could be found, and a video about cats in boxes is not world news.
+    """
+    from .trending import is_trending_channel
+    from .verified_facts import only_verified
+
+    lessons = only_verified(channel, load_topics_for(channel))
+    if is_trending_channel(channel):
+        lessons = {key: raw for key, raw in lessons.items() if key.startswith("trend_")}
+    return lessons
+
+
+# Long videos are saved under their own "long_..." topic key, so the short-video
+# history never saw which seed topic a long video came from and the same seed was
+# picked every day. This file counts the seeds the long videos used. It sits in
+# data/, so the daily GitHub run carries it forward with the rest of the state.
+_SEED_HISTORY_FILE = settings.root / "data" / "long_seed_history.json"
+
+
+def _load_seed_history() -> dict:
+    try:
+        data = json.loads(_SEED_HISTORY_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _record_seeds(channel_id: str, keys: list[str]) -> None:
+    data = _load_seed_history()
+    bucket = data.setdefault(channel_id, {})
+    now = datetime.now().isoformat(timespec="seconds")
+    for key in keys:
+        entry = bucket.get(key) or {}
+        bucket[key] = {"count": int(entry.get("count", 0) or 0) + 1, "last": now}
+    try:
+        _SEED_HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        _SEED_HISTORY_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    except OSError as exc:
+        # Losing the count only means a seed may come round sooner; never a blocker.
+        print(f"[daily_runner] could not save the seed history ({exc})")
+
+
+def _pick_long_seeds(channel: Channel, count: int) -> list[tuple[str, dict]]:
+    """`count` seed topics for long videos: the least used first, ties picked at random.
+
+    "Used" adds the short videos made from a topic to the long videos that took it
+    as their seed. The seeds picked are recorded, so the next call moves on. When
+    there are fewer topics than `count` the list wraps round. Empty if the channel
+    has no topic to take a seed from.
+    """
+    pool = [(key, raw) for key, raw in _channel_pool(channel).items() if not key.startswith("long_")]
+    if not pool or count < 1:
+        return []
+    history = _topic_history(channel.id)
+    seeds = _load_seed_history().get(channel.id, {})
+
+    def rank(item: tuple[str, dict]):
+        key = item[0]
+        short = history.get(key, TopicHistory(0, ""))
+        long_ = seeds.get(key) or {}
+        used = short.count + int(long_.get("count", 0) or 0)
+        return (used, str(long_.get("last") or short.last_created_at), random.random())
+
+    pool.sort(key=rank)
+    picked = [pool[index % len(pool)] for index in range(count)]
+    _record_seeds(channel.id, list(dict.fromkeys(key for key, _raw in picked)))
+    return picked
+
+
+def _long_idea_prompt(channel: Channel, seed_title: str) -> str:
+    """The brief for one long video, built round a seed topic.
+
+    It keeps the "inspired by:" and "Creator guideline:" markers that
+    genre_topics._story_subject and seo.py already read. The old brief ended in
+    "Date seed: <date>", and the writer took "date seed" for part of the story.
+    """
+    return (
+        f"Create a complete, original {channel.genre} video inspired by: {seed_title}. "
+        "Creator guideline: keep the same subject area but tell a brand-new story with new "
+        f"characters, a new title and a new angle. Never reuse the title \"{seed_title}\"."
+    )
 
 
 def _topic_history(channel_id: str) -> dict[str, TopicHistory]:
@@ -190,10 +283,10 @@ def load_custom_lessons_safe(channel: Channel) -> dict:
 
 def select_daily_topics(count: int = 2, channel: Channel | None = None) -> list[str]:
     channel = _resolve(channel)
-    from .verified_facts import only_verified
 
-    # A fact-only channel must never pick up an older free-written script.
-    lessons = only_verified(channel, load_topics_for(channel))
+    # A fact-only channel must never pick up an older free-written script, and
+    # the news channel only publishes scripts written from real headlines.
+    lessons = _channel_pool(channel)
     history = _topic_history(channel.id)
     today_topics = _topics_generated_today(channel.id)
 
@@ -231,17 +324,18 @@ def select_daily_topics(count: int = 2, channel: Channel | None = None) -> list[
             try:
                 if is_trending_channel(channel):
                     # This channel follows the world instead of inventing topics:
-                    # today's live trends become today's videos. If every trend
-                    # source is unreachable, fall through to the normal generator
-                    # so the daily run still produces something.
+                    # today's live trends become today's videos. When no fresh
+                    # trend can be found it makes fewer videos, or none. The
+                    # generic story writer used to fill the gap, which put videos
+                    # about squirrels and cats on a world-news channel.
                     from .trending import generate_trending_topics
                     if not generate_trending_topics(channel, count=shortage):
-                        from .genre_topics import generate_genre_topics
-                        generate_genre_topics(channel, count=shortage)
+                        print(f"[daily_runner] {channel.id}: no fresh world trends; "
+                              "not making off-topic videos to fill the gap")
                 else:
                     from .genre_topics import generate_genre_topics
                     generate_genre_topics(channel, count=shortage)
-                lessons = only_verified(channel, load_topics_for(channel))
+                lessons = _channel_pool(channel)
             except Exception as exc:
                 print(f"[daily_runner] {channel.id}: could not replenish unique topics ({exc})")
 
@@ -370,7 +464,10 @@ def _run_short_batch(
         for target in targets:
             # Topics are chosen inside the loop, after the previous account's
             # videos are already recorded, so no two accounts get the same one.
-            for topic_key in select_daily_topics(count, target):
+            topic_keys = select_daily_topics(count, target)
+            if not topic_keys:
+                results.append((target.id, "SKIPPED no fresh topic available today"))
+            for topic_key in topic_keys:
                 label = topic_key if target.account == "main" else f"{topic_key} -> {target.account}"
                 try:
                     assets = run_pipeline(
@@ -447,12 +544,11 @@ def _automatic_long_idea(channel: Channel) -> str:
             idea = None
         if idea:
             return idea
-    topics = load_topics_for(channel)
-    candidates = [
-        (key, raw) for key, raw in topics.items()
-        if not key.startswith("long_")
-    ]
-    if not candidates:
+        # A news channel stays on the news. Falling back to an old script here
+        # made a "world news" video out of a story about cats in boxes.
+        raise NoFreshTopic("no fresh world trend today; skipped instead of making an off-topic video")
+    seeds = _pick_long_seeds(channel, 1)
+    if not seeds:
         # A channel made from a topic starts with a handful of planned ideas:
         # one a day, then fresh topics of its own.
         ideas = list(getattr(channel, "ideas", ()) or ())
@@ -461,18 +557,10 @@ def _automatic_long_idea(channel: Channel) -> str:
         except (TypeError, ValueError):
             day = len(ideas)
         if 0 <= day < len(ideas):
-            return f"Create a complete, original {channel.genre} video about: {ideas[day]}. Date seed: {today_label}."
+            return f"Create a complete, original {channel.genre} video about: {ideas[day]}."
         return f"Create a fresh original {channel.genre} video for {today_label}."
-    history = _topic_history(channel.id)
-    candidates.sort(key=lambda item: (
-        history.get(item[0], TopicHistory(0, "")).count,
-        history.get(item[0], TopicHistory(0, "")).last_created_at,
-    ))
-    seed_title = candidates[0][1].get("title", candidates[0][0])
-    return (
-        f"Create a complete, original {channel.genre} video inspired by: "
-        f"{seed_title}. Date seed: {today_label}."
-    )
+    key, raw = seeds[0]
+    return _long_idea_prompt(channel, str(raw.get("title") or key))
 
 
 def run_long_video(
@@ -499,6 +587,9 @@ def run_long_video(
             lesson, upload=upload, channel=channel,
             content_type="long", queue=queue, is_daily=is_daily,
         )
+    except NoFreshTopic:
+        # Nothing to make today is not a failure; the caller reports it as skipped.
+        raise
     except Exception as exc:
         run_log.record(channel.id, "long", False, str(exc), title)
         raise
@@ -533,6 +624,8 @@ def run_long_batch(
                     )
                     label = key if target.account == "main" else f"{key} -> {target.account}"
                     results.append((label, f"OK {assets.job_id}"))
+                except NoFreshTopic as exc:
+                    results.append((str(idea or "auto")[:50], f"SKIPPED {exc}"))
                 except Exception as exc:
                     results.append((str(idea or "auto")[:50], f"FAILED {exc}"))
         return results
@@ -587,6 +680,8 @@ def run_daily_long_all(
                 queue=False, is_daily=True,
             )
             results.append((channel.id, f"OK {key} {assets.job_id}"))
+        except NoFreshTopic as exc:
+            results.append((channel.id, f"SKIPPED {exc}"))
         except Exception as exc:
             results.append((channel.id, f"FAILED {exc}"))
         finally:
@@ -594,22 +689,13 @@ def run_daily_long_all(
     return results
 
 def _offline_long_ideas(channel: Channel, days: int, guideline: str = "") -> list[str]:
-    topics = [
-        (key, raw) for key, raw in load_topics_for(channel).items()
-        if not key.startswith("long_")
-    ]
-    history = _topic_history(channel.id)
-    topics.sort(key=lambda item: (
-        history.get(item[0], TopicHistory(0, "")).count,
-        history.get(item[0], TopicHistory(0, "")).last_created_at,
-        item[0],
-    ))
+    seeds = _pick_long_seeds(channel, days)
     ideas: list[str] = []
     for index in range(days):
         target = (datetime.now() + timedelta(days=index + 1)).strftime("%B %d, %Y")
         seed = (
-            topics[index % len(topics)][1].get("title", topics[index % len(topics)][0])
-            if topics else f"a fresh original {channel.genre} topic"
+            str(seeds[index][1].get("title") or seeds[index][0])
+            if seeds else f"a fresh original {channel.genre} topic"
         )
         direction = guideline.strip() or "Keep it original, engaging, and appropriate for this channel."
         ideas.append(

@@ -146,7 +146,7 @@ class Settings:
     # How many freshly written kids topics to add each day, on top of the
     # built-in bank. 0 turns it off and the channel goes back to bank-only.
     kids_fresh_topics_per_day: int = int(os.getenv("KIDS_FRESH_TOPICS_PER_DAY", "2"))
-    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
     # Second free Gemini model tried when the primary model's daily free quota
     # is exhausted. On the free tier each model has its OWN daily limit, so a
     # different model on the same key keeps scripts flowing. Blank = skip.

@@ -2,6 +2,8 @@
 #  SECRETS — never commit these
 # ============================================================
 .env
+.env.*
+!.env.example
 credentials/
 *token*.json
 *token*.json.*
@@ -41,6 +43,8 @@ logs/
 data/thumbnail_disabled_channels.json
 data/thumbnail_reenabled_channels.json
 data/trending_history.json
+# Which seed topics the long videos already used (the daily GitHub run force-adds it to bot-state)
+data/long_seed_history.json
 # Which YouTube accounts are connected on THIS machine
 data/youtube_accounts.json
 # Which Gmail each YouTube account signed in with

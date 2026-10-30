@@ -60,6 +60,14 @@ class Trend:
     sources: set[str] = field(default_factory=set)
     traffic: int = 0
     headlines: list[str] = field(default_factory=list)
+    # The best single source's score. `score` adds up every source that carried
+    # the topic, so a sports fixture listed by three countries' search lists
+    # out-scored a story two newsrooms ran. Ranking uses `peak` plus bonuses.
+    peak: float = 0.0
+
+    def __post_init__(self) -> None:
+        if not self.peak:
+            self.peak = self.score
 
     @property
     def key(self) -> str:
@@ -277,6 +285,101 @@ def _source_plan(channel: Channel | None = None) -> list[tuple[str, callable]]:
 
 # ------------------------------------------------------------------ ranking
 
+# Sports ARE covered by this channel (the owner wants them), so they are not in
+# the not-news list below. They are recognised only so that each day's picks can
+# hold a sports story (see SPORTS_SLOTS).
+_SPORTS = re.compile(
+    r"\b(football|soccer|cricket|tennis|rugby|basketball|baseball|nfl|nba|mlb|nhl|ipl|psl|"
+    r"premier league|la liga|serie a|bundesliga|ligue 1|champions league|europa league|"
+    r"world cup|golf|formula 1|formula one|grand prix|wimbledon|atp|wta|ufc|wwe|boxing|"
+    r"live score|live stream(?:ing)?|fixtures?|line-?ups?|playoffs?|transfer window|"
+    r"group stage|innings|wickets?|touchdown|jockey|horse racing|hong kong sixes|"
+    r"super league|isl|olympics?|medal|marathon|cycling|athletics)\b", re.I)
+# Tournaments and fixtures the whole world follows, tried first for the sports place.
+_MAJOR_EVENT = re.compile(
+    r"\b(world cup|olympics?|champions league|europa league|grand prix|formula 1|wimbledon|"
+    r"us open|french open|australian open|super bowl|nba finals|test match|the ashes|"
+    r"asia cup|t20|ipl|psl|premier league|la liga|serie a|bundesliga|final|semi-?final)\b", re.I)
+# Of a day's picks, this many are sports stories when any is available and the
+# day makes two or more videos. Set it to 0 to rank sports like any other topic.
+SPORTS_SLOTS = 1
+
+# Search lists are also full of game titles, film promotion and price tickers;
+# none of that is news. A topic whose words say it is one of these is dropped
+# from the picks and sunk in the ranking.
+_NOT_NEWS = {
+    "entertainment": re.compile(
+        r"\b(box office|trailer|teaser|season finale|release date|netflix|album|grammys?|oscars?|"
+        r"emmys?|bafta|celebrity|red carpet|reality tv|bigg boss|love island|call of duty|"
+        r"fortnite|gta|playstation|xbox|nintendo|video game|k-pop|taylor swift|voice actor)\b", re.I),
+    "markets": re.compile(
+        r"\b(price today|rate today|gold rate|gold price|silver price|share price|stock price|"
+        r"etf|etfs|crypto price|bitcoin price|forex|nifty|sensex|horoscope|lottery|powerball|"
+        r"mega millions)\b", re.I),
+}
+# "a vs b" as a bare search term is a match fixture.
+_FIXTURE = re.compile(r"^[^:]{2,60}\s+vs\.?\s+[^:]{2,60}$", re.I)
+# Searches below this are too small to show the world cares; with no news outlet
+# behind them they are rated down (real world-news searches are far above it).
+_BIG_SEARCH = 50_000
+
+
+def _mostly(pattern: re.Pattern, trend: Trend) -> bool:
+    """The pattern matches at least half of the topic's title and headlines."""
+    snippets = [trend.title, *list(dict.fromkeys(trend.headlines))[:4]]
+    hits = sum(1 for text in snippets if pattern.search(text))
+    return bool(hits) and hits * 2 >= len(snippets)
+
+
+def is_sports(trend: Trend) -> bool:
+    """True when the topic is a match, a tournament, a transfer or other sport."""
+    feeds = [s for s in trend.sources if not s.startswith("google-trends")]
+    if _mostly(_SPORTS, trend):
+        return True
+    return not feeds and bool(_FIXTURE.match(trend.title))
+
+
+def trend_kind(trend: Trend) -> str | None:
+    """'entertainment' or 'markets' when the topic is not news, else None.
+
+    Sports is not in this list: the channel covers it.
+    """
+    for kind, pattern in _NOT_NEWS.items():
+        if _mostly(pattern, trend):
+            return kind
+    return None
+
+
+def _story_words(title: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z0-9]+", str(title or "").lower())
+            if w not in _STOPWORDS and len(w) > 2}
+
+
+def _same_story(left: str, right: str) -> bool:
+    """Two headlines about one story: at least three telling words in common and
+    half of the shorter headline's words. The old fingerprint kept only the first
+    six words in alphabetical order, so two reports of one crash rarely matched."""
+    a, b = _story_words(left), _story_words(right)
+    shared = len(a & b)
+    return shared >= 3 and shared / min(len(a), len(b)) >= 0.5
+
+
+def rank_value(trend: Trend) -> float:
+    """How strongly the world is covering this topic, for a news channel."""
+    feeds = {s for s in trend.sources if not s.startswith("google-trends")}
+    geos = {s for s in trend.sources if s.startswith("google-trends")}
+    value = trend.peak
+    value += 4.0 * max(0, len(feeds) - 1)      # several newsrooms ran it
+    if feeds and geos:
+        value += 4.0                            # and people are searching for it too
+    value += 1.0 * max(0, len(geos) - 1)       # several countries: little weight, leagues do it too
+    if not feeds and trend.traffic < _BIG_SEARCH and not is_sports(trend):
+        value -= 8.0                            # a small search term with no reporting behind it
+    if trend_kind(trend):
+        value -= 30.0
+    return value
+
+
 def fetch_world_trends(limit: int = 25, channel: Channel | None = None) -> list[Trend]:
     """Collect and rank what the world is searching for / reading right now.
 
@@ -301,13 +404,14 @@ def fetch_world_trends(limit: int = 25, channel: Channel | None = None) -> list[
             if existing is None:
                 # Also merge near-identical wordings of the same story.
                 for other_key, other in merged.items():
-                    if _overlap(signature, other_key) >= 0.7:
+                    if _overlap(signature, other_key) >= 0.7 or _same_story(trend.title, other.title):
                         existing = other
                         break
             if existing is None:
                 merged[signature] = trend
                 continue
             existing.score += trend.score
+            existing.peak = max(existing.peak, trend.peak)
             existing.sources |= trend.sources
             existing.traffic = max(existing.traffic, trend.traffic)
             existing.headlines.extend(trend.headlines)
@@ -317,7 +421,7 @@ def fetch_world_trends(limit: int = 25, channel: Channel | None = None) -> list[
     if failures:
         print(f"[trending] {len(failures)} source(s) unavailable: {failures[0]}")
 
-    ranked = sorted(merged.values(), key=lambda t: (-(t.score + 4.0 * (len(t.sources) - 1)), t.title))
+    ranked = sorted(merged.values(), key=lambda t: (-rank_value(t), t.title))
     return ranked[:limit]
 
 
@@ -350,6 +454,22 @@ def _remember(signatures: list[str]) -> None:
     HISTORY_FILE.write_text(json.dumps(history, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
+def _already_covered(signature: str, seen: str) -> bool:
+    """True when `signature` is the same story as one already made.
+
+    A signature of one or two words ("israel", "stock") is a bare search term.
+    Measured as a share of itself it matches every story that mentions the word,
+    so one search term used to block a whole country or market for the 45 days
+    the history is kept. A signature that short only counts as covered when it
+    is the very same one.
+    """
+    if signature == seen:
+        return True
+    if min(len(signature.split()), len(seen.split())) < 3:
+        return False
+    return _overlap(signature, seen) >= 0.6
+
+
 def pick_fresh_trends(channel: Channel, count: int) -> list[Trend]:
     """Top trends that this channel has not already made a video about."""
     from .lessons import load_topics_for
@@ -361,9 +481,8 @@ def pick_fresh_trends(channel: Channel, count: int) -> list[Trend]:
         if signature:
             covered.append(signature)
 
-    picked: list[Trend] = []
-    for trend in fetch_world_trends(limit=40, channel=channel):
-        signature = trend.key
+    eligible: list[Trend] = []
+    for trend in fetch_world_trends(limit=60, channel=channel):
         if len(re.findall(r"[^\W\d_]", trend.title)) < 5 or not re.search(r"[^\W\d_]{3,}", trend.title):
             # A stub search term such as "vz s": nothing a viewer would recognise.
             continue
@@ -371,12 +490,45 @@ def pick_fresh_trends(channel: Channel, count: int) -> list[Trend]:
             # A bare search term with no reporting behind it gives the script
             # writer nothing factual to stand on, so it would invent the story.
             continue
-        if any(_overlap(signature, seen) >= 0.6 for seen in covered):
+        if trend_kind(trend):
+            # Game titles, film promotion, price tickers: not news.
+            continue
+        if any(_already_covered(trend.key, seen) for seen in covered):
+            continue
+        eligible.append(trend)
+
+    picked: list[Trend] = []
+    for trend in eligible:
+        if any(_already_covered(trend.key, other.key) for other in picked):
             continue
         picked.append(trend)
-        covered.append(signature)
         if len(picked) >= count:
             break
+
+    # Sport is part of this channel, but a match scores below a story that
+    # several newsrooms ran. Without a reserved place a day of two videos would
+    # almost never hold one, so the lowest pick makes way for the best sports story.
+    wanted = SPORTS_SLOTS if count >= 2 else 0
+    have = sum(1 for trend in picked if is_sports(trend))
+    # Among sports stories a big tournament comes first, then the most searched,
+    # then the one with most reporting. The news score does not rank sport well:
+    # it put a 100-search league match above a World Cup game.
+    sports_first = sorted(
+        (trend for trend in eligible if is_sports(trend)),
+        key=lambda trend: (
+            not _MAJOR_EVENT.search(" ".join([trend.title, *trend.headlines[:3]])),
+            -trend.traffic, -len(trend.headlines),
+        ),
+    )
+    for trend in sports_first:
+        if have >= wanted or len(picked) < count:
+            break
+        if trend in picked:
+            continue
+        if any(_already_covered(trend.key, other.key) for other in picked[:-1]):
+            continue
+        picked[-1] = trend
+        have += 1
     return picked
 
 
@@ -421,6 +573,12 @@ def _news_prompt(channel: Channel, trend: Trend, scenes: int, long_form: bool) -
             "scenes. Each scene line is one narrated sentence of 12-20 words, so the Short "
             "runs 60 to 85 seconds. Open with the single most surprising fact so nobody scrolls away."
         )
+    sport_rule = (
+        "   This is a SPORT story. Report only the results, scores, injuries, "
+        "transfers and records the headlines state. Do not predict the outcome, "
+        "give betting odds or tips, or invent player statistics.\n"
+        if is_sports(trend) else ""
+    )
     return (
         f"You are the writer for a world-news explainer channel. Today is {today}.\n"
         f"This subject is trending worldwide right now:\n\"{trend.title}\"\n\n"
@@ -435,6 +593,7 @@ def _news_prompt(channel: Channel, trend: Trend, scenes: int, long_form: bool) -
         "(\"reports suggest\", \"officials have not confirmed\").\n"
         "4. Take no political side, endorse no group, and do not describe "
         "graphic violence. Keep it advertiser-friendly.\n"
+        f"{sport_rule}"
         "5. The title must be a clear, non-clickbait description of the story.\n"
         + (f"   {PLAIN_TITLE_RULE}\n" if getattr(channel, "news_regions", ()) else "")
         + "Return ONLY JSON: {\"title\": str, \"intro\": str, \"outro\": str, "

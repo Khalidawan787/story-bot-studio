@@ -278,6 +278,13 @@ def run_pipeline(
         scene_audio_paths=scene_audio_paths, channel=channel,
         scene_marks=scene_marks, content_type=content_type,
     )
+    from .presenter import add_presenter, presenter_enabled
+
+    if presenter_enabled(channel):
+        try:
+            video_path = add_presenter(video_path, run_dir, channel, content_type)
+        except Exception as exc:
+            print(f"[presenter] left out of this video: {exc}")
     video_path = add_background_music(
         video_path, run_dir, seed_text=lesson.topic_key, channel=channel, lesson=lesson,
     )

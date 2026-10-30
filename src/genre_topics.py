@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import re
 import json
+import sqlite3
 import time
 import urllib.request
 import urllib.error
@@ -229,6 +230,99 @@ SHORT_SCENES = 12
 SHORT_LINE_WORDS = "12-20"
 
 
+# A script whose title retells one the channel already has is written again this
+# many times before the run gives up and makes no video. Before this check the
+# long-video path never looked at earlier titles: one crime story came back eleven
+# times under four names, and the kids channel kept writing the "date seed" story.
+_FRESH_TRIES = 3
+# Two titles are the same story when this share of the shorter one's words is
+# shared. Series titles ("Barnaby Bear's Bright Blue Sky" / "Barnaby Bear's Bright
+# Brown Boots") share 3 of 5 words and stay allowed; renamings of one story share
+# nearly all of them.
+_TITLE_REPEAT_SHARE = 0.75
+_TITLE_FILLER = frozenset({
+    "the", "and", "for", "with", "from", "how", "why", "what", "who", "this", "that",
+    "its", "your", "you", "his", "her", "their", "our", "are", "was", "were",
+    # words that most titles of a genre share without being the same story
+    "true", "crime", "story", "stories", "mystery", "mysteries", "tale", "tales",
+    "case", "video", "explained", "trending", "world", "news", "kids", "learning",
+    "fun", "learn", "adventure",
+})
+
+
+def _title_head(title: str) -> str:
+    """The title without the " | True Crime Story" style suffix added at upload."""
+    return re.split(r"\s+[|–—-]\s+", str(title or ""), maxsplit=1)[0]
+
+
+def _title_words(title: str) -> frozenset[str]:
+    words: set[str] = set()
+    for word in re.findall(r"[a-z0-9]+", _title_head(title).lower()):
+        if len(word) <= 2 or word in _TITLE_FILLER:
+            continue
+        if len(word) > 3 and word.endswith("s") and not word.endswith("ss"):
+            word = word[:-1]
+        words.add(word)
+    return frozenset(words)
+
+
+def _recent_titles(channel: Channel) -> list[str]:
+    """Every title this channel has written or published, newest videos first."""
+    titles: list[str] = []
+    try:
+        rows = {} if channel.builtin else dict(load_genre_lessons(channel))
+        rows.update(load_custom_lessons(channel))
+        titles += [str(raw.get("title") or "") for raw in rows.values()]
+    except (OSError, ValueError) as exc:
+        print(f"[genre_topics] {channel.id}: could not read the saved scripts for the repeat check ({exc})")
+    try:
+        if settings.db_path.exists():
+            conn = sqlite3.connect(settings.db_path)
+            try:
+                titles += [str(title or "") for (title,) in conn.execute(
+                    "SELECT title FROM videos WHERE channel = ? AND title IS NOT NULL "
+                    "ORDER BY id DESC LIMIT 400", (channel.id,),
+                )]
+            finally:
+                conn.close()
+    except sqlite3.Error as exc:
+        print(f"[genre_topics] {channel.id}: could not read the video history for the repeat check ({exc})")
+    return [title for title in titles if title.strip()]
+
+
+def title_clash(channel: Channel, title: str, extra_titles=()) -> str | None:
+    """The existing title that `title` retells, or None when it is a new story.
+
+    `extra_titles` are titles not saved yet (the other scripts of the same run).
+    Titles with fewer than three telling words are only compared as a whole: a
+    one-word title would otherwise match every story that uses the word.
+    """
+    plain = " ".join(re.findall(r"[a-z0-9]+", _title_head(title).lower()))
+    if not plain:
+        return None
+    words = _title_words(title)
+    for other in [*extra_titles, *_recent_titles(channel)]:
+        if plain == " ".join(re.findall(r"[a-z0-9]+", _title_head(other).lower())):
+            return str(other)
+        other_words = _title_words(other)
+        if len(words) < 3 or len(other_words) < 3:
+            continue
+        if len(words & other_words) / min(len(words), len(other_words)) >= _TITLE_REPEAT_SHARE:
+            return str(other)
+    return None
+
+
+def already_exist_note(titles: list[str]) -> str:
+    """Prompt text that names the stories a rewrite must stay away from."""
+    if not titles:
+        return ""
+    named = "; ".join(f'"{str(title)[:80]}"' for title in titles[-5:])
+    return (
+        "\nIMPORTANT: these stories already exist, so write a completely different story "
+        f"with a new title, new characters and a new plot: {named}."
+    )
+
+
 def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT_SCENES) -> dict:
     from .verified_facts import is_verified_channel, write_next_lesson
 
@@ -274,7 +368,21 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT
             f"Write ONE fresh {channel.genre} short video script about an original, "
             f"click-worthy topic. Do NOT reuse any of these titles: {avoid}.\n" + schema
         )
-    raw = _script_json(prompt)
+    raw: dict = {}
+    clash: str | None = None
+    clashes: list[str] = []
+    for _try in range(_FRESH_TRIES):
+        raw = _script_json(prompt + already_exist_note(clashes))
+        clash = title_clash(channel, str(raw.get("title") or ""), avoid_titles)
+        if not clash:
+            break
+        print(f"[genre_topics] {channel.id}: '{str(raw.get('title'))[:60]}' repeats "
+              f"'{str(clash)[:60]}'; writing it again")
+        clashes.append(clash)
+    else:
+        raise RuntimeError(
+            f"Every draft repeated an existing story (last: '{str(clash)[:60]}'); no script saved"
+        )
 
     title = raw.get("title", "Untitled").strip()
     key = _slug(title)
@@ -390,6 +498,34 @@ def _crime_long_fallback_rows(subject: str) -> list[dict]:
         })
     return rows
 
+# Room above the per-scene word target for one whole filler sentence (the longest
+# is about 28 words), so a short line can finish its filler instead of losing it.
+_FILLER_SLACK_WORDS = 30
+
+
+def _whole_sentences(text: str, max_words: int) -> str:
+    """Trim `text` to at most `max_words` words, cutting only at a sentence end.
+
+    The first sentence is always kept whole, even when it alone is longer than
+    `max_words`: a long finished sentence sounds fine, a half sentence does not.
+    The result always ends with ., ! or ?.
+    """
+    text = " ".join(str(text or "").split())
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    kept: list[str] = []
+    used = 0
+    for sentence in sentences:
+        count = len(sentence.split())
+        if kept and used + count > max_words:
+            break
+        kept.append(sentence)
+        used += count
+    result = " ".join(kept).strip()
+    if result and result[-1] not in ".!?":
+        result = result.rstrip(",;:—-") + "."
+    return result
+
+
 def _complete_long_script(raw: dict, channel: Channel, user_prompt: str, scenes: int) -> dict:
     """Complete short free-provider drafts locally instead of failing a video."""
     raw = dict(raw or {})
@@ -455,10 +591,11 @@ def _complete_long_script(raw: dict, channel: Channel, user_prompt: str, scenes:
             line = f"{line} {genre_tail}"
         if len(line.split()) < words_per_scene:
             line += f" In part {index}, keep the central subject, {topic}, in mind as the explanation continues step by step."
-        words = line.split()
-        if len(words) > words_per_scene:
-            line = " ".join(words[:words_per_scene]).rstrip(",;:") + "."
-        row["line"] = line
+        # Cut only between sentences. Cutting at an exact word count used to leave
+        # lines such as "This detail matters because it changes how the." that the
+        # narrator then read out half-finished. The slack leaves room for one whole
+        # filler sentence on a short line.
+        row["line"] = _whole_sentences(line, words_per_scene + _FILLER_SLACK_WORDS)
         row["label"] = str(row.get("label") or f"Part {index}")
         row["image_prompt"] = str(row.get("image_prompt") or f"A distinct visual scene about {topic}, part {index}")
 
@@ -531,12 +668,41 @@ def generate_from_prompt(
     scenes: int = 8,
     long_form: bool = False,
 ) -> str:
-    """Write and save a script from a user prompt for any configured channel."""
+    """Write and save a script from a user prompt for any configured channel.
+
+    A script whose title retells one the channel already has is written again,
+    up to _FRESH_TRIES times, with the clashing titles named in the prompt. If it
+    is still a repeat nothing is saved and no video is made.
+    """
     from .verified_facts import is_verified_channel, write_next_lesson
 
     if is_verified_channel(channel):
         key, lesson = write_next_lesson(channel, scenes, long_form, user_prompt=user_prompt)
         return _save_custom_lesson(channel, f"long_{key}" if long_form else key, lesson)
+    raw: dict = {}
+    clash: str | None = None
+    clashes: list[str] = []
+    for _try in range(_FRESH_TRIES):
+        raw = _draft_script(channel, user_prompt, scenes, long_form, clashes)
+        clash = title_clash(channel, str(raw.get("title") or ""))
+        if not clash:
+            break
+        print(f"[genre_topics] {channel.id}: '{str(raw.get('title'))[:60]}' repeats "
+              f"'{str(clash)[:60]}'; writing it again")
+        clashes.append(clash)
+    else:
+        raise RuntimeError(
+            f"Every draft repeated an existing story (last: '{str(clash)[:60]}'); no video made"
+        )
+    key, lesson = _build_lesson(channel, raw, fallback_title=user_prompt[:60])
+    if long_form:
+        key = f"long_{key}"
+    return _save_custom_lesson(channel, key, lesson)
+
+
+def _draft_script(channel: Channel, user_prompt: str, scenes: int, long_form: bool,
+                  avoid: list[str]) -> dict:
+    """One finished script draft as JSON; `avoid` lists titles it must not retell."""
     tone = getattr(channel, "tone", "") or GENRE_TONE.get(channel.genre, "engaging and well-paced")
     if long_form:
         format_instructions = (
@@ -559,6 +725,7 @@ def generate_from_prompt(
         f"'label' = a 2-4 word on-screen caption. 'image_prompt' = a visual description "
         f"of that scene (scene only, no art-style words)."
         + script_rules(channel)
+        + already_exist_note(avoid)
     )
     if is_urdu(channel):
         prompt = prompt.replace(
@@ -571,8 +738,7 @@ def generate_from_prompt(
         if len(raw.get("scenes") or []) > _PART_SCENES:
             if _looks_like_instruction_title(str(raw.get("title") or "")):
                 raw["title"] = _story_subject(user_prompt, channel.genre)
-            key, lesson = _build_lesson(channel, raw, fallback_title=user_prompt[:60])
-            return _save_custom_lesson(channel, f"long_{key}", lesson)
+            return raw
     raw = None
     best_candidate = None
     # Urdu drafts get a second try: the English filler that tops up short
@@ -613,10 +779,10 @@ def generate_from_prompt(
         # Free providers often stop early. Complete the best draft locally so a
         # valid five-minute job is not discarded only because of word count.
         raw = _complete_long_script(raw or best_candidate or {}, channel, user_prompt, scenes)
-    key, lesson = _build_lesson(channel, raw, fallback_title=user_prompt[:60])
-    if long_form:
-        key = f"long_{key}"
-    return _save_custom_lesson(channel, key, lesson)
+    if raw is None:
+        # Every provider failed. This used to fail later with "NoneType has no 'get'".
+        raise RuntimeError("No script could be written (every script provider failed); no video made.")
+    return raw
 
 
 def _save_custom_lesson(channel: Channel, key: str, lesson: dict) -> str:

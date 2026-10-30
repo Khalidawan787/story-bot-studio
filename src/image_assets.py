@@ -216,6 +216,15 @@ def generate_cloudflare_scene_image(
             _prompt_for_scene(scene, channel)
             + f" High quality, kid friendly, colorful, professional YouTube illustration, {orientation}."
         )
+    return generate_cloudflare_image(prompt, output_path, landscape)
+
+
+def generate_cloudflare_image(prompt: str, output_path: Path, landscape: bool = False) -> Path:
+    """Any prompt through Workers AI, trying each model in _CLOUDFLARE_MODELS."""
+    account = cloudflare_account_id()
+    token = cloudflare_api_token()
+    if not (account and token):
+        raise RuntimeError("Cloudflare Workers AI is not configured.")
     # A random seed keeps every render unique, so the duplicate-image guard in
     # resolve_scene_image never rejects a repeat of the same picture.
     seed = random.randint(0, 2_000_000_000)

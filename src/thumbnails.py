@@ -7,8 +7,9 @@ purpose-built 16:9 thumbnail of the video's own topic, then composes the title
 on top with wrapped, auto-sized text.
 
 Sources, tried in order (see _thumbnail_provider_order): free Pexels stock
-photos -> OpenAI (paid) -> free Pollinations -> the scene image that was already
-rendered -> a generated backdrop. Compositing is done with ffmpeg, which is
+photos -> free Cloudflare FLUX art -> OpenAI (paid) -> free Pollinations -> the
+scene image that was already rendered -> a generated backdrop. The kids channel
+starts with OpenAI instead of Pexels. Compositing is done with ffmpeg, which is
 already bundled, so no extra image library is needed. Every step is non-fatal:
 a thumbnail problem must never stop a finished video from uploading.
 """
@@ -211,13 +212,75 @@ _GENRE_ART_STYLE = {
 }
 
 
+_TITLE_SPLIT = re.compile(r"\s+[|\u2013\u2014-]\s+")
+# The fallback image prompt written when a script came back without its own.
+_EMPTY_VISUAL = re.compile(r"^a (?:clear|distinct) visual scene (?:about|illustrating)\b", re.I)
+
+
+def _instruction_like(text: str) -> bool:
+    """True for writing instructions ("Create a ... video inspired by ...")."""
+    try:
+        from .genre_topics import _looks_like_instruction_title
+
+        return _looks_like_instruction_title(text)
+    except Exception:
+        return False
+
+
+def _thumbnail_subject(lesson: Lesson, channel=None) -> str:
+    """What the video is about, in plain words, for the artwork prompt.
+
+    The published title is built for search ("Can You Name Surprise!, Who Is It?,
+    A Little Peek?") out of scene captions, which makes a poor brief for an image
+    model. The script's own title is the real subject. A title that is really the
+    writing instruction is cut down to its subject, or to the category.
+    """
+    title = " ".join(str(lesson.title or "").split())
+    if _instruction_like(title):
+        try:
+            from .genre_topics import _story_subject
+
+            title = _story_subject(title, str(getattr(channel, "genre", "") or ""))
+        except Exception:
+            title = ""
+        if _instruction_like(title) or len(title.split()) > 14:
+            title = str(lesson.category or "")
+    title = _TITLE_SPLIT.split(title, maxsplit=1)[0]
+    title = _TITLE_NOISE.sub("", title).strip(" .:-")
+    return (title or str(lesson.category or "")).replace('"', "'")
+
+
+def _hook_visual(lesson: Lesson, channel=None) -> str:
+    """The picture the script itself describes for its opening scene, or "".
+
+    Each scene's image_prompt names one drawable moment ("a fluffy blue creature
+    peeking out from behind a large green leaf"). The first scene is the hook, the
+    most gripping moment of the story, so it makes the thumbnail. Scene labels
+    ("Part 2", "Surprise!") are captions, not pictures, and are never used. The
+    channel's art-style words, added to every image_prompt when the script was
+    saved, are cut off because the thumbnail carries its own style.
+    """
+    style = str(getattr(channel, "image_style", "") or "").strip()
+    for scene in lesson.scenes[:6]:
+        text = " ".join(str(scene.image_prompt or "").split())
+        if style:
+            text = text.replace(style, "")
+        text = text.strip(" ,.;:")
+        if len(text) < 25 or _EMPTY_VISUAL.match(text) or _instruction_like(text):
+            continue
+        if len(text) > 240:
+            text = text[:240].rsplit(" ", 1)[0].rstrip(" ,.;:")
+        return text.replace('"', "'")
+    return ""
+
+
 def build_thumbnail_prompt(lesson: Lesson, channel=None, content_type: str = "short") -> str:
     """A 16:9 prompt about THIS video's topic, with room left for the title."""
     genre = str(getattr(channel, "genre", "kids") or "kids").lower()
     style = _GENRE_ART_STYLE.get(genre, _GENRE_ART_STYLE["kids"])
-    subject = thumbnail_headline(lesson, channel, content_type, max_words=10).title()
-    highlights = ", ".join(scene.label for scene in lesson.scenes[:4])
-    detail = f" Key elements to show: {highlights}." if highlights else ""
+    subject = _thumbnail_subject(lesson, channel)
+    visual = _hook_visual(lesson, channel)
+    detail = f" Main subject: {visual}." if visual else ""
     return (
         f"YouTube thumbnail artwork, 16:9 landscape, about: {subject}.{detail} "
         f"Style: {style}. Composition: main subject on the RIGHT side, the LEFT "
@@ -256,6 +319,29 @@ def generate_openai_thumbnail(lesson: Lesson, output_path: Path, channel=None,
     output_path.write_bytes(base64.b64decode(encoded))
     record_api_usage("openai", "thumbnail")
     return output_path
+
+
+def cloudflare_thumbnail_ready() -> bool:
+    """Cloudflare Workers AI (free daily allowance) has both its keys."""
+    from .image_assets import cloudflare_account_id, cloudflare_api_token
+
+    return bool(cloudflare_account_id() and cloudflare_api_token())
+
+
+def generate_cloudflare_thumbnail(lesson: Lesson, output_path: Path, channel=None,
+                                  content_type: str = "short") -> Path:
+    """Free FLUX artwork from Cloudflare Workers AI, same prompt as the other generators.
+
+    Scene images already use it. The thumbnail never did, so a channel whose paid
+    OpenAI budget was spent and whose Pollinations call was rate-limited went
+    straight to stock photos or the first scene frame.
+    """
+    from .image_assets import generate_cloudflare_image
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    return generate_cloudflare_image(
+        build_thumbnail_prompt(lesson, channel, content_type), output_path, landscape=True,
+    )
 
 
 def generate_pollinations_thumbnail(lesson: Lesson, output_path: Path, channel=None,
@@ -492,18 +578,48 @@ def save_pexels_api_key(value: str) -> None:
         path.unlink(missing_ok=True)
 
 
+# Words that describe how a picture is framed or lit, not what is in it.
+_VISUAL_FILLER = _STOCK_STOP_WORDS | {
+    "shot", "view", "image", "photo", "picture", "close", "closeup", "wide", "angle", "slightly",
+    "showing", "shows", "shown", "lying", "standing", "sitting", "placed", "seen", "from", "into",
+    "behind", "against", "background", "foreground", "scene", "looking", "being", "has", "are",
+    "its", "their", "there", "where", "which", "then", "dimly", "lit", "bright", "dark", "large",
+    "small", "single", "several", "many", "very", "some", "each", "other", "one", "two", "three",
+    "cinematic", "dramatic", "moody", "lighting", "light", "style", "illustration", "cartoon",
+    "while", "over", "under", "above", "below", "near", "across", "along", "onto", "upon",
+}
+
+
+def _visual_words(text: str, limit: int = 4) -> list[str]:
+    """The first few words of a picture description that name what is in it."""
+    words: list[str] = []
+    for word in re.findall(r"[A-Za-z]{4,}", text):
+        low = word.lower()
+        if low in _VISUAL_FILLER or low in words:
+            continue
+        words.append(low)
+        if len(words) >= limit:
+            break
+    return words
+
+
 def _pexels_query(lesson: Lesson, channel=None, content_type: str = "short") -> str:
     genre = str(getattr(channel, "genre", "kids") or "kids").lower()
-    words = [
-        word for word in re.findall(
-            r"[A-Za-z]{3,}", thumbnail_headline(lesson, channel, content_type, max_words=10),
-        )
-        if word.lower() not in _STOCK_STOP_WORDS
-    ][:4]
+    # What the script's opening scene shows searches far better than the title's
+    # words ("shattered pocket watch workbench" against "olfactory investigator").
+    words = _visual_words(_hook_visual(lesson, channel))
+    if len(words) < 2:
+        words = [
+            word for word in re.findall(
+                r"[A-Za-z]{3,}", thumbnail_headline(lesson, channel, content_type, max_words=10),
+            )
+            if word.lower() not in _STOCK_STOP_WORDS
+        ][:4]
+        words = [word.lower() for word in words]
     if not words:
-        words = [scene.label for scene in lesson.scenes[:2]]
+        words = [scene.label.lower() for scene in lesson.scenes[:2]]
     hint = _GENRE_STOCK_HINT.get(genre, "")
-    return " ".join([*[word.lower() for word in words], hint]).strip()[:120]
+    return " ".join([*words, hint]).strip()[:120]
 
 
 def generate_pexels_thumbnail(lesson: Lesson, output_path: Path, channel=None,
@@ -581,16 +697,19 @@ def _thumbnail_provider_order(channel=None) -> list[str]:
     while the cartoon kids channel leads with generated art because stock photos
     do not match its look.
     """
-    known = ("comfyui", "pexels", "openai", "pollinations")
+    known = ("comfyui", "pexels", "cloudflare", "openai", "pollinations")
     configured = str(settings.thumbnail_provider or "auto").lower()
     if configured in known:
         return [configured, *[name for name in known if name != configured]]
     genre = str(getattr(channel, "genre", "kids") or "kids").lower()
     # ComfyUI leads when it is switched on: it is free, unlimited and local.
     lead = ["comfyui"] if settings.enable_comfyui_thumbnails else []
+    # Cloudflare is free and reliable, so it comes before Pollinations, which
+    # rate-limits (HTTP 429) on its anonymous tier. Kids keep the paid OpenAI art
+    # first; the real-world channels keep Pexels photos first.
     if genre == "kids":
-        return [*lead, "openai", "pollinations", "pexels"]
-    return [*lead, "pexels", "openai", "pollinations"]
+        return [*lead, "openai", "cloudflare", "pollinations", "pexels"]
+    return [*lead, "pexels", "cloudflare", "openai", "pollinations"]
 
 
 def generate_thumbnail_art(lesson: Lesson, output_path: Path, channel=None,
@@ -613,6 +732,11 @@ def generate_thumbnail_art(lesson: Lesson, output_path: Path, channel=None,
                     errors.append("Pexels: no free API key saved")
                     continue
                 return generate_pexels_thumbnail(lesson, output_path, channel, content_type)
+            if provider == "cloudflare":
+                if not cloudflare_thumbnail_ready():
+                    errors.append("Cloudflare: no account id / API token saved")
+                    continue
+                return generate_cloudflare_thumbnail(lesson, output_path, channel, content_type)
             if provider == "openai":
                 if not _openai_thumbnail_ready():
                     errors.append("OpenAI: not configured or daily thumbnail limit reached")
