@@ -22,6 +22,26 @@ SCOPES = [
 ]
 
 
+# YouTube refuses a description over 5000 bytes or with < or > in it
+# ("invalidDescription"). A long video's script summary plus its clip credits
+# and source line ran past the limit, and the video waited forever.
+_DESCRIPTION_BYTES = 4900
+
+
+def youtube_description(text: str) -> str:
+    text = text.replace("<", "(").replace(">", ")")
+    if len(text.encode("utf-8")) <= _DESCRIPTION_BYTES:
+        return text
+    # Drop whole lines from the middle (the script summary), keeping the
+    # opening and the closing lines, which carry the hashtags, credits and source.
+    lines = text.split("\n")
+    head, tail = lines[:4], lines[4:]
+    while tail and len("\n".join(head + ["..."] + tail).encode("utf-8")) > _DESCRIPTION_BYTES:
+        tail.pop(0)
+    trimmed = "\n".join(head + ["..."] + tail)
+    return trimmed.encode("utf-8")[:_DESCRIPTION_BYTES].decode("utf-8", "ignore")
+
+
 class ThumbnailUploadError(RuntimeError):
     def __init__(self, video_url: str, message: str) -> None:
         super().__init__(message)
@@ -119,7 +139,7 @@ def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, obj
         body={
             "snippet": {
                 "title": metadata["title"],
-                "description": metadata["description"],
+                "description": youtube_description(str(metadata["description"])),
                 "tags": metadata["tags"],
                 "categoryId": category_id,
                 # Tells YouTube which language the title and the voice are in.

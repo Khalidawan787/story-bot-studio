@@ -510,6 +510,12 @@ def reserve_publish_slot(
                 if not any(abs((candidate - slot).total_seconds()) < gap * 1800 for slot in taken):
                     break
                 candidate += timedelta(hours=gap)
+        # publish_at is UNIQUE across ALL channels, but the walk above only
+        # looks at this channel: two channels with the same release time
+        # ("15:30") made the second insert fail, and its video waited forever.
+        held = {str(value) for (value,) in conn.execute("SELECT publish_at FROM publish_slots")}
+        while candidate.isoformat() in held:
+            candidate += timedelta(minutes=1)
         publish_at = candidate.isoformat()
         conn.execute(
             "INSERT INTO publish_slots (reservation_key, channel, publish_at, created_at) VALUES (?, ?, ?, ?)",
