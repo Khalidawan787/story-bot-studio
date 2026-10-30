@@ -55,6 +55,8 @@ class Channel:
     # The fixed AI presenter (presenter.py) on the thumbnail and in a corner of
     # the video.
     presenter: bool = False
+    # The framed news thumbnail, with the anchor on long videos (news_thumbnail.py).
+    news_thumbnail: bool = False
     # A news channel's audience: ("US", "EU") reads American, then European
     # sources (trending._REGION_FEEDS). Empty keeps the world mix.
     news_regions: tuple = ()

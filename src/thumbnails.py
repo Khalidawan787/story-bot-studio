@@ -865,6 +865,13 @@ def _title_layers(lines: list[str], font_size: int, style: dict, font_arg: str,
 def compose_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Path,
                       channel=None, content_type: str = "short") -> Path:
     """Burn the headline + channel badge onto the artwork at 1280x720."""
+    if getattr(channel, "news_thumbnail", False):
+        try:
+            from .news_thumbnail import compose_news_thumbnail
+
+            return compose_news_thumbnail(lesson, art_path, output_path, channel, content_type)
+        except Exception as exc:
+            print(f"[thumbnail] news layout failed, using the plain one: {exc}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     font = _font_path()
     font_arg = f":fontfile='{_escape(font)}'" if font else ""

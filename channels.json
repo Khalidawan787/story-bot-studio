@@ -262,7 +262,8 @@
         "Wed",
         "Fri"
       ],
-      "long_scenes": 65
+      "long_scenes": 65,
+      "news_thumbnail": true
     }
   ]
 }
