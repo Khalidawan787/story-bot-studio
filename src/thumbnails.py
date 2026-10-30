@@ -274,13 +274,35 @@ def _hook_visual(lesson: Lesson, channel=None) -> str:
     return ""
 
 
+def _is_crime_lesson(lesson: Lesson, channel=None) -> bool:
+    """A crime channel, or a title or opening lines that speak of a crime."""
+    from .stock_video import crime_text
+
+    if str(getattr(channel, "genre", "") or "").lower() == "crime":
+        return True
+    lines = " ".join(str(scene.line or "") for scene in lesson.scenes[:3])
+    return crime_text(f"{lesson.title} {lines}")
+
+
 def build_thumbnail_prompt(lesson: Lesson, channel=None, content_type: str = "short") -> str:
     """A 16:9 prompt about THIS video's topic, with room left for the title."""
     genre = str(getattr(channel, "genre", "kids") or "kids").lower()
     style = _GENRE_ART_STYLE.get(genre, _GENRE_ART_STYLE["kids"])
     subject = _thumbnail_subject(lesson, channel)
     visual = _hook_visual(lesson, channel)
-    detail = f" Main subject: {visual}." if visual else ""
+    people_rule = ""
+    if _is_crime_lesson(lesson, channel):
+        # A stranger drawn next to a criminal's or suspect's name reads as that
+        # person (project rule), so a crime thumbnail shows a place or an object.
+        from .stock_video import _PEOPLE_WORDS
+
+        if set(re.findall(r"[a-z]+", visual.lower())) & _PEOPLE_WORDS:
+            visual = ""
+        people_rule = (
+            " No people at all: no faces, no hands, no silhouettes, no crowds, "
+            "no detective or officer; show only a place or an object."
+        )
+    detail = (f" Main subject: {visual}." if visual else "") + people_rule
     return (
         f"YouTube thumbnail artwork, 16:9 landscape, about: {subject}.{detail} "
         f"Style: {style}. Composition: main subject on the RIGHT side, the LEFT "
