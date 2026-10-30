@@ -598,14 +598,6 @@ def generate_thumbnail_art(lesson: Lesson, output_path: Path, channel=None,
     """Purpose-built 16:9 artwork for this topic, or None if every provider failed."""
     if not settings.enable_ai_thumbnails or settings.thumbnail_provider == "scene":
         return None
-    from .presenter import generate_presenter_art, presenter_enabled
-
-    # A presenter thumbnail wants a dramatic poster scene behind her, which a
-    # stock photo is not, so free Cloudflare art leads for those channels.
-    if presenter_enabled(channel):
-        art = generate_presenter_art(lesson, output_path, channel, content_type)
-        if art is not None:
-            return art
     errors: list[str] = []
 
     for provider in _thumbnail_provider_order(channel):
@@ -727,13 +719,6 @@ def _title_layers(lines: list[str], font_size: int, style: dict, font_arg: str,
 def compose_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Path,
                       channel=None, content_type: str = "short") -> Path:
     """Burn the headline + channel badge onto the artwork at 1280x720."""
-    from .presenter import compose_presenter_thumbnail, presenter_enabled
-
-    if presenter_enabled(channel):
-        try:
-            return compose_presenter_thumbnail(lesson, art_path, output_path, channel, content_type)
-        except Exception as exc:
-            print(f"[presenter] thumbnail failed, using the plain layout: {exc}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     font = _font_path()
     font_arg = f":fontfile='{_escape(font)}'" if font else ""
