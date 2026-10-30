@@ -32,7 +32,7 @@ This file and `.clinerules/project-rules.md` hold the same text. When you change
 - 2 Shorts a day **without the anchor**. Long videos on Mon/Wed/Fri, 65 scenes (12-18 minutes), written in parts.
 - Titles are plain: no "Reels From" or "Amidst" filler, and never the words Reels or Shorts.
 - Thumbnails are BBC style: a red frame (breaking news) or a purple one (explainer), a white two-line headline and an "AIN NEWS" badge. No BBC logo or font.
-- Long-video thumbnails also show the anchor in a box on the right (`src/news_thumbnail.py`, `"news_thumbnail": true`); Shorts do not. She is the one allowed exception to the "Real people" rule on a crime thumbnail (the owner's decision, 2026-10-30), so a crime headline drops any name the script gives.
+- Long-video thumbnails also show the anchor in a box on the right (`src/news_thumbnail.py`, `"news_thumbnail": true`). Shorts and crime stories do not (the owner's decision, 2026-10-30).
 - The anchor's motion: head, eyes and lips only, with NO hand movement (the owner's decision, 2026-10-30). Of the six idle
   clips (Kaggle kernel `ain-anchor-idles`), use 1, 2, 3, 4 and 6. Never use clip 5, the hand gesture.
 - The AI anchor (a fictional woman, navy blazer, news desk) appears only in long videos: 5 parts lip-synced on Kaggle (LatentSync 1.5, free T4 GPU) and overlaid at each scene's start time. A video with the anchor needs YouTube's "altered or synthetic content" label, which the owner sets in Studio.
