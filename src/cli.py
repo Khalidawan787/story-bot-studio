@@ -78,6 +78,9 @@ def main() -> None:
     retry = sub.add_parser("retry-uploads", help="Upload rendered/failed videos when internet is back.")
     retry.add_argument("--limit", default="20", help="Maximum pending videos to retry.")
 
+    rviews = sub.add_parser("refresh-views", help="Read every uploaded video's real view count from YouTube.")
+    rviews.add_argument("--channel", default="", help="Only this channel id (blank = all).")
+
     upg = sub.add_parser("upgrade-images", help="Replace tiny/low-quality asset images with fresh AI ones.")
     upg.add_argument("--limit", default="30", help="Maximum images to upgrade.")
 
@@ -343,6 +346,14 @@ def main() -> None:
     elif args.command == "retry-uploads":
         for message in retry_pending_uploads(limit=max(1, int(args.limit))):
             print(message)
+        return
+    elif args.command == "refresh-views":
+        from .view_stats import refresh_views, top_videos
+        for message in refresh_views(args.channel):
+            print(message)
+        print("\nMost watched:")
+        for line in top_videos(10):
+            print(line)
         return
     elif args.command == "fix-thumbnails":
         from .pending_uploads import refresh_thumbnails
