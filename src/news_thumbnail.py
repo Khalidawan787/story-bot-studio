@@ -1,8 +1,8 @@
 """The news channel's thumbnail: a coloured frame, a two-line headline, a badge.
 
 Red for breaking news, purple for an explainer. A long video also shows the
-anchor (fictional, data/presenter/anchor.jpg) in a box on the right; Shorts and
-crime stories have no anchor, so theirs keep the whole picture. Switched on per channel with
+anchor (fictional, data/presenter/anchor.jpg) in a box on the right; Shorts have
+no anchor, so theirs keep the whole picture. Switched on per channel with
 "news_thumbnail": true in channels.json.
 """
 from __future__ import annotations
@@ -34,6 +34,23 @@ _ANCHOR_CROP_H = 530
 _ANCHOR_CROP_W = _ANCHOR_CROP_H * _BOX_W // _BOX_H
 _ANCHOR_CROP_X, _ANCHOR_CROP_Y = 680 - _ANCHOR_CROP_W // 2, 25
 _EXPLAINER = re.compile(r"^(WHY|HOW|WHAT|WHO)\b|\bEXPLAINED\b")
+_FULL_NAME = re.compile(r"\b[A-Z][a-z]+ [A-Z][a-z]+\b")
+
+
+def _without_names(headline: str, lesson: Lesson) -> str:
+    """Take the people the script names out of a headline.
+
+    The anchor must never stand next to a real criminal's or suspect's name, or
+    she reads as that person.
+    """
+    script = " ".join(str(scene.line or "") for scene in lesson.scenes)
+    for name in set(_FULL_NAME.findall(script)):
+        for part in (name, name.split()[1]):
+            headline = re.sub(rf"\b{re.escape(part)}\b", " ", headline, flags=re.I)
+    words = headline.split()
+    while words and words[-1].lower().strip(",;:") in _DANGLING_WORDS:
+        words.pop()
+    return " ".join(words)
 
 
 def _two_lines(headline: str) -> list[str]:
@@ -60,9 +77,13 @@ def compose_news_thumbnail(lesson: Lesson, art_path: Path | None, output_path: P
     output_path.parent.mkdir(parents=True, exist_ok=True)
     font = str(HEADLINE_FONT)
     headline = thumbnail_headline(lesson, channel, content_type)
-    # Next to a real criminal's or suspect's story she would read as that person.
-    show_anchor = (content_type == "long" and ANCHOR_IMAGE.is_file()
-                   and not crime_text(f"{lesson.title} {headline}"))
+    show_anchor = content_type == "long" and ANCHOR_IMAGE.is_file()
+    if show_anchor and crime_text(f"{lesson.title} {headline}"):
+        cleaned = _without_names(headline, lesson)
+        if len(cleaned.split()) >= 2:
+            headline = cleaned
+        else:
+            show_anchor = False
 
     colour = _PURPLE if _EXPLAINER.search(headline) else _RED
     limit = (_BOX_X - 20 if show_anchor else THUMB_WIDTH - _FRAME - 20) - _TEXT_LEFT
