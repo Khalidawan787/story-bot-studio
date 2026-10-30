@@ -322,6 +322,7 @@ _PEOPLE_WORDS = {
     "player", "athlete", "dancer", "actor", "actress", "police", "policeman", "cop", "firefighter",
     "pilot", "sailor", "veteran", "bride", "groom", "lover", "lovers", "hero", "someone", "guys",
     "judge", "lawyer", "attorney", "reporter", "journalist", "detective", "suspect", "prisoner",
+    "inmate", "inmates", "convict", "criminal", "thief", "robber", "hands", "hand", "silhouette",
     "climber", "hiker", "tourist", "fan", "fans", "audience", "speaker", "politician",
 }
 
