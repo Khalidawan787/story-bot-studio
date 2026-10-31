@@ -1,0 +1,2744 @@
+{
+  "the_vanishing_act_a_fortune_lost_to_the_shadows": {
+    "title": "The Vanishing Act: A Fortune Lost to the Shadows",
+    "category": "Crime",
+    "intro": "In the dead of night, a celebrated figure disappears, leaving behind a trail of unanswered questions and a fortune that seems to have evaporated into thin air. Tonight, we delve into a disappearance that defies explanation.",
+    "outro": "The truth remains elusive, a ghost in the machine of wealth and ambition. This case serves as a chilling reminder that sometimes, the greatest mysteries are not about what is found, but what is lost forever.",
+    "scenes": [
+      {
+        "label": "Sudden Disappearance",
+        "line": "The night was ordinary, or so it seemed, until a prominent entrepreneur vanished without a trace.",
+        "image": "assets/generated/the_vanishing_act_a_fortune_lost_to_the_shadows_01.jpg",
+        "image_prompt": "A darkened silhouette of a person walking away from a lavish mansion at night., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Empty Mansion",
+        "line": "His opulent home, once echoing with life, stood silent and empty, a stark testament to his absence.",
+        "image": "assets/generated/the_vanishing_act_a_fortune_lost_to_the_shadows_02.jpg",
+        "image_prompt": "The grand, empty entrance hall of a large, luxurious house, dimly lit., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Financial Riddle",
+        "line": "Investigators soon discovered that more than just a man was missing; vast sums of money had also vanished.",
+        "image": "assets/generated/the_vanishing_act_a_fortune_lost_to_the_shadows_03.jpg",
+        "image_prompt": "A desk with scattered financial documents and a calculator, an overturned chair nearby., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Shadowy Dealings",
+        "line": "Whispers of clandestine meetings and offshore accounts began to surface, painting a picture of complex hidden dealings.",
+        "image": "assets/generated/the_vanishing_act_a_fortune_lost_to_the_shadows_04.jpg",
+        "image_prompt": "Silhouetted figures meeting in a dimly lit, smoky back room of a club., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "No Forced Entry",
+        "line": "Paradoxically, there were no signs of a struggle, no forced entry, suggesting an exit planned or perhaps... facilitated.",
+        "image": "assets/generated/the_vanishing_act_a_fortune_lost_to_the_shadows_05.jpg",
+        "image_prompt": "A close-up of a securely locked, ornate door with no visible damage., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Unlikely Suspects",
+        "line": "From disgruntled partners to estranged family, the list of potential involved parties grew, each with their own motives.",
+        "image": "assets/generated/the_vanishing_act_a_fortune_lost_to_the_shadows_06.jpg",
+        "image_prompt": "A mosaic of blurred faces, representing various potential suspects., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Global Search",
+        "line": "The search spanned continents, a desperate hunt for a man who seemed to have mastered the art of becoming invisible.",
+        "image": "assets/generated/the_vanishing_act_a_fortune_lost_to_the_shadows_07.jpg",
+        "image_prompt": "A world map with red pins scattered across multiple countries, connected by faint lines., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Unresolved Mystery",
+        "line": "Years later, the entrepreneur, his fortune, and the full story behind his vanishing act remain an enduring enigma.",
+        "image": "assets/generated/the_vanishing_act_a_fortune_lost_to_the_shadows_08.jpg",
+        "image_prompt": "A lone, flickering candle on a dark table, casting long shadows., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_phantom_of_the_gallery_art_theft_s_silent_mastermind": {
+    "title": "The Phantom of the Gallery: Art Theft's Silent Mastermind",
+    "category": "Crime",
+    "intro": "In the hushed halls of elite art institutions, where priceless masterpieces whisper tales of history, a new kind of predator emerged. This is the story of a thief who moved like a ghost, leaving behind only baffled security and empty spaces on gallery walls.",
+    "outro": "The Phantom of the Gallery remains at large, a chilling reminder that sometimes, the greatest treasures vanish not with a bang, but with an eerie, unsettling silence. The art world holds its breath, waiting for the next masterpiece to disappear.",
+    "scenes": [
+      {
+        "label": "Gilded Frame",
+        "line": "It all began with a single, audacious disappearance from a renowned metropolitan museum.",
+        "image": "assets/generated/the_phantom_of_the_gallery_art_theft_s_silent_mastermind_01.jpg",
+        "image_prompt": "A dimly lit museum gallery with a spotlight illuminating an empty space on a wall where a painting once hung., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Unseen Entry",
+        "line": "No alarms were tripped, no windows broken, no security footage captured a single anomaly.",
+        "image": "assets/generated/the_phantom_of_the_gallery_art_theft_s_silent_mastermind_02.jpg",
+        "image_prompt": "A shadowy figure silhouetted against a large, intricate security camera on a museum wall., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Missing Masterpiece",
+        "line": "The stolen artwork, a small but historically significant Renaissance portrait, was gone by morning.",
+        "image": "assets/generated/the_phantom_of_the_gallery_art_theft_s_silent_mastermind_03.jpg",
+        "image_prompt": "A close-up of a velvet rope barrier in front of an empty wall, with the faint outline of a vanished painting visible., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "A Ghostly Trail",
+        "line": "Investigators found no fingerprints, no forced entry, only an unnerving void.",
+        "image": "assets/generated/the_phantom_of_the_gallery_art_theft_s_silent_mastermind_04.jpg",
+        "image_prompt": "A detective examining an empty display case with a magnifying glass, looking frustrated., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Pattern Emerges",
+        "line": "Within months, similar baffling thefts occurred in Paris, London, and even a private collection in Tokyo.",
+        "image": "assets/generated/the_phantom_of_the_gallery_art_theft_s_silent_mastermind_05.jpg",
+        "image_prompt": "A world map with glowing pins appearing in different major cities., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Collector's Nightmare",
+        "line": "The perpetrator, dubbed 'The Phantom', seemed to possess an intimate knowledge of security systems and art.",
+        "image": "assets/generated/the_phantom_of_the_gallery_art_theft_s_silent_mastermind_06.jpg",
+        "image_prompt": "A blurred image of a person in a dark trench coat walking away into a foggy street., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Vanishing Act",
+        "line": "Each crime was a perfect execution, a testament to meticulous planning and an almost supernatural stealth.",
+        "image": "assets/generated/the_phantom_of_the_gallery_art_theft_s_silent_mastermind_07.jpg",
+        "image_prompt": "A close-up of a single, pristine white glove lying on a dark marble floor., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Unsolved Mystery",
+        "line": "The Phantom's motive remained as elusive as their identity, leaving the art world in a state of anxious suspense.",
+        "image": "assets/generated/the_phantom_of_the_gallery_art_theft_s_silent_mastermind_08.jpg",
+        "image_prompt": "A collage of famous, high-value artworks, with question marks superimposed over them., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_ghost_in_the_code_a_digital_heist": {
+    "title": "The Ghost in the Code: A Digital Heist",
+    "category": "Crime",
+    "intro": "In the hushed corridors of the digital world, where fortunes are made and lost in the blink of an eye, a new kind of criminal emerged. This is the story of the Ghost in the Code, a hacker who left no trace, only an empty vault.",
+    "outro": "The Ghost in the Code remains at large, a chilling reminder that in our increasingly interconnected world, the greatest treasures are also the most vulnerable. The hunt continues.",
+    "scenes": [
+      {
+        "label": "Digital Landscape",
+        "line": "It began with a whisper in the vast, anonymous expanse of the internet.",
+        "image": "assets/generated/the_ghost_in_the_code_a_digital_heist_01.jpg",
+        "image_prompt": "A sprawling, abstract digital network with glowing nodes and connecting lines., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Target",
+        "line": "A cutting-edge cryptocurrency exchange, built on layers of sophisticated security.",
+        "image": "assets/generated/the_ghost_in_the_code_a_digital_heist_02.jpg",
+        "image_prompt": "A sleek, modern server room with blinking lights and intricate wiring., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Breach",
+        "line": "But one night, a phantom slipped through the digital cracks, unseen, unheard.",
+        "image": "assets/generated/the_ghost_in_the_code_a_digital_heist_03.jpg",
+        "image_prompt": "Abstract visual of code lines dissolving and reforming, creating an opening., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Silent Operations",
+        "line": "Working with surgical precision, the hacker navigated the system's defenses like a ghost.",
+        "image": "assets/generated/the_ghost_in_the_code_a_digital_heist_04.jpg",
+        "image_prompt": "A close-up of a keyboard with rapidly moving fingers, illuminated by screen glow., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Withdrawal",
+        "line": "Millions in digital currency vanished, transferred to untraceable offshore accounts.",
+        "image": "assets/generated/the_ghost_in_the_code_a_digital_heist_05.jpg",
+        "image_prompt": "Animated bars representing digital currency flowing out of a vault icon., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Discovery",
+        "line": "By dawn, the exchange was in chaos, the unimaginable had happened.",
+        "image": "assets/generated/the_ghost_in_the_code_a_digital_heist_06.jpg",
+        "image_prompt": "A dimly lit office with people in silhouette looking at screens in disbelief., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "No Clues",
+        "line": "Investigators found no fingerprints, no digital footprints, only an eerie void.",
+        "image": "assets/generated/the_ghost_in_the_code_a_digital_heist_07.jpg",
+        "image_prompt": "A magnifying glass hovering over a blank computer screen., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Legend",
+        "line": "The Ghost in the Code became a legend, a digital specter in the machine.",
+        "image": "assets/generated/the_ghost_in_the_code_a_digital_heist_08.jpg",
+        "image_prompt": "A shadowy figure in a hooded sweatshirt, facing away from the camera, looking at a glowing cityscape., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_midnight_vault_a_billionaire_s_impossible_theft": {
+    "title": "The Midnight Vault: A Billionaire's Impossible Theft",
+    "category": "Crime",
+    "intro": "In a city where security is absolute, a fortune vanished without a single alarm ever sounding.",
+    "outro": "The vault remains sealed, the treasure gone, leaving behind a mystery that money simply cannot solve.",
+    "scenes": [
+      {
+        "label": "The Sealed Fortress",
+        "line": "Towering above the financial district, the obsidian monolith housed secrets worth more than kingdoms.",
+        "speech": "",
+        "image": "assets/generated/the_midnight_vault_a_billionaire_s_impossible_theft_01.jpg",
+        "image_prompt": "A massive modern skyscraper at night with glowing windows against a dark sky, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Impenetrable Security",
+        "line": "Laser grids, biometric scanners, and thick titanium doors guarded the subterranean depths.",
+        "speech": "",
+        "image": "assets/generated/the_midnight_vault_a_billionaire_s_impossible_theft_02.jpg",
+        "image_prompt": "Heavy steel vault door with digital keypads and glowing red security lasers, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Midnight Hour",
+        "line": "At precisely midnight, the city dozed off, unaware of the silent shadow slipping inside.",
+        "speech": "",
+        "image": "assets/generated/the_midnight_vault_a_billionaire_s_impossible_theft_03.jpg",
+        "image_prompt": "An empty city street illuminated by streetlights under a heavy fog, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Ghost Protocol",
+        "line": "Security cameras flickered once, looping pre-recorded footage of empty corridors.",
+        "speech": "",
+        "image": "assets/generated/the_midnight_vault_a_billionaire_s_impossible_theft_04.jpg",
+        "image_prompt": "A security monitor showing a static hallway with a glitching digital overlay, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Inside the Vault",
+        "line": "Row after row of safety deposit boxes stood untouched, except for one solitary target.",
+        "speech": "",
+        "image": "assets/generated/the_midnight_vault_a_billionaire_s_impossible_theft_05.jpg",
+        "image_prompt": "Rows of gleaming metal safety deposit boxes inside a brightly lit vault, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Missing Fortune",
+        "line": "A collection of priceless ancient artifacts was lifted cleanly from its pedestal.",
+        "speech": "",
+        "image": "assets/generated/the_midnight_vault_a_billionaire_s_impossible_theft_06.jpg",
+        "image_prompt": "An empty circular marble pedestal beneath a spotlight in a dark room, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "No Trace Left",
+        "line": "Forensics found no fingerprints, no forced entry, and no clues pointing to a suspect.",
+        "speech": "",
+        "image": "assets/generated/the_midnight_vault_a_billionaire_s_impossible_theft_07.jpg",
+        "image_prompt": "A magnifying glass resting on a dark surface with faint dust particles, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Endless Mystery",
+        "line": "The master thief vanished into the night, leaving investigators staring at blank walls.",
+        "speech": "",
+        "image": "assets/generated/the_midnight_vault_a_billionaire_s_impossible_theft_08.jpg",
+        "image_prompt": "A lone figure walking away down a wet alleyway into the shadows, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_cipher_s_shadow_the_unsolved_case_of_room_404": {
+    "title": "The Cipher's Shadow: The Unsolved Case of Room 404",
+    "category": "Crime",
+    "intro": "In the winter of 1998, a cryptic ledger vanished from a high-security archive, leaving behind a trail of impossible clues and a silent ghost.",
+    "outro": "The ledger remains missing, its final cipher locked away, waiting for someone daring enough to read between the lines.",
+    "scenes": [
+      {
+        "label": "The Silent Archive",
+        "line": "Deep within the concrete walls of the national records room, midnight struck without warning.",
+        "speech": "",
+        "image": "assets/generated/the_cipher_s_shadow_the_unsolved_case_of_room_404_01.jpg",
+        "image_prompt": "A long, dark corridor lined with towering metal filing cabinets under flickering fluorescent lights., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Broken Seal",
+        "line": "The heavy steel door of Room 404 was found unlocked, yet the digital security logs showed zero entries.",
+        "speech": "",
+        "image": "assets/generated/the_cipher_s_shadow_the_unsolved_case_of_room_404_02.jpg",
+        "image_prompt": "A heavy steel vault door slightly ajar with a broken tamper-evident security seal hanging loosely., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Missing Pages",
+        "line": "Inside, the display case stood empty, stripped of a single, unassuming leather-bound book.",
+        "speech": "",
+        "image": "assets/generated/the_cipher_s_shadow_the_unsolved_case_of_room_404_03.jpg",
+        "image_prompt": "A glass display pedestal in the center of a dimly lit room, holding only a velvet pillow with a rectangular indentation., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Cryptic Message",
+        "line": "Left behind on the polished oak desk was a single handwritten note written in an unknown code.",
+        "speech": "",
+        "image": "assets/generated/the_cipher_s_shadow_the_unsolved_case_of_room_404_04.jpg",
+        "image_prompt": "A piece of aged parchment paper on a dark wooden desk, covered in intricate handwritten alphanumeric symbols., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Decryption Fails",
+        "line": "For months, top cryptographers stared at the symbols, realizing every single translation led to a dead end.",
+        "speech": "",
+        "image": "assets/generated/the_cipher_s_shadow_the_unsolved_case_of_room_404_05.jpg",
+        "image_prompt": "A computer screen glowing in a dark room displaying complex mathematical equations and glowing red error text., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Surveillance Blindspot",
+        "line": "Camera footage from that exact hour suffered a mysterious ten-minute blackout across all feeds.",
+        "speech": "",
+        "image": "assets/generated/the_cipher_s_shadow_the_unsolved_case_of_room_404_06.jpg",
+        "image_prompt": "An old cathode-ray tube security monitor displaying heavy static and gray snow lines., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "A Ghostly Trail",
+        "line": "Investigators traced a series of anonymous tips across three continents, always arriving an hour too late.",
+        "speech": "",
+        "image": "assets/generated/the_cipher_s_shadow_the_unsolved_case_of_room_404_07.jpg",
+        "image_prompt": "A world map spread out on a table with several red pushpins connected by tangled black yarn., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Unsolved Mystery",
+        "line": "To this day, the master thief known only as The Cipher has never been identified.",
+        "speech": "",
+        "image": "assets/generated/the_cipher_s_shadow_the_unsolved_case_of_room_404_08.jpg",
+        "image_prompt": "A silhouette of a person in a trench coat walking away down a foggy city street at twilight., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_collector_s_curse_a_priceless_legacy_vanishes": {
+    "title": "The Collector's Curse: A Priceless Legacy Vanishes",
+    "category": "Crime",
+    "intro": "In the hushed halls of academia, where history sleeps and priceless artifacts reside, a chilling silence fell. A legacy, painstakingly built over generations, was about to disappear, leaving behind only questions and a pervasive sense of dread.",
+    "outro": "The investigation continues, a relentless pursuit of truth in the labyrinthine world of antiquities. Will the stolen whispers of the past ever be heard again, or will this priceless legacy remain lost to the shadows, a testament to a collector's ultimate curse?",
+    "scenes": [
+      {
+        "label": "The Study",
+        "line": "Dr. Alistair Finch, a renowned historian and passionate collector, dedicated his life to amassing an unparalleled collection of ancient texts and artifacts.",
+        "speech": "",
+        "image": "assets/generated/the_collector_s_curse_a_priceless_legacy_vanishes_01.jpg",
+        "image_prompt": "A dimly lit, wood-paneled study filled with overflowing bookshelves, ancient maps, and glass display cases containing historical artifacts., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Discovery",
+        "line": "One crisp autumn morning, the unthinkable happened: the centerpiece of his collection, a legendary illuminated manuscript, was gone.",
+        "speech": "",
+        "image": "assets/generated/the_collector_s_curse_a_priceless_legacy_vanishes_02.jpg",
+        "image_prompt": "A close-up on an empty velvet pedestal inside a glass display case, dust motes dancing in a single shaft of light., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "No Forced Entry",
+        "line": "The secure vault showed no signs of forced entry, no broken locks, no tripped alarms, baffling even the most experienced investigators.",
+        "speech": "",
+        "image": "assets/generated/the_collector_s_curse_a_priceless_legacy_vanishes_03.jpg",
+        "image_prompt": "A heavy, ornate vault door, pristine and securely locked, with no visible damage., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Insider Theory",
+        "line": "Suspicion immediately turned inward, towards those with intimate knowledge of the collection and its defenses.",
+        "speech": "",
+        "image": "assets/generated/the_collector_s_curse_a_priceless_legacy_vanishes_04.jpg",
+        "image_prompt": "A shadowy figure silhouetted against a large window, looking out thoughtfully., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "A Rival's Greed",
+        "line": "Could a jealous rival, driven by avarice, have orchestrated this audacious theft?",
+        "speech": "",
+        "image": "assets/generated/the_collector_s_curse_a_priceless_legacy_vanishes_05.jpg",
+        "image_prompt": "A collection of rare, antique books displayed in a luxurious, modern setting, implying a competitive collector., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Faded Clue",
+        "line": "A single, almost imperceptible smudge of exotic pollen was the only anomaly found, a whisper from a distant land.",
+        "speech": "",
+        "image": "assets/generated/the_collector_s_curse_a_priceless_legacy_vanishes_06.jpg",
+        "image_prompt": "A close-up of a magnifying glass hovering over a faint, dusty fingerprint on a wooden surface., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Global Hunt",
+        "line": "Investigators embarked on a global chase, tracing the phantom thief through a network of clandestine auctions and shadowy dealers.",
+        "speech": "",
+        "image": "assets/generated/the_collector_s_curse_a_priceless_legacy_vanishes_07.jpg",
+        "image_prompt": "A world map with glowing lines connecting various international cities, indicating travel and investigation routes., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Missing Piece",
+        "line": "The manuscript, worth a king's ransom, was never recovered, its whereabouts remaining one of history's most perplexing unsolved mysteries.",
+        "speech": "",
+        "image": "assets/generated/the_collector_s_curse_a_priceless_legacy_vanishes_08.jpg",
+        "image_prompt": "A single, empty, antique leather-bound book cover lying open on a table., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_serpent_s_kiss_a_poisoned_inheritance": {
+    "title": "The Serpent's Kiss: A Poisoned Inheritance",
+    "category": "Crime",
+    "intro": "In the hushed halls of old money and exclusive estates, fortunes are built and sometimes, tragically, unraveled. Tonight, we delve into a chilling tale of ambition, betrayal, and a death that left a family shattered, all under the guise of a natural passing. This is the story of the Serpent's Kiss.",
+    "outro": "The motive, the opportunity, the chilling silence. The Serpent's Kiss remains a stark reminder that sometimes, the most dangerous threats are the ones closest to home, hidden behind smiles and inherited wealth.",
+    "scenes": [
+      {
+        "label": "Gilded Cage",
+        "line": "The Sterling family, pillars of society, lived a life most only dreamed of, a sprawling estate filled with generations of wealth.",
+        "speech": "",
+        "image": "assets/generated/the_serpent_s_kiss_a_poisoned_inheritance_01.jpg",
+        "image_prompt": "A grand, old mansion with manicured gardens under a twilight sky., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Sudden Silence",
+        "line": "Lord Ashworth Sterling, the patriarch, was found peacefully in his study, a sudden and unexpected end.",
+        "speech": "",
+        "image": "assets/generated/the_serpent_s_kiss_a_poisoned_inheritance_02.jpg",
+        "image_prompt": "A dim, wood-paneled study with an empty armchair near a fireplace., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Whispers of Doubt",
+        "line": "But whispers began to circulate, questions arose about the true cause of his demise, too convenient, too quiet.",
+        "speech": "",
+        "image": "assets/generated/the_serpent_s_kiss_a_poisoned_inheritance_03.jpg",
+        "image_prompt": "Close-up of worried faces in hushed conversation in a dimly lit room., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Secret Beneficiary",
+        "line": "An altered will surfaced, naming a single, unexpected beneficiary who stood to gain a staggering inheritance.",
+        "speech": "",
+        "image": "assets/generated/the_serpent_s_kiss_a_poisoned_inheritance_04.jpg",
+        "image_prompt": "A close-up of an aged, official-looking document with a prominent signature., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "A Faint Scent",
+        "line": "Investigators noticed a peculiar, faint almond-like scent lingering in the air around the deceased, a detail easily overlooked.",
+        "speech": "",
+        "image": "assets/generated/the_serpent_s_kiss_a_poisoned_inheritance_05.jpg",
+        "image_prompt": "A detective carefully sniffing the air in an opulent room., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Hidden Toxin",
+        "line": "Forensic analysis later revealed trace amounts of a rare, fast-acting poison, mimicking symptoms of a heart attack.",
+        "speech": "",
+        "image": "assets/generated/the_serpent_s_kiss_a_poisoned_inheritance_06.jpg",
+        "image_prompt": "A microscopic view of chemical compounds in a laboratory setting., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Unseen Hand",
+        "line": "The beneficiary, once considered loyal, had meticulously planned to inherit everything, silencing the obstacle with deadly precision.",
+        "speech": "",
+        "image": "assets/generated/the_serpent_s_kiss_a_poisoned_inheritance_07.jpg",
+        "image_prompt": "A shadowy figure seen from behind, looking out over a vast estate., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Justice Served",
+        "line": "The Serpent's Kiss was exposed, a chilling testament to how greed can poison even the most sacred of bonds.",
+        "speech": "",
+        "image": "assets/generated/the_serpent_s_kiss_a_poisoned_inheritance_08.jpg",
+        "image_prompt": "A gavel striking down in a courtroom, casting a long shadow., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_bioluminescent_betrayal_deep_sea_heist": {
+    "title": "The Bioluminescent Betrayal: Deep-Sea Heist",
+    "category": "Crime",
+    "intro": "Deep below the churning waves, where sunlight surrenders to perpetual night, humanity built a marvel: the Neptune's Cradle Research Station. It housed treasures beyond earthly price, guarded by impossible depths and cutting-edge technology. But even in this fortress of the abyss, a shadow found its way in, leaving an unforgettable mystery.",
+    "outro": "The Lumina Gem, a marvel of nature and science, vanished without a trace, leaving behind only questions. Was it a lone genius, a shadowy organization, or something else entirely? The ocean keeps its secrets, but the chilling thought remains: what else can be stolen when even the unbreachable deep can be breached?",
+    "scenes": [
+      {
+        "label": "Ocean's Depths",
+        "line": "Far beneath the sun-kissed surface, where light dares not tread, lies a secret human marvel.",
+        "speech": "",
+        "image": "assets/generated/the_bioluminescent_betrayal_deep_sea_heist_01.jpg",
+        "image_prompt": "Panoramic view of a futuristic, glowing deep-sea research facility nestled among bioluminescent marine life., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Lumina Gem",
+        "line": "Within its bio-domes, thrived the Lumina Gem, a creature of pure light and an ecosystem unto itself, valued beyond measure.",
+        "speech": "",
+        "image": "assets/generated/the_bioluminescent_betrayal_deep_sea_heist_02.jpg",
+        "image_prompt": "Close-up of a vibrant, pulsating, bioluminescent organism housed in a transparent, high-tech containment unit., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Unbreachable Walls",
+        "line": "Protected by crushing pressures, robotic sentinels, and multi-layered cyber-defenses, the facility was deemed impregnable.",
+        "speech": "",
+        "image": "assets/generated/the_bioluminescent_betrayal_deep_sea_heist_03.jpg",
+        "image_prompt": "Intricate security systems: robotic arms patrolling, laser grids, pressure gauges, glowing data streams., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Alarm Sounds",
+        "line": "Then, one cold dawn, the facility's silent alarm screamed through the abyss: the Lumina Gem was gone.",
+        "speech": "",
+        "image": "assets/generated/the_bioluminescent_betrayal_deep_sea_heist_04.jpg",
+        "image_prompt": "Emergency lights flashing red inside a control room, worried technicians at consoles, an empty containment unit screen., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Deep-Sea Investigation",
+        "line": "Specialized teams descended, expecting signs of forced entry, but found only the crushing silence of the deep.",
+        "speech": "",
+        "image": "assets/generated/the_bioluminescent_betrayal_deep_sea_heist_05.jpg",
+        "image_prompt": "Submersible vehicles with powerful lights illuminating a section of the facility exterior, divers in advanced suits examining a secure hatch., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "A Baffling Clue",
+        "line": "The only anomaly: a minute trace of an unknown, rapidly dissolving biopolymer near the empty habitat.",
+        "speech": "",
+        "image": "assets/generated/the_bioluminescent_betrayal_deep_sea_heist_06.jpg",
+        "image_prompt": "A scientist in a lab coat examining a glowing, microscopic residue sample under a futuristic microscope., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Impossible Theory",
+        "line": "Investigators theorized a thief had cultivated a bio-engineered agent capable of bypassing all defenses and consuming the Gem, leaving no trace.",
+        "speech": "",
+        "image": "assets/generated/the_bioluminescent_betrayal_deep_sea_heist_07.jpg",
+        "image_prompt": "Schematic representation of a small, custom-engineered biological drone or organism dissolving security layers and encapsulating the Lumina Gem., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "A Ghostly Predator",
+        "line": "Who could master life itself to commit the perfect crime, and what untold depths now held their luminous prize?",
+        "speech": "",
+        "image": "assets/generated/the_bioluminescent_betrayal_deep_sea_heist_08.jpg",
+        "image_prompt": "Dark, vast ocean depth, with a faint, distant bioluminescent glow disappearing into the blackness, implying the stolen object., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_echo_chamber_escape_a_prisoner_s_audacious_illusion": {
+    "title": "The Echo Chamber Escape: A Prisoner's Audacious Illusion",
+    "category": "Crime",
+    "intro": "In the sterile silence of maximum security, a single mind conceived an impossibility, a vanishing act that defied concrete and steel. This is the story of how a ghost slipped through the bars, leaving only whispers and unanswered questions.",
+    "outro": "The legend of the Echo Chamber Escape lives on, a chilling testament to the depths of human ingenuity and the persistent, gnawing mystery of a man who seemingly dissolved into thin air. Was it a flawless plan, or a deliberate deception? The truth remains locked away, perhaps forever.",
+    "scenes": [
+      {
+        "label": "High-Security Prison",
+        "line": "Within the imposing walls of Blackwood Penitentiary, notorious for its impenetrable security, a most improbable escape was brewing.",
+        "speech": "",
+        "image": "assets/generated/the_echo_chamber_escape_a_prisoner_s_audacious_illusion_01.jpg",
+        "image_prompt": "A dark, foreboding maximum-security prison exterior at dusk., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Inmate",
+        "line": "Subject 734, known only for his quiet intellect and inscrutable gaze, had become a ghost within the system long before his disappearance.",
+        "speech": "",
+        "image": "assets/generated/the_echo_chamber_escape_a_prisoner_s_audacious_illusion_02.jpg",
+        "image_prompt": "A shadowy silhouette of a man standing in a prison cell, seen through bars., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Meticulous Planning",
+        "line": "For months, every sound, every shift change, every flicker of light was observed, cataloged, and analyzed.",
+        "speech": "",
+        "image": "assets/generated/the_echo_chamber_escape_a_prisoner_s_audacious_illusion_03.jpg",
+        "image_prompt": "Close-up on a hand meticulously drawing complex diagrams on a notepad., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Illusion",
+        "line": "His plan hinged not on brute force, but on a masterclass of misdirection, an auditory illusion designed to fool the most sophisticated surveillance.",
+        "speech": "",
+        "image": "assets/generated/the_echo_chamber_escape_a_prisoner_s_audacious_illusion_04.jpg",
+        "image_prompt": "Sound waves emanating from a small, hidden device in a prison cell., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Distraction",
+        "line": "On the designated night, a series of carefully orchestrated sounds echoed through the cell block, drawing guards away from their posts.",
+        "speech": "",
+        "image": "assets/generated/the_echo_chamber_escape_a_prisoner_s_audacious_illusion_05.jpg",
+        "image_prompt": "A prison guard looking startled and turning his head, away from the camera., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Vanishing",
+        "line": "While the attention was diverted, Subject 734 seemingly dissolved from his locked cell, leaving behind only an empty bunk.",
+        "speech": "",
+        "image": "assets/generated/the_echo_chamber_escape_a_prisoner_s_audacious_illusion_06.jpg",
+        "image_prompt": "An empty prison bunk, with the blanket neatly folded, in a dimly lit cell., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Discovery",
+        "line": "The discovery sent shockwaves through the facility, a seemingly impossible feat that baffled seasoned investigators.",
+        "speech": "",
+        "image": "assets/generated/the_echo_chamber_escape_a_prisoner_s_audacious_illusion_07.jpg",
+        "image_prompt": "Multiple prison guards and officials looking stunned inside an empty prison cell., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Unanswered Questions",
+        "line": "To this day, no trace of Subject 734 has ever been found, leaving behind a chilling legend of the prisoner who mastered the art of silence.",
+        "speech": "",
+        "image": "assets/generated/the_echo_chamber_escape_a_prisoner_s_audacious_illusion_08.jpg",
+        "image_prompt": "A winding, dark road disappearing into a misty forest., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_glass_spider_a_high_rise_masterpiece_heist": {
+    "title": "The Glass Spider: A High-Rise Masterpiece Heist",
+    "category": "Crime",
+    "intro": "Step inside a world where security systems are merely suggestions, and a legendary gemstone vanished into thin air.",
+    "outro": "The spider vanished into the night, leaving behind an empty pedestal and a legacy that defies belief. Subscribe for more unsolved mysteries.",
+    "scenes": [
+      {
+        "label": "THE MIDNIGHT TOWER",
+        "line": "High above the sprawling metropolis, the sixty-story obsidian monolith stood as an impenetrable fortress of modern wealth.",
+        "speech": "",
+        "image": "assets/generated/the_glass_spider_a_high_rise_masterpiece_heist_01.jpg",
+        "image_prompt": "A towering skyscraper gleaming against a dark, moody night sky with city lights below., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "THE PRICELESS GEM",
+        "line": "Encased in reinforced bulletproof glass rested the Glass Spider, a forty-carat diamond carved into a web of blinding perfection.",
+        "speech": "",
+        "image": "assets/generated/the_glass_spider_a_high_rise_masterpiece_heist_02.jpg",
+        "image_prompt": "A brilliantly glowing diamond shaped like a spider resting on a dark velvet pedestal., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "THE SILENT ALARM",
+        "line": "At precisely 3:14 AM, every motion sensor on the penthouse floor blinked out of existence simultaneously.",
+        "speech": "",
+        "image": "assets/generated/the_glass_spider_a_high_rise_masterpiece_heist_03.jpg",
+        "image_prompt": "A close-up of a high-tech security monitor flashing a sudden red error code., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "THE IMPOSSIBLE DESCENT",
+        "line": "Without a single footprint left behind, the thief had somehow breached the ceiling vault from the outside.",
+        "speech": "",
+        "image": "assets/generated/the_glass_spider_a_high_rise_masterpiece_heist_04.jpg",
+        "image_prompt": "A shadowy figure rappelling down the sheer glass exterior of a massive skyscraper., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "THE EMPTY VAULT",
+        "line": "Morning light revealed shattered glass and an agonizingly empty display case where a fortune once lived.",
+        "speech": "",
+        "image": "assets/generated/the_glass_spider_a_high_rise_masterpiece_heist_05.jpg",
+        "image_prompt": "A sunlit luxury museum room focusing on an empty glass display case with scattered shards., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "THE GHOSTLY CLUE",
+        "line": "The only evidence recovered from the entire crime scene was a single strand of ultra-fine platinum wire.",
+        "speech": "",
+        "image": "assets/generated/the_glass_spider_a_high_rise_masterpiece_heist_06.jpg",
+        "image_prompt": "A microscopic view of a thin metallic wire resting on a dark, polished surface., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "THE INTERNATIONAL HUNT",
+        "line": "Interpol launched a global manhunt, tracing whispers of the stolen diamond through the dark underworld of elite collectors.",
+        "speech": "",
+        "image": "assets/generated/the_glass_spider_a_high_rise_masterpiece_heist_07.jpg",
+        "image_prompt": "A dimly lit room filled with international maps, glowing computer screens, and detective files., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "THE SHADOWS REMAIN",
+        "line": "To this day, the Glass Spider remains hidden in the shadows, waiting for its next web to be spun.",
+        "speech": "",
+        "image": "assets/generated/the_glass_spider_a_high_rise_masterpiece_heist_08.jpg",
+        "image_prompt": "A dark, elegant room with a single beam of light illuminating an empty pedestal., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_ghost_particle_heist": {
+    "title": "The Ghost Particle Heist",
+    "category": "Crime",
+    "intro": "Tonight, we delve into a mystery that baffled the world's top minds: a theft so audacious, so utterly impossible, it defies explanation. Inside a fortress of innovation, a groundbreaking invention, dubbed the 'Ghost Particle,' vanished without a trace, leaving behind only questions and a chilling silence.",
+    "outro": "To this day, the Ghost Particle remains lost, its capabilities unknown, its thief an enigma. Was it a technological marvel stolen by a shadowy organization, or something far more…unconventional? The facility remains on lockdown, the world holds its breath, and the echo of its impossible disappearance still haunts the halls of science.",
+    "scenes": [
+      {
+        "label": "Secure Facility",
+        "line": "Deep within a secluded valley, the Aegis Research Complex stood as a beacon of human ingenuity, its secrets guarded by layers of impenetrable security.",
+        "speech": "",
+        "image": "assets/generated/the_ghost_particle_heist_01.jpg",
+        "image_prompt": "A futuristic, sleek research facility nestled in a pristine, secluded valley, with visible security cameras and fences., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The \"Ghost Particle\"",
+        "line": "Here, Dr. Aris Thorne had painstakingly developed the 'Ghost Particle,' an invention rumored to redefine the very laws of physics.",
+        "speech": "",
+        "image": "assets/generated/the_ghost_particle_heist_02.jpg",
+        "image_prompt": "A dimly lit, sterile laboratory interior, a focused scientist in a lab coat observing a small, faintly glowing, intricate device contained within a clear casing., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Silent Night",
+        "line": "One fateful night, as automated systems monitored the silent corridors, something inexplicable occurred.",
+        "speech": "",
+        "image": "assets/generated/the_ghost_particle_heist_03.jpg",
+        "image_prompt": "Grainy security camera footage view of a deserted, well-lit futuristic corridor, showing timestamp in the corner., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Vanished Proof",
+        "line": "By morning, the reinforced vault where the 'Ghost Particle' was stored stood uncompromised, yet utterly empty.",
+        "speech": "",
+        "image": "assets/generated/the_ghost_particle_heist_04.jpg",
+        "image_prompt": "A high-tech, reinforced display pedestal in a secure vault, now conspicuously empty, with no signs of forced entry., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "No Evidence",
+        "line": "Forensics found no forced entry, no digital footprints, no lingering radiation – nothing to suggest a theft had even taken place.",
+        "speech": "",
+        "image": "assets/generated/the_ghost_particle_heist_05.jpg",
+        "image_prompt": "A team of forensic investigators in white suits meticulously examining a pristine vault, looking perplexed, one holding a data tablet., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Unsettling Clues",
+        "line": "Dr. Thorne himself had vanished, his personal effects untouched, only a cryptic, hastily scrawled note left on his desk.",
+        "speech": "",
+        "image": "assets/generated/the_ghost_particle_heist_06.jpg",
+        "image_prompt": "A modern office desk, slightly disheveled, with a single, handwritten note on a pad, under a desk lamp., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Cryptic Message",
+        "line": "The note contained only a single, unsettling symbol, unknown to any codebreakers or linguists.",
+        "speech": "",
+        "image": "assets/generated/the_ghost_particle_heist_07.jpg",
+        "image_prompt": "A close-up shot of a crumpled piece of paper on a desk, showing a single, abstract, geometric symbol drawn roughly in pen., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Enduring Mystery",
+        "line": "The disappearance sent shockwaves through the scientific community, sparking countless theories, yet offering no definitive answers.",
+        "speech": "",
+        "image": "assets/generated/the_ghost_particle_heist_08.jpg",
+        "image_prompt": "An aerial shot of the Aegis Research Complex, now surrounded by flashing emergency vehicle lights and a search helicopter hovering overhead, casting searchlights., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_silent_symphony_the_orchestrated_art_forgery": {
+    "title": "The Silent Symphony: The Orchestrated Art Forgery",
+    "category": "Crime",
+    "intro": "In the hushed halls of high society, where reputation is currency and taste is paramount, a masterful deception unfolded. A crime so intricate, so perfectly executed, it left experts bewildered and fortunes in doubt.",
+    "outro": "The case remains open, a chilling reminder that sometimes, the most audacious crimes are committed not with brute force, but with a brushstroke of pure, calculated deceit. The Silent Symphony continues to play, its final notes yet unheard.",
+    "scenes": [
+      {
+        "label": "Gilded World",
+        "line": "Our story begins in the opulent world of elite art collectors, a realm of exclusive auctions and hushed whispers of unparalleled value.",
+        "speech": "",
+        "image": "assets/generated/the_silent_symphony_the_orchestrated_art_forgery_01.jpg",
+        "image_prompt": "A dimly lit auction house with a spotlight on a framed classical painting., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Masterpiece",
+        "line": "A renowned philanthropist, known for their discerning eye, acquired what was believed to be a lost masterpiece, a pivotal work by a celebrated Renaissance artist.",
+        "speech": "",
+        "image": "assets/generated/the_silent_symphony_the_orchestrated_art_forgery_02.jpg",
+        "image_prompt": "Close-up of an ornate, antique frame surrounding a painting of serene figures., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Expert Approval",
+        "line": "Esteemed art historians and conservators meticulously examined the painting, their collective consensus confirming its authenticity beyond a shadow of a doubt.",
+        "speech": "",
+        "image": "assets/generated/the_silent_symphony_the_orchestrated_art_forgery_03.jpg",
+        "image_prompt": "Two figures in lab coats examining a painting under bright lights with magnifying tools., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Reveal",
+        "line": "The painting became the crown jewel of a private exhibition, drawing crowds of admirers and solidifying the collector's status as a true connoisseur.",
+        "speech": "",
+        "image": "assets/generated/the_silent_symphony_the_orchestrated_art_forgery_04.jpg",
+        "image_prompt": "A well-dressed crowd mingling in a sophisticated gallery, looking at a central painting., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "A Faint Doubt",
+        "line": "But beneath the veneer of certainty, a subtle anomaly began to surface, a microscopic inconsistency invisible to all but the most rigorous scrutiny.",
+        "speech": "",
+        "image": "assets/generated/the_silent_symphony_the_orchestrated_art_forgery_05.jpg",
+        "image_prompt": "A single, almost imperceptible crack in the varnish of a painting., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Unraveling",
+        "line": "Advanced forensic analysis, spurred by a lingering hunch, revealed a truth more shocking than anyone could have imagined: the masterpiece was a brilliant forgery.",
+        "speech": "",
+        "image": "assets/generated/the_silent_symphony_the_orchestrated_art_forgery_06.jpg",
+        "image_prompt": "A spectral overlay of scientific analysis charts and graphs over a painting., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Architect",
+        "line": "The perpetrator, a phantom within the art world, had meticulously recreated the artist's style, aging the canvas and pigments with uncanny precision.",
+        "speech": "",
+        "image": "assets/generated/the_silent_symphony_the_orchestrated_art_forgery_07.jpg",
+        "image_prompt": "A shadowy figure's hands carefully applying paint to a canvas with a fine brush., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Legacy Questioned",
+        "line": "The implications were staggering, casting doubt on countless other acquisitions and shaking the very foundations of art valuation.",
+        "speech": "",
+        "image": "assets/generated/the_silent_symphony_the_orchestrated_art_forgery_08.jpg",
+        "image_prompt": "A cascade of falling art auction paddles, symbolizing lost value., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_celestial_shadow_heist": {
+    "title": "The Celestial Shadow Heist",
+    "category": "Crime",
+    "intro": "Imagine a moment when the world holds its breath, when day turns to an eerie twilight, and the very sun seems to vanish. It's in this fleeting, unnatural darkness, precisely when the moon eclipses the sun, that some choose to strike. This is the story of a crime so audacious, so perfectly timed, it defied belief: The Celestial Shadow Heist.",
+    "outro": "The Celestial Shadow Heist remains etched in the annals of unsolved crimes, a chilling reminder that even in a world bathed in light, darkness holds secrets and opportunities for those bold enough to seize them. The jewels may be gone, but the specter of that perfectly timed theft, forever linked to the cosmic dance of sun and moon, continues to cast its long, cold shadow.",
+    "scenes": [
+      {
+        "label": "Priceless Exhibition",
+        "line": "In a gleaming metropolitan museum, the \"Starfire\" collection, a display of rare gems, captivated millions.",
+        "speech": "",
+        "image": "assets/generated/the_celestial_shadow_heist_01.jpg",
+        "image_prompt": "A large, brightly lit museum exhibit case showcasing several sparkling, large gemstones on velvet pedestals., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Anticipated Eclipse",
+        "line": "Whispers of an impending total solar eclipse generated excitement, drawing throngs to witness the celestial spectacle.",
+        "speech": "",
+        "image": "assets/generated/the_celestial_shadow_heist_02.jpg",
+        "image_prompt": "A bustling city square with people gathered, some looking up at the sky, a partial solar eclipse visible overhead., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Security Fortified",
+        "line": "As the rare event approached, security around the museum's prized collection was heightened to an unprecedented level.",
+        "speech": "",
+        "image": "assets/generated/the_celestial_shadow_heist_03.jpg",
+        "image_prompt": "Security cameras mounted on walls, a guard patrolling a quiet museum corridor, and fortified display cases., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Eerie Twilight",
+        "line": "On the day of the eclipse, the sky slowly darkened, plunging the city into an otherworldly, rapidly deepening twilight.",
+        "speech": "",
+        "image": "assets/generated/the_celestial_shadow_heist_04.jpg",
+        "image_prompt": "A city skyline at midday, but under a strangely dark, purplish sky as the eclipse progresses., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Moment of Totality",
+        "line": "For a mere few minutes, the moon completely obscured the sun, casting an unnatural, complete darkness over everything.",
+        "speech": "",
+        "image": "assets/generated/the_celestial_shadow_heist_05.jpg",
+        "image_prompt": "A total solar eclipse with the sun's corona visible, the surrounding landscape plunged into deep shadow, like night., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Vanished Without Trace",
+        "line": "As the first sliver of sunlight returned, a priceless diamond, the collection's centerpiece, was discovered missing from its supposedly impenetrable display.",
+        "speech": "",
+        "image": "assets/generated/the_celestial_shadow_heist_06.jpg",
+        "image_prompt": "A museum display case with an empty pedestal, spotlights shining on the empty space, a shocked security guard looking on., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Baffling Absence",
+        "line": "No alarms triggered, no surveillance footage captured the moment of theft, only the bewildering absence of the gem.",
+        "speech": "",
+        "image": "assets/generated/the_celestial_shadow_heist_07.jpg",
+        "image_prompt": "Security personnel huddling around monitors showing static or empty corridors, looking perplexed., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Unseen Mastermind",
+        "line": "The audacious thief had used the rare cosmic event as their perfect cover, disappearing into the returning light without a single witness.",
+        "speech": "",
+        "image": "assets/generated/the_celestial_shadow_heist_08.jpg",
+        "image_prompt": "A silhouetted figure standing on a rooftop overlooking the city as the sun's light slowly returns, holding a small, glinting object., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_clockwork_conspiracy_time_itself_stolen": {
+    "title": "The Clockwork Conspiracy: Time Itself Stolen",
+    "category": "Crime",
+    "intro": "In the hushed halls of academia, where knowledge is currency and reputation is everything, a scandal of unimaginable proportions unfolded, one that didn't involve stolen jewels or illicit fortunes, but something far more insidious: the manipulation of time itself.",
+    "outro": "The case remains a chilling reminder that the most dangerous thieves are often those who operate in plain sight, their motives as complex and untraceable as the very mechanisms they sought to control.",
+    "scenes": [
+      {
+        "label": "Academic Elite",
+        "line": "Professor Alistair Finch, a titan in theoretical physics, was on the cusp of a groundbreaking discovery, one that promised to redefine our understanding of temporal mechanics.",
+        "speech": "",
+        "image": "assets/generated/the_clockwork_conspiracy_time_itself_stolen_01.jpg",
+        "image_prompt": "A distinguished, middle-aged man with graying hair and spectacles stands at a blackboard filled with complex equations, a faint smile on his face., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Lost Hours",
+        "line": "But as his research intensified, so did strange anomalies within the university's secure server logs: hours of critical data inexplicably vanishing, then reappearing as if they'd never been gone.",
+        "speech": "",
+        "image": "assets/generated/the_clockwork_conspiracy_time_itself_stolen_02.jpg",
+        "image_prompt": "A dark computer server room with blinking lights, a single strand of distorted data visualized as a faint, shimmering thread., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Suspicious Colleagues",
+        "line": "Suspicion fell not on outside hackers, but on those closest to Finch, individuals with intimate knowledge of his work and access to his most guarded secrets.",
+        "speech": "",
+        "image": "assets/generated/the_clockwork_conspiracy_time_itself_stolen_03.jpg",
+        "image_prompt": "Silhouettes of several individuals stand in a dimly lit hallway outside a laboratory door, their faces obscured., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Subtle Manipulation",
+        "line": "The motive was not theft, but control – a desperate attempt to rewrite history, to subtly alter the timeline of a rival's career before it even began.",
+        "speech": "",
+        "image": "assets/generated/the_clockwork_conspiracy_time_itself_stolen_04.jpg",
+        "image_prompt": "A close-up of a digital clock face with its numbers rapidly flickering and blurring., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Missing Device",
+        "line": "Investigators discovered that Finch had been developing a prototype device, a temporal modulator, capable of creating localized time distortions.",
+        "speech": "",
+        "image": "assets/generated/the_clockwork_conspiracy_time_itself_stolen_05.jpg",
+        "image_prompt": "A futuristic, intricate metallic device with glowing components rests on a workbench, partially covered by a cloth., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Whistleblower",
+        "line": "It was a junior researcher, overlooked and underestimated, who noticed the faint temporal residue left by the device's unauthorized use.",
+        "speech": "",
+        "image": "assets/generated/the_clockwork_conspiracy_time_itself_stolen_06.jpg",
+        "image_prompt": "A young, determined-looking person hunches over a computer screen, their face illuminated by the glow, pointing at a specific anomaly., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Confrontation",
+        "line": "Finch's once-brilliant mind, warped by ambition, had been using his invention not for discovery, but for destructive personal gain, a silent war waged against his peers.",
+        "speech": "",
+        "image": "assets/generated/the_clockwork_conspiracy_time_itself_stolen_07.jpg",
+        "image_prompt": "Two figures stand facing each other in a stark, modern office, one in a position of authority, the other looking accusatory., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Justice Undone",
+        "line": "Though the perpetrator was identified, the exact extent of the temporal alterations remains unknown, a haunting testament to the fragile nature of truth and causality.",
+        "speech": "",
+        "image": "assets/generated/the_clockwork_conspiracy_time_itself_stolen_08.jpg",
+        "image_prompt": "A courtroom gavel is raised, but the background is a swirling vortex of abstract colors, suggesting uncertainty and distortion., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "the_diamond_dust_deception_a_heist_of_glittering_illusion": {
+    "title": "The Diamond Dust Deception: A Heist of Glittering Illusion",
+    "category": "Crime",
+    "intro": "In the glittering world of high finance and even higher stakes, some crimes sparkle with an almost irresistible allure. Today, we delve into a heist that wasn't about brute force, but about breathtaking deception – a crime where the prize was stolen, not with a crowbar, but with a whisper and a cloud of shimmering dust.",
+    "outro": "The Diamond Dust Deception remains a chilling testament to the power of illusion. It reminds us that sometimes, the most valuable things aren't just what we can see, but what we're *made* to see. The thieves may have vanished, but the legend of their glittering deception lives on.",
+    "scenes": [
+      {
+        "label": "Glimmering City",
+        "line": "Beneath the towering skyscrapers of a metropolis renowned for its wealth, a legendary jewel was about to become the target of an unimaginable scheme.",
+        "speech": "",
+        "image": "assets/generated/the_diamond_dust_deception_a_heist_of_glittering_illusion_01.jpg",
+        "image_prompt": "A stylized, wide shot of a bustling cityscape at night, with skyscrapers lit up like beacons., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Masterpiece",
+        "line": "The 'Star of Polaris,' a diamond of unparalleled clarity and size, was on display, protected by the latest in security technology.",
+        "speech": "",
+        "image": "assets/generated/the_diamond_dust_deception_a_heist_of_glittering_illusion_02.jpg",
+        "image_prompt": "A close-up, dramatic shot of a magnificent, large diamond resting on a velvet cushion under a spotlight., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Artist's Touch",
+        "line": "But this wasn't a plan for smash-and-grab; it was a meticulously crafted performance, orchestrated by a criminal mind known only as 'The Alchemist'.",
+        "speech": "",
+        "image": "assets/generated/the_diamond_dust_deception_a_heist_of_glittering_illusion_03.jpg",
+        "image_prompt": "A shadowy silhouette of a person examining blueprints and schematics in a dimly lit room., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Subtle Shift",
+        "line": "The plan hinged on a nearly imperceptible diversion, a microscopic anomaly introduced into the pristine environment.",
+        "speech": "",
+        "image": "assets/generated/the_diamond_dust_deception_a_heist_of_glittering_illusion_04.jpg",
+        "image_prompt": "A close-up shot of a fine, almost invisible powder being blown through a tiny nozzle., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "A Haze of Distraction",
+        "line": "As a carefully timed chemical reaction occurred, a cloud of fine, iridescent dust filled the air, momentarily obscuring sensors.",
+        "speech": "",
+        "image": "assets/generated/the_diamond_dust_deception_a_heist_of_glittering_illusion_05.jpg",
+        "image_prompt": "A shimmering, ethereal cloud of dust particles swirling in the air, distorting the view behind it., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Switch",
+        "line": "In that split second of confusion, a near-perfect replica, indistinguishable to the naked eye, was swapped with the genuine article.",
+        "speech": "",
+        "image": "assets/generated/the_diamond_dust_deception_a_heist_of_glittering_illusion_06.jpg",
+        "image_prompt": "A quick, blurred motion shot of hands making a swift exchange, one object moving out of frame, another entering., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Empty Pedestal",
+        "line": "By the time the dust settled and the alarms blared, the 'Star of Polaris' was gone, replaced by an impostor, a ghost of its former brilliance.",
+        "speech": "",
+        "image": "assets/generated/the_diamond_dust_deception_a_heist_of_glittering_illusion_07.jpg",
+        "image_prompt": "A dramatic shot of an empty display pedestal with a single beam of light shining down, the surrounding area in shadow., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Vanished Without a Trace",
+        "line": "The perpetrators, along with their glittering prize, vanished like smoke, leaving behind only a lingering scent of mystery and a diamond's haunting legacy.",
+        "speech": "",
+        "image": "assets/generated/the_diamond_dust_deception_a_heist_of_glittering_illusion_08.jpg",
+        "image_prompt": "A lone, abandoned suitcase on a deserted city street at dawn, with faint, shimmering dust motes visible in the early light., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ]
+  },
+  "pilot_officer_rashid_minhas": {
+    "title": "Pilot Officer Rashid Minhas",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Early Training Days",
+        "line": "Pilot Officer Rashid Minhas completed his military training at the Pakistan Air Force Academy on 14 March 1971.",
+        "speech": "",
+        "image": "assets/generated/pilot_officer_rashid_minhas_01.jpg",
+        "image_prompt": "An empty military academy building with concrete architecture and a clear sky., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Preparing For Flight",
+        "line": "On 20 August of that year, he was getting ready to take off in a Lockheed T-33A T-Bird jet trainer.",
+        "speech": "",
+        "image": "assets/generated/pilot_officer_rashid_minhas_02.jpg",
+        "image_prompt": "A vintage military jet trainer aircraft parked on a concrete airfield., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Cockpit Takeover",
+        "line": "Flight Lieutenant Matiur Rahman signalled him to stop before climbing into the instructor seat of the aircraft.",
+        "speech": "",
+        "image": "assets/generated/pilot_officer_rashid_minhas_03.jpg",
+        "image_prompt": "A close-up view of an empty cockpit instrument panel inside a training jet., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Emergency Radio Call",
+        "line": "Minhas radioed the air base with the message that he was being hijacked during the flight.",
+        "speech": "",
+        "image": "assets/generated/pilot_officer_rashid_minhas_04.jpg",
+        "image_prompt": "An old radio communication device sitting on a wooden desk indoors., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Struggle For Control",
+        "line": "Both men tried to overpower each other through the mechanically linked flight controls inside the cockpit.",
+        "speech": "",
+        "image": "assets/generated/pilot_officer_rashid_minhas_05.jpg",
+        "image_prompt": "A metal control stick and throttle inside an aircraft cockpit., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Crash Site",
+        "line": "Some 32 miles from the Indian border, the jet crashed in Sujawal District in Pakistan.",
+        "speech": "",
+        "image": "assets/generated/pilot_officer_rashid_minhas_06.jpg",
+        "image_prompt": "A remote desert landscape with flat sandy ground and distant shrubs., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Military Honours",
+        "line": "Minhas was posthumously awarded Pakistan top military honour, known as the Nishan-e-Haider.",
+        "speech": "",
+        "image": "assets/generated/pilot_officer_rashid_minhas_07.jpg",
+        "image_prompt": "A framed military medal resting on a dark wooden table surface., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Lasting Memory",
+        "line": "In his memory, the Pakistan Air Force base at Kamra was renamed PAF Base Minhas.",
+        "speech": "",
+        "image": "assets/generated/pilot_officer_rashid_minhas_08.jpg",
+        "image_prompt": "The large metal gates of a military air force installation from the outside., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Rashid Minhas",
+    "source_url": "https://en.wikipedia.org/wiki/Rashid_Minhas"
+  },
+  "rashid_minhas_nishan_e_haider_recipient": {
+    "title": "Rashid Minhas: Nishan-e-Haider Recipient",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Pilot Profile",
+        "line": "Pilot Officer Rashid Minhas NH was a Pakistani fighter pilot, the fifth recipient of Pakistan's highest military award.",
+        "speech": "",
+        "image": "assets/generated/rashid_minhas_nishan_e_haider_recipient_01.jpg",
+        "image_prompt": "Military pilot standing near a jet aircraft on a runway, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Highest Honor",
+        "line": "He was the first and only officer from the Pakistan Air Force to receive the Nishan-e-Haider.",
+        "speech": "",
+        "image": "assets/generated/rashid_minhas_nishan_e_haider_recipient_02.jpg",
+        "image_prompt": "A ceremonial military medal displayed on a velvet cushion, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Training Day",
+        "line": "In August 1971, Minhas prepared for his second solo flight during a routine training mission in Karachi.",
+        "speech": "",
+        "image": "assets/generated/rashid_minhas_nishan_e_haider_recipient_03.jpg",
+        "image_prompt": "Jet trainer aircraft on a tarmac, pilot walking towards it, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Unexpected Boarding",
+        "line": "As he taxied his Lockheed T-33A jet, Flight Lieutenant Matiur Rahman signalled Minhas to stop.",
+        "speech": "",
+        "image": "assets/generated/rashid_minhas_nishan_e_haider_recipient_04.jpg",
+        "image_prompt": "Jet trainer aircraft taxiing on a runway, a person on the ground signalling, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Control Seized",
+        "line": "Rahman then climbed into the instructor's seat, taking control of the aircraft and turning it towards India.",
+        "speech": "",
+        "image": "assets/generated/rashid_minhas_nishan_e_haider_recipient_05.jpg",
+        "image_prompt": "Cockpit view from a jet trainer, a hand on the flight stick, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Hijack Alert",
+        "line": "Minhas radioed PAF Base Masroor, reporting that his aircraft was being hijacked, a message he confirmed.",
+        "speech": "",
+        "image": "assets/generated/rashid_minhas_nishan_e_haider_recipient_06.jpg",
+        "image_prompt": "Air traffic control tower with a control room inside, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Mid-Air Fight",
+        "line": "In the air, Minhas physically struggled against Rahman, attempting to regain control through linked flight controls.",
+        "speech": "",
+        "image": "assets/generated/rashid_minhas_nishan_e_haider_recipient_07.jpg",
+        "image_prompt": "Two hands on a jet's flight control stick in a cockpit, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Forced Landing",
+        "line": "The jet crashed near Sujawal, some 32 miles from the Indian border, resulting in both men's deaths.",
+        "speech": "",
+        "image": "assets/generated/rashid_minhas_nishan_e_haider_recipient_08.jpg",
+        "image_prompt": "Aerial view of a barren, flat landscape with scattered debris, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Rashid Minhas",
+    "source_url": "https://en.wikipedia.org/wiki/Rashid_Minhas"
+  },
+  "al_capone_scarface_s_reign": {
+    "title": "Al Capone: Scarface's Reign",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "The Deed",
+        "line": "Seven people were murdered in broad daylight.",
+        "speech": "",
+        "image": "assets/generated/al_capone_scarface_s_reign_01.jpg",
+        "image_prompt": "A wide shot of a city street in daylight with no people visible., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Early Life",
+        "line": "Alphonse Gabriel Capone was born in New York City in 1899.",
+        "speech": "",
+        "image": "assets/generated/al_capone_scarface_s_reign_02.jpg",
+        "image_prompt": "A vintage photograph of a bustling New York City street in the late 1800s., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Criminal Beginnings",
+        "line": "He joined the Five Points Gang as a teenager and became a bouncer.",
+        "speech": "",
+        "image": "assets/generated/al_capone_scarface_s_reign_03.jpg",
+        "image_prompt": "A dimly lit interior of a 1920s-era dance hall or saloon., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Rise to Power",
+        "line": "Capone moved to Chicago and became a bodyguard for Johnny Torrio.",
+        "speech": "",
+        "image": "assets/generated/al_capone_scarface_s_reign_04.jpg",
+        "image_prompt": "A classic 1920s automobile parked on a city street., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Public Image",
+        "line": "He was viewed by many as a 'modern-day Robin Hood'.",
+        "speech": "",
+        "image": "assets/generated/al_capone_scarface_s_reign_05.jpg",
+        "image_prompt": "A vintage newspaper stand displaying various papers., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Public Enemy",
+        "line": "Newspapers dubbed Capone 'Public Enemy No. 1' after a massacre.",
+        "speech": "",
+        "image": "assets/generated/al_capone_scarface_s_reign_06.jpg",
+        "image_prompt": "A grainy black and white photograph of a city skyline., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Conviction",
+        "line": "Federal authorities charged Capone with twenty-two counts of tax evasion.",
+        "speech": "",
+        "image": "assets/generated/al_capone_scarface_s_reign_07.jpg",
+        "image_prompt": "A stern-faced judge sits behind a wooden bench in a courtroom., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Imprisonment",
+        "line": "He was released after almost eight years of incarceration.",
+        "speech": "",
+        "image": "assets/generated/al_capone_scarface_s_reign_08.jpg",
+        "image_prompt": "A tall, imposing prison wall with a guard tower., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Al Capone",
+    "source_url": "https://en.wikipedia.org/wiki/Al_Capone"
+  },
+  "bonnie_and_clyde_outlaw_couple": {
+    "title": "Bonnie and Clyde Outlaw Couple",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Outlaw Couple",
+        "line": "Bonnie Parker and Clyde Barrow committed crimes across the Central United States.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_outlaw_couple_01.jpg",
+        "image_prompt": "Rural gas station with a vintage car parked outside., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Criminal History",
+        "line": "They committed store robberies, bank robberies, kidnappings, and murders between 1932 and 1934.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_outlaw_couple_02.jpg",
+        "image_prompt": "Old wooden counter of a small general store., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Murders",
+        "line": "The couple are believed to have murdered at least nine police officers and three civilians.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_outlaw_couple_03.jpg",
+        "image_prompt": "Police car parked on a lonely highway at night., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Public Attention",
+        "line": "Their exploits captured the attention of the American press during the public enemy era.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_outlaw_couple_04.jpg",
+        "image_prompt": "Newspaper stand with headlines visible., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Final Ambush",
+        "line": "On May 23, 1934, the couple were ambushed and killed on a Louisiana highway.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_outlaw_couple_05.jpg",
+        "image_prompt": "Gravel road in a wooded area., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Bonnie Parker",
+        "line": "Bonnie Parker was born in Rowena, Texas, and dreamt of becoming an actress.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_outlaw_couple_06.jpg",
+        "image_prompt": "A dusty Texas road leading towards a small town., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Clyde Barrow",
+        "line": "Clyde Barrow was born into a poor farming family and met Bonnie in 1930.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_outlaw_couple_07.jpg",
+        "image_prompt": "A simple, weathered farmhouse with a porch., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Prison Influence",
+        "line": "Abuses Barrow sustained in prison reportedly made him bitter and seeking revenge.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_outlaw_couple_08.jpg",
+        "image_prompt": "Chain-link fence surrounding a prison yard., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Bonnie and Clyde",
+    "source_url": "https://en.wikipedia.org/wiki/Bonnie_and_Clyde"
+  },
+  "bonnie_and_clyde_and_their_criminal_gang": {
+    "title": "Bonnie and Clyde and Their Criminal Gang",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Outlaw Couple",
+        "line": "Bonnie and Clyde roamed the Central United States committing store robberies, bank robberies, kidnappings, and murders.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_and_their_criminal_gang_01.jpg",
+        "image_prompt": "An old empty rural highway stretching through the American plains., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Early Life",
+        "line": "Bonnie Elizabeth Parker was born on October 1, 1910, in Rowena, Texas, the second of three children.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_and_their_criminal_gang_02.jpg",
+        "image_prompt": "A weathered brick building in a small Texas town., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Marriage",
+        "line": "In her second year in high school, Parker met Roy Thornton, and they married on September 25, 1926.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_and_their_criminal_gang_03.jpg",
+        "image_prompt": "A vintage metal wedding ring resting on a wooden table., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Barrow Family",
+        "line": "Clyde Chestnut Barrow was born March 24, 1909 into a poor farming family in the town of Telico, Texas.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_and_their_criminal_gang_04.jpg",
+        "image_prompt": "A desolate rural farm landscape with an old wooden fence., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Prison Escape",
+        "line": "On March 11, 1930, Barrow escaped from the McLennan County jail in Waco, Texas, using a smuggled gun.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_and_their_criminal_gang_05.jpg",
+        "image_prompt": "The interior stone walls of an old nineteenth-century county jail., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Prison Abuse",
+        "line": "In September, after five months at Huntsville, Barrow was assigned to the Eastham Prison Farm at the age of 21.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_and_their_criminal_gang_06.jpg",
+        "image_prompt": "A vast, empty agricultural field under a heavy overcast sky., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Intentional Injury",
+        "line": "To avoid hard labor in the fields, Barrow purposely had two of his toes amputated in late January 1932.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_and_their_criminal_gang_07.jpg",
+        "image_prompt": "A pair of worn leather work boots standing on a dirt floor., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Final Ambush",
+        "line": "On May 23, 1934, the couple were ambushed and killed on Louisiana Highway 154 in Bienville Parish, Louisiana.",
+        "speech": "",
+        "image": "assets/generated/bonnie_and_clyde_and_their_criminal_gang_08.jpg",
+        "image_prompt": "A dense roadside forest with tall trees and thick underbrush., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Bonnie and Clyde",
+    "source_url": "https://en.wikipedia.org/wiki/Bonnie_and_Clyde"
+  },
+  "ned_kelly_the_last_bushranger": {
+    "title": "Ned Kelly: The Last Bushranger",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Final Stand",
+        "line": "Ned Kelly wore homemade armour in his final shootout with police.",
+        "speech": "",
+        "image": "assets/generated/ned_kelly_the_last_bushranger_01.jpg",
+        "image_prompt": "A weathered metal chest plate and helmet., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Early Life",
+        "line": "Edward Kelly was born in rural Victoria, the third of eight children.",
+        "speech": "",
+        "image": "assets/generated/ned_kelly_the_last_bushranger_02.jpg",
+        "image_prompt": "A pastoral landscape with a small wooden farmhouse., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Family Hardship",
+        "line": "His father died when Ned was 12, leaving him the eldest male.",
+        "speech": "",
+        "image": "assets/generated/ned_kelly_the_last_bushranger_03.jpg",
+        "image_prompt": "A solitary figure standing by a fireplace in a humble home., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "First Arrests",
+        "line": "As a teenager, Kelly associated with a bushranger and served prison terms.",
+        "speech": "",
+        "image": "assets/generated/ned_kelly_the_last_bushranger_04.jpg",
+        "image_prompt": "Iron bars seen from inside a dimly lit cell., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Violent Encounter",
+        "line": "A confrontation at the Kelly home led to Kelly being indicted for attempted murder.",
+        "speech": "",
+        "image": "assets/generated/ned_kelly_the_last_bushranger_05.jpg",
+        "image_prompt": "A tense scene outside a rural dwelling., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Into the Bush",
+        "line": "Fleeing, Kelly vowed to avenge his mother who was imprisoned for her role.",
+        "speech": "",
+        "image": "assets/generated/ned_kelly_the_last_bushranger_06.jpg",
+        "image_prompt": "A figure disappearing into dense bushland., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Outlawed",
+        "line": "Kelly and his associates shot dead three policemen, becoming proclaimed outlaws.",
+        "speech": "",
+        "image": "assets/generated/ned_kelly_the_last_bushranger_07.jpg",
+        "image_prompt": "Three police officers on horseback silhouetted against the sky., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Evasion",
+        "line": "The gang evaded police for two years with help from sympathisers.",
+        "speech": "",
+        "image": "assets/generated/ned_kelly_the_last_bushranger_08.jpg",
+        "image_prompt": "A map of Victoria with scattered dots representing police movements., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Manifesto",
+        "line": "Kelly wrote a manifesto denouncing authorities and demanding justice for the poor.",
+        "speech": "",
+        "image": "assets/generated/ned_kelly_the_last_bushranger_09.jpg",
+        "image_prompt": "A close-up of a quill pen resting on aged paper., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Ambush Attempt",
+        "line": "The gang tried to derail a police train before attacking Benalla.",
+        "speech": "",
+        "image": "assets/generated/ned_kelly_the_last_bushranger_10.jpg",
+        "image_prompt": "Railway tracks disappearing into the distance through a forest., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Siege",
+        "line": "Police confronted the outlaws at Glenrowan, where dozens were held hostage.",
+        "speech": "",
+        "image": "assets/generated/ned_kelly_the_last_bushranger_11.jpg",
+        "image_prompt": "A hotel exterior with several figures seen through windows., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Capture",
+        "line": "Kelly, wearing armour, was wounded and captured after a 12-hour siege.",
+        "speech": "",
+        "image": "assets/generated/ned_kelly_the_last_bushranger_12.jpg",
+        "image_prompt": "A man in makeshift metal armour being apprehended by police., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Ned Kelly",
+    "source_url": "https://en.wikipedia.org/wiki/Ned_Kelly"
+  },
+  "billy_the_kid_the_outlaw_s_short_life": {
+    "title": "Billy the Kid: The Outlaw's Short Life",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Hook",
+        "line": "Billy the Kid was linked to nine murders during his outlaw career.",
+        "speech": "",
+        "image": "assets/generated/billy_the_kid_the_outlaw_s_short_life_01.jpg",
+        "image_prompt": "Old West wanted poster, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Early Life",
+        "line": "Henry McCarty, later known as Billy the Kid, was orphaned at age 15.",
+        "speech": "",
+        "image": "assets/generated/billy_the_kid_the_outlaw_s_short_life_02.jpg",
+        "image_prompt": "Desert landscape with a lone cabin, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "First Arrest",
+        "line": "His first arrest occurred at age 16 for stealing food in 1875.",
+        "speech": "",
+        "image": "assets/generated/billy_the_kid_the_outlaw_s_short_life_03.jpg",
+        "image_prompt": "General store counter with food items, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Escape",
+        "line": "He escaped jail shortly after being arrested for robbing a Chinese laundry.",
+        "speech": "",
+        "image": "assets/generated/billy_the_kid_the_outlaw_s_short_life_04.jpg",
+        "image_prompt": "Wooden jail cell door, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Alias",
+        "line": "In 1877, he began calling himself William H. Bonney.",
+        "speech": "",
+        "image": "assets/generated/billy_the_kid_the_outlaw_s_short_life_05.jpg",
+        "image_prompt": "Silhouette of a man writing with a quill, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Altercation",
+        "line": "Bonney became a wanted man after killing a blacksmith in August 1877.",
+        "speech": "",
+        "image": "assets/generated/billy_the_kid_the_outlaw_s_short_life_06.jpg",
+        "image_prompt": "Saloon entrance with swinging doors, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Lincoln County War",
+        "line": "He became known for joining the Regulators in the Lincoln County War.",
+        "speech": "",
+        "image": "assets/generated/billy_the_kid_the_outlaw_s_short_life_07.jpg",
+        "image_prompt": "Group of cowboys on horseback, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Notoriety",
+        "line": "His notoriety grew when newspapers carried stories about his crimes.",
+        "speech": "",
+        "image": "assets/generated/billy_the_kid_the_outlaw_s_short_life_08.jpg",
+        "image_prompt": "Old printing press in operation, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Capture",
+        "line": "Sheriff Pat Garrett captured Bonney in December 1880.",
+        "speech": "",
+        "image": "assets/generated/billy_the_kid_the_outlaw_s_short_life_09.jpg",
+        "image_prompt": "Man being apprehended by a sheriff, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Conviction",
+        "line": "Bonney was convicted of murder and sentenced to hang in May 1881.",
+        "speech": "",
+        "image": "assets/generated/billy_the_kid_the_outlaw_s_short_life_10.jpg",
+        "image_prompt": "Gavel striking a judge's block, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Second Escape",
+        "line": "He escaped jail on April 28, killing two sheriff's deputies.",
+        "speech": "",
+        "image": "assets/generated/billy_the_kid_the_outlaw_s_short_life_11.jpg",
+        "image_prompt": "Broken bars on a jail window, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Death",
+        "line": "Garrett shot and killed Bonney, then aged 21, on July 14, 1881.",
+        "speech": "",
+        "image": "assets/generated/billy_the_kid_the_outlaw_s_short_life_12.jpg",
+        "image_prompt": "Desert landscape at sunset, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Billy the Kid",
+    "source_url": "https://en.wikipedia.org/wiki/Billy_the_Kid"
+  },
+  "the_baker_street_robbery": {
+    "title": "The Baker Street Robbery",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "The Tunnel",
+        "line": "Gang members tunnelled forty feet from a rented shop into a bank vault.",
+        "speech": "",
+        "image": "assets/generated/the_baker_street_robbery_01.jpg",
+        "image_prompt": "A man digging a tunnel with a shovel., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Plan",
+        "line": "The Baker Street robbery was planned by career criminal Anthony Gavin in 1970.",
+        "speech": "",
+        "image": "assets/generated/the_baker_street_robbery_02.jpg",
+        "image_prompt": "A man looking at a blueprint., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Sherlock Holmes",
+        "line": "His plan was inspired by a Sherlock Holmes story about tunnelling into a bank.",
+        "speech": "",
+        "image": "assets/generated/the_baker_street_robbery_03.jpg",
+        "image_prompt": "A worn copy of a Sherlock Holmes book., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Reconnaissance",
+        "line": "One gang member opened an account and measured the vault using an umbrella.",
+        "speech": "",
+        "image": "assets/generated/the_baker_street_robbery_04.jpg",
+        "image_prompt": "A man measuring a room with an umbrella., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Shop",
+        "line": "A leather goods shop two doors down was rented for the base of operations.",
+        "speech": "",
+        "image": "assets/generated/the_baker_street_robbery_05.jpg",
+        "image_prompt": "The exterior of a small retail shop., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Digging",
+        "line": "Work on the tunnel began on the August bank holiday weekend of 1971.",
+        "speech": "",
+        "image": "assets/generated/the_baker_street_robbery_06.jpg",
+        "image_prompt": "Dirt being removed from a tunnel., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Obstacles",
+        "line": "Initial attempts to break the floor failed, requiring gelignite for entry.",
+        "speech": "",
+        "image": "assets/generated/the_baker_street_robbery_07.jpg",
+        "image_prompt": "A close-up of dynamite sticks., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Entry",
+        "line": "A twelve-inch hole was blasted through the vault floor on Saturday, 11 September.",
+        "speech": "",
+        "image": "assets/generated/the_baker_street_robbery_08.jpg",
+        "image_prompt": "A hole in a concrete floor., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Inside",
+        "line": "Once inside, the gang emptied two hundred and sixty-eight safety deposit boxes.",
+        "speech": "",
+        "image": "assets/generated/the_baker_street_robbery_09.jpg",
+        "image_prompt": "Rows of metal safety deposit boxes., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Lookout",
+        "line": "A lookout on a nearby roof communicated with the gang via walkie-talkie.",
+        "speech": "",
+        "image": "assets/generated/the_baker_street_robbery_10.jpg",
+        "image_prompt": "A person on a rooftop looking out., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Amateur Listener",
+        "line": "An amateur radio enthusiast overheard their conversations and alerted the police.",
+        "speech": "",
+        "image": "assets/generated/the_baker_street_robbery_11.jpg",
+        "image_prompt": "A person wearing headphones with a radio., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Aftermath",
+        "line": "Police arrested several members of the gang, but others evaded capture for years.",
+        "speech": "",
+        "image": "assets/generated/the_baker_street_robbery_12.jpg",
+        "image_prompt": "Police officers examining a crime scene., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Baker Street robbery",
+    "source_url": "https://en.wikipedia.org/wiki/Baker_Street_robbery"
+  },
+  "june_1962_alcatraz_escape_the_vanished_inmates": {
+    "title": "June 1962 Alcatraz Escape: The Vanished Inmates",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "The Escape",
+        "line": "Three inmates vanished from Alcatraz on the night of June 11, 1962.",
+        "speech": "",
+        "image": "assets/generated/june_1962_alcatraz_escape_the_vanished_inmates_01.jpg",
+        "image_prompt": "Aerial view of Alcatraz Island at night., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Inmates",
+        "line": "They were Frank Morris and brothers John and Clarence Anglin.",
+        "speech": "",
+        "image": "assets/generated/june_1962_alcatraz_escape_the_vanished_inmates_02.jpg",
+        "image_prompt": "A composite sketch showing three men's faces., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Preparation",
+        "line": "The men spent six months preparing for their elaborate breakout.",
+        "speech": "",
+        "image": "assets/generated/june_1962_alcatraz_escape_the_vanished_inmates_03.jpg",
+        "image_prompt": "Hands carefully crafting a papier-mâché object., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Decoys",
+        "line": "Papier-mâché heads resembling the inmates were left in their beds.",
+        "speech": "",
+        "image": "assets/generated/june_1962_alcatraz_escape_the_vanished_inmates_04.jpg",
+        "image_prompt": "A prison bed with a realistic-looking dummy head., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Route",
+        "line": "They exited the prison through ventilation ducts and a utility corridor.",
+        "speech": "",
+        "image": "assets/generated/june_1962_alcatraz_escape_the_vanished_inmates_05.jpg",
+        "image_prompt": "A dark, narrow ventilation shaft inside a prison wall., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Vessel",
+        "line": "An improvised inflatable raft was used to depart the island.",
+        "speech": "",
+        "image": "assets/generated/june_1962_alcatraz_escape_the_vanished_inmates_06.jpg",
+        "image_prompt": "A partially inflated rubber raft on a dark body of water., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Investigation",
+        "line": "Hundreds of leads were pursued by law enforcement officials.",
+        "speech": "",
+        "image": "assets/generated/june_1962_alcatraz_escape_the_vanished_inmates_07.jpg",
+        "image_prompt": "Investigators examining maps and documents in an office., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "No Evidence",
+        "line": "No conclusive evidence has ever surfaced regarding their fate.",
+        "speech": "",
+        "image": "assets/generated/june_1962_alcatraz_escape_the_vanished_inmates_08.jpg",
+        "image_prompt": "A magnifying glass over an empty table., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Official Theory",
+        "line": "The FBI concluded they likely drowned in San Francisco Bay.",
+        "speech": "",
+        "image": "assets/generated/june_1962_alcatraz_escape_the_vanished_inmates_09.jpg",
+        "image_prompt": "Rough waves in a dark bay at night., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Open Case",
+        "line": "The U.S. Marshals Service case file remains open and active.",
+        "speech": "",
+        "image": "assets/generated/june_1962_alcatraz_escape_the_vanished_inmates_10.jpg",
+        "image_prompt": "A ledger book with pages being turned., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Lingering Questions",
+        "line": "Numerous theories exist about whether the inmates may have survived.",
+        "speech": "",
+        "image": "assets/generated/june_1962_alcatraz_escape_the_vanished_inmates_11.jpg",
+        "image_prompt": "People gathered, looking towards a distant shoreline., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Mystery",
+        "line": "The fate of Frank Morris and the Anglin brothers remains unknown.",
+        "speech": "",
+        "image": "assets/generated/june_1962_alcatraz_escape_the_vanished_inmates_12.jpg",
+        "image_prompt": "Fog rolling over the San Francisco Bay., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "June 1962 Alcatraz escape",
+    "source_url": "https://en.wikipedia.org/wiki/June_1962_Alcatraz_escape"
+  },
+  "john_dillinger_the_gangster_who_inspired_the_fbi": {
+    "title": "John Dillinger: The Gangster Who Inspired the FBI",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "The Deed",
+        "line": "John Dillinger's gang was accused of robbing twenty-four banks and four police stations.",
+        "speech": "",
+        "image": "assets/generated/john_dillinger_the_gangster_who_inspired_the_fbi_01.jpg",
+        "image_prompt": "A vintage bank interior with people behind counters., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Gangster Era",
+        "line": "John Herbert Dillinger was an American gangster during the Great Depression era.",
+        "speech": "",
+        "image": "assets/generated/john_dillinger_the_gangster_who_inspired_the_fbi_02.jpg",
+        "image_prompt": "A grainy, sepia-toned photograph of a city street., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Escaped Twice",
+        "line": "Dillinger was imprisoned several times and managed to escape from prison twice.",
+        "speech": "",
+        "image": "assets/generated/john_dillinger_the_gangster_who_inspired_the_fbi_03.jpg",
+        "image_prompt": "Bars on a prison window., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Homicide Charge",
+        "line": "He was charged with homicide but not convicted of killing a police officer.",
+        "speech": "",
+        "image": "assets/generated/john_dillinger_the_gangster_who_inspired_the_fbi_04.jpg",
+        "image_prompt": "A silhouette of a police officer in uniform., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Public Persona",
+        "line": "Dillinger courted publicity, with media printing exaggerated accounts of his personality.",
+        "speech": "",
+        "image": "assets/generated/john_dillinger_the_gangster_who_inspired_the_fbi_05.jpg",
+        "image_prompt": "A stack of old newspapers with headlines., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "FBI's Rise",
+        "line": "J. Edgar Hoover used Dillinger to justify evolving the Bureau of Investigation.",
+        "speech": "",
+        "image": "assets/generated/john_dillinger_the_gangster_who_inspired_the_fbi_06.jpg",
+        "image_prompt": "A vintage government building exterior., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Hideout Location",
+        "line": "After evading police, his Michigan hideout was located in Charlevoix, Michigan.",
+        "speech": "",
+        "image": "assets/generated/john_dillinger_the_gangster_who_inspired_the_fbi_07.jpg",
+        "image_prompt": "A rustic cabin near a lake., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Informer's Tip",
+        "line": "He sought refuge in a brothel owned by Ana Cumpănaș, who informed authorities.",
+        "speech": "",
+        "image": "assets/generated/john_dillinger_the_gangster_who_inspired_the_fbi_08.jpg",
+        "image_prompt": "An old, dimly lit building facade., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Theater Ambush",
+        "line": "On July 22, 1934, officers closed in on the Biograph Theater for his arrest.",
+        "speech": "",
+        "image": "assets/generated/john_dillinger_the_gangster_who_inspired_the_fbi_09.jpg",
+        "image_prompt": "The exterior of an old movie theater., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Attempted Escape",
+        "line": "When agents moved to arrest Dillinger, he attempted to flee from the theater.",
+        "speech": "",
+        "image": "assets/generated/john_dillinger_the_gangster_who_inspired_the_fbi_10.jpg",
+        "image_prompt": "A dark street outside a theater entrance., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Fatal Encounter",
+        "line": "He was fatally shot by agents as he tried to escape their grasp.",
+        "speech": "",
+        "image": "assets/generated/john_dillinger_the_gangster_who_inspired_the_fbi_11.jpg",
+        "image_prompt": "Uniformed officers standing guard on a street., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Justifiable Force",
+        "line": "The lethal use of force by agents would eventually be ruled justifiable homicide.",
+        "speech": "",
+        "image": "assets/generated/john_dillinger_the_gangster_who_inspired_the_fbi_12.jpg",
+        "image_prompt": "A gavel on a wooden desk., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "John Dillinger",
+    "source_url": "https://en.wikipedia.org/wiki/John_Dillinger"
+  },
+  "dr_crippen_first_to_be_caught_by_wireless": {
+    "title": "Dr. Crippen: First to be Caught by Wireless",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Astonishing Fact",
+        "line": "He was the first criminal captured using wireless telegraphy.",
+        "speech": "",
+        "image": "assets/generated/dr_crippen_first_to_be_caught_by_wireless_01.jpg",
+        "image_prompt": "An antique wireless telegraph machine on a wooden table., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Doctor",
+        "line": "Hawley Harvey Crippen was an American homeopath and eye specialist.",
+        "speech": "",
+        "image": "assets/generated/dr_crippen_first_to_be_caught_by_wireless_02.jpg",
+        "image_prompt": "An old-fashioned doctor's bag resting on a cobblestone street., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "New York Practice",
+        "line": "He began practicing medicine in New York City after medical school.",
+        "speech": "",
+        "image": "assets/generated/dr_crippen_first_to_be_caught_by_wireless_03.jpg",
+        "image_prompt": "A view of early 20th-century New York City streets., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "London Move",
+        "line": "Crippen moved to London in 1897 to manage a branch office.",
+        "speech": "",
+        "image": "assets/generated/dr_crippen_first_to_be_caught_by_wireless_04.jpg",
+        "image_prompt": "A busy London street scene with horse-drawn carriages., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Affair Begins",
+        "line": "By 1905, he was having an affair with his typist.",
+        "speech": "",
+        "image": "assets/generated/dr_crippen_first_to_be_caught_by_wireless_05.jpg",
+        "image_prompt": "Two people sitting opposite each other at a desk., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Wife Vanishes",
+        "line": "Cora Crippen disappeared after a party on January 31, 1910.",
+        "speech": "",
+        "image": "assets/generated/dr_crippen_first_to_be_caught_by_wireless_06.jpg",
+        "image_prompt": "A dimly lit Victorian drawing-room after guests have departed., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Police Inquiry",
+        "line": "Friends urged Scotland Yard to investigate Cora's unexplained disappearance.",
+        "speech": "",
+        "image": "assets/generated/dr_crippen_first_to_be_caught_by_wireless_07.jpg",
+        "image_prompt": "A detective interviewing a witness in an office., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Home Search",
+        "line": "Police found human torso remains buried under the basement floor.",
+        "speech": "",
+        "image": "assets/generated/dr_crippen_first_to_be_caught_by_wireless_08.jpg",
+        "image_prompt": "A basement with a brick floor, a section removed., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Flight and Capture",
+        "line": "Crippen and his lover fled to Canada aboard a ship.",
+        "speech": "",
+        "image": "assets/generated/dr_crippen_first_to_be_caught_by_wireless_09.jpg",
+        "image_prompt": "A large passenger ship sailing on the ocean., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Wireless Tip",
+        "line": "A ship's captain sent a wireless message identifying the fugitives.",
+        "speech": "",
+        "image": "assets/generated/dr_crippen_first_to_be_caught_by_wireless_10.jpg",
+        "image_prompt": "A wireless telegraph operator sending a message., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "In Custody",
+        "line": "Chief Inspector Dew arrested Dr. Crippen aboard the ship.",
+        "speech": "",
+        "image": "assets/generated/dr_crippen_first_to_be_caught_by_wireless_11.jpg",
+        "image_prompt": "Two men talking on the deck of a ship., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Guilty Verdict",
+        "line": "The jury found Dr. Crippen guilty of murder after brief deliberations.",
+        "speech": "",
+        "image": "assets/generated/dr_crippen_first_to_be_caught_by_wireless_12.jpg",
+        "image_prompt": "A jury deliberating inside a courtroom., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Hawley Harvey Crippen",
+    "source_url": "https://en.wikipedia.org/wiki/Hawley_Harvey_Crippen"
+  },
+  "the_dunbar_armored_robbery": {
+    "title": "The Dunbar Armored Robbery",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Missing Millions",
+        "line": "US$13.9 million from the robbery remains unaccounted for.",
+        "speech": "",
+        "image": "assets/generated/the_dunbar_armored_robbery_01.jpg",
+        "image_prompt": "Stack of money with currency straps, a few bills loose, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Mastermind",
+        "line": "Allen Pace III, a regional safety inspector, orchestrated the Dunbar Armored robbery.",
+        "speech": "",
+        "image": "assets/generated/the_dunbar_armored_robbery_02.jpg",
+        "image_prompt": "Exterior of a large, secure armored facility at dusk, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Inside Information",
+        "line": "Pace photographed and examined the company's Los Angeles armored car depot.",
+        "speech": "",
+        "image": "assets/generated/the_dunbar_armored_robbery_03.jpg",
+        "image_prompt": "Security camera pointed down a hallway inside an empty depot, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Assembling Crew",
+        "line": "He recruited five childhood friends, providing them floor plans and necessary gear.",
+        "speech": "",
+        "image": "assets/generated/the_dunbar_armored_robbery_04.jpg",
+        "image_prompt": "Detailed blueprint or map on a table, with pens and notepads, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Fired Inspector",
+        "line": "The day before the robbery, Dunbar fired Pace for tampering with company vehicles.",
+        "speech": "",
+        "image": "assets/generated/the_dunbar_armored_robbery_05.jpg",
+        "image_prompt": "Office door with 'Employee Entrance' sign, slightly ajar, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Establishing Alibi",
+        "line": "On September 12, 1997, the group assembled at a house party for an alibi.",
+        "speech": "",
+        "image": "assets/generated/the_dunbar_armored_robbery_06.jpg",
+        "image_prompt": "Suburban house at night with lights on, suggesting a party, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Night Entry",
+        "line": "Pace used his keys to enter the facility, ambushing guards one by one.",
+        "speech": "",
+        "image": "assets/generated/the_dunbar_armored_robbery_07.jpg",
+        "image_prompt": "Dark corridor inside a depot, a single security light on, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Vault Looted",
+        "line": "They subdued employees with tape, loading $18.9 million into a waiting U-Haul truck.",
+        "speech": "",
+        "image": "assets/generated/the_dunbar_armored_robbery_08.jpg",
+        "image_prompt": "Open vault door, empty money bags on the floor, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Money Laundering",
+        "line": "The gang waited six months, then enlisted an attorney to launder the stolen money.",
+        "speech": "",
+        "image": "assets/generated/the_dunbar_armored_robbery_09.jpg",
+        "image_prompt": "Exterior of a professional office building during the day, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Critical Mistake",
+        "line": "Two years later, Hill implicated himself by paying with original strapped banknotes.",
+        "speech": "",
+        "image": "assets/generated/the_dunbar_armored_robbery_10.jpg",
+        "image_prompt": "Hand handing a stack of banded cash across a desk to another hand, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Justice Served",
+        "line": "Hill confessed, implicating co-conspirators who received varying prison sentences.",
+        "speech": "",
+        "image": "assets/generated/the_dunbar_armored_robbery_11.jpg",
+        "image_prompt": "Courthouse steps on a cloudy day, no people visible, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Dunbar Armored robbery",
+    "source_url": "https://en.wikipedia.org/wiki/Dunbar_Armored_robbery"
+  },
+  "the_enron_scandal": {
+    "title": "The Enron Scandal",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Corporate Bankruptcy",
+        "line": "The Enron scandal resulted in the largest corporate bankruptcy in U.S. history.",
+        "speech": "",
+        "image": "assets/generated/the_enron_scandal_01.jpg",
+        "image_prompt": "Courtroom filing desk, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Energy Deregulation",
+        "line": "Lay initiated electricity sales at market prices, and Congress deregulated natural gas markets.",
+        "speech": "",
+        "image": "assets/generated/the_enron_scandal_02.jpg",
+        "image_prompt": "Empty trading floor screens, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Trading Contracts",
+        "line": "Jeffrey Skilling helped Enron shift to a trader of energy derivative contracts, increasing revenue.",
+        "speech": "",
+        "image": "assets/generated/the_enron_scandal_03.jpg",
+        "image_prompt": "Modern financial trading software interface, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Inflated Reporting",
+        "line": "Enron reported entire trade values as revenue using a 'merchant model,' inflating performance.",
+        "speech": "",
+        "image": "assets/generated/the_enron_scandal_04.jpg",
+        "image_prompt": "Financial ledger close-up, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Global Assets",
+        "line": "Enron pursued growth, owning global assets including pipelines, power plants, and broadband.",
+        "speech": "",
+        "image": "assets/generated/the_enron_scandal_05.jpg",
+        "image_prompt": "Large industrial power plant, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Hidden Debt",
+        "line": "Executives used accounting loopholes and entities to hide billions in debt from failed projects.",
+        "speech": "",
+        "image": "assets/generated/the_enron_scandal_06.jpg",
+        "image_prompt": "Stack of complex financial documents, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Auditor Pressure",
+        "line": "CFO Andrew Fastow and others pressured Arthur Andersen to ignore high-risk accounting practices.",
+        "speech": "",
+        "image": "assets/generated/the_enron_scandal_07.jpg",
+        "image_prompt": "Old-fashioned accounting firm office, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Stock Plummet",
+        "line": "Enron's stock plummeted from $90.75 in August 2000 to less than $1 by November 2001.",
+        "speech": "",
+        "image": "assets/generated/the_enron_scandal_08.jpg",
+        "image_prompt": "Empty stock ticker display, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Investigation Begins",
+        "line": "The SEC began investigating; a rival company's offer to purchase Enron at a low price failed.",
+        "speech": "",
+        "image": "assets/generated/the_enron_scandal_09.jpg",
+        "image_prompt": "Government building facade, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Bankruptcy Filing",
+        "line": "On December 2, 2001, Enron filed for Chapter 11 bankruptcy with $63.4 billion in assets.",
+        "speech": "",
+        "image": "assets/generated/the_enron_scandal_10.jpg",
+        "image_prompt": "Official legal document, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Regulatory Changes",
+        "line": "This led to Arthur Andersen's dissolution and new regulations like the Sarbanes–Oxley Act.",
+        "speech": "",
+        "image": "assets/generated/the_enron_scandal_11.jpg",
+        "image_prompt": "Law books on a shelf, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Enron scandal",
+    "source_url": "https://en.wikipedia.org/wiki/Enron_scandal"
+  },
+  "the_northern_bank_robbery": {
+    "title": "The Northern Bank Robbery",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "The Heist",
+        "line": "Over £26 million was stolen from Northern Bank in December 2004.",
+        "speech": "",
+        "image": "assets/generated/the_northern_bank_robbery_01.jpg",
+        "image_prompt": "A large building exterior., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Hostage Situation",
+        "line": "An armed gang took family members of bank officials hostage.",
+        "speech": "",
+        "image": "assets/generated/the_northern_bank_robbery_02.jpg",
+        "image_prompt": "People entering a house., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Forced Assistance",
+        "line": "Officials were forced to help steal both used and unused banknotes.",
+        "speech": "",
+        "image": "assets/generated/the_northern_bank_robbery_03.jpg",
+        "image_prompt": "Bank employees working at a counter., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Getaway",
+        "line": "Money was loaded into a van and driven away in two trips.",
+        "speech": "",
+        "image": "assets/generated/the_northern_bank_robbery_04.jpg",
+        "image_prompt": "A van parked near a large building., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Scale of Robbery",
+        "line": "This was one of the largest bank robberies in UK history.",
+        "speech": "",
+        "image": "assets/generated/the_northern_bank_robbery_05.jpg",
+        "image_prompt": "Stacks of money., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Accusations Made",
+        "line": "Police and government blamed the Provisional Irish Republican Army.",
+        "speech": "",
+        "image": "assets/generated/the_northern_bank_robbery_06.jpg",
+        "image_prompt": "Police officers standing together., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Denial Issued",
+        "line": "The IRA and Sinn Féin denied any responsibility for the robbery.",
+        "speech": "",
+        "image": "assets/generated/the_northern_bank_robbery_07.jpg",
+        "image_prompt": "People speaking at a press conference., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Investigation",
+        "line": "Police forces made arrests and conducted numerous house searches.",
+        "speech": "",
+        "image": "assets/generated/the_northern_bank_robbery_08.jpg",
+        "image_prompt": "Detectives examining evidence., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Partial Seizure",
+        "line": "Over £2 million was impounded at a financial adviser's house.",
+        "speech": "",
+        "image": "assets/generated/the_northern_bank_robbery_09.jpg",
+        "image_prompt": "Money being counted., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Peace Process Impact",
+        "line": "The robbery adversely affected the Northern Ireland peace process.",
+        "speech": "",
+        "image": "assets/generated/the_northern_bank_robbery_10.jpg",
+        "image_prompt": "Government buildings., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "No Direct Responsibility",
+        "line": "No one has ever been held directly responsible for the robbery.",
+        "speech": "",
+        "image": "assets/generated/the_northern_bank_robbery_11.jpg",
+        "image_prompt": "A gavel on a desk., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Untraceable Money",
+        "line": "Used banknotes were untraceable, making recovery difficult.",
+        "speech": "",
+        "image": "assets/generated/the_northern_bank_robbery_12.jpg",
+        "image_prompt": "A pile of old banknotes., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Northern Bank robbery",
+    "source_url": "https://en.wikipedia.org/wiki/Northern_Bank_robbery"
+  },
+  "the_securitas_depot_robbery": {
+    "title": "The Securitas Depot Robbery",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Largest Heist",
+        "line": "In 2006, England experienced the UK's largest cash heist, totaling £53 million.",
+        "speech": "",
+        "image": "assets/generated/the_securitas_depot_robbery_01.jpg",
+        "image_prompt": "A large building at night with security lights on., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Kidnapping Begins",
+        "line": "The robbery commenced with the abduction of a depot manager and his family.",
+        "speech": "",
+        "image": "assets/generated/the_securitas_depot_robbery_02.jpg",
+        "image_prompt": "A dark road with a car pulled over., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Gaining Entry",
+        "line": "The gang tricked their way inside the building, using deception and threats.",
+        "speech": "",
+        "image": "assets/generated/the_securitas_depot_robbery_03.jpg",
+        "image_prompt": "A security gate at an industrial facility., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Workers Tied",
+        "line": "Fourteen workers were tied up at gunpoint during the audacious takeover.",
+        "speech": "",
+        "image": "assets/generated/the_securitas_depot_robbery_04.jpg",
+        "image_prompt": "A group of people sitting on the floor., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Millions Stolen",
+        "line": "The criminals stole £52,996,760 in used and unused sterling banknotes.",
+        "speech": "",
+        "image": "assets/generated/the_securitas_depot_robbery_05.jpg",
+        "image_prompt": "Stacks of cash bundled together., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Left Behind",
+        "line": "They left behind an additional £154 million due to transport limitations.",
+        "speech": "",
+        "image": "assets/generated/the_securitas_depot_robbery_06.jpg",
+        "image_prompt": "Several large bags and crates left in a room., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Vehicles Found",
+        "line": "Most of the getaway vehicles were recovered within the following week.",
+        "speech": "",
+        "image": "assets/generated/the_securitas_depot_robbery_07.jpg",
+        "image_prompt": "Police cars surrounding abandoned vehicles., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Money Recovered",
+        "line": "Significant amounts of the stolen cash were recovered in subsequent police raids.",
+        "speech": "",
+        "image": "assets/generated/the_securitas_depot_robbery_08.jpg",
+        "image_prompt": "Police officers examining evidence bags., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Arrests Made",
+        "line": "By 2007, 36 people had been arrested in connection with the crime.",
+        "speech": "",
+        "image": "assets/generated/the_securitas_depot_robbery_09.jpg",
+        "image_prompt": "A police station booking area., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Convictions Secured",
+        "line": "Five people were convicted at trial, including the inside man.",
+        "speech": "",
+        "image": "assets/generated/the_securitas_depot_robbery_10.jpg",
+        "image_prompt": "A courtroom with a judge presiding., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Unrecovered Sum",
+        "line": "By 2016, £32 million remained unrecovered, with suspects still at large.",
+        "speech": "",
+        "image": "assets/generated/the_securitas_depot_robbery_11.jpg",
+        "image_prompt": "A map of England with several areas circled., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Securitas depot robbery",
+    "source_url": "https://en.wikipedia.org/wiki/Securitas_depot_robbery"
+  },
+  "valerio_viccei_and_the_knightsbridge_security_deposit_robbery": {
+    "title": "Valerio Viccei and the Knightsbridge Security Deposit Robbery",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Massive Heist",
+        "line": "£60 million was stolen in a 1987 London robbery.",
+        "speech": "",
+        "image": "assets/generated/valerio_viccei_and_the_knightsbridge_security_deposit_robbery_01.jpg",
+        "image_prompt": "Exterior view of a secure bank building on a city street, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Robbery Leader",
+        "line": "This Knightsbridge Security Deposit robbery was led by Valerio Viccei.",
+        "speech": "",
+        "image": "assets/generated/valerio_viccei_and_the_knightsbridge_security_deposit_robbery_02.jpg",
+        "image_prompt": "City street in Knightsbridge, London, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Italian Arrival",
+        "line": "Viccei arrived in London in 1986 from Italy, wanted for 50 armed robberies.",
+        "speech": "",
+        "image": "assets/generated/valerio_viccei_and_the_knightsbridge_security_deposit_robbery_03.jpg",
+        "image_prompt": "Person arriving at a busy train station in a European city, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "New Career",
+        "line": "He quickly resumed his robbery career in London to fund his playboy lifestyle.",
+        "speech": "",
+        "image": "assets/generated/valerio_viccei_and_the_knightsbridge_security_deposit_robbery_04.jpg",
+        "image_prompt": "Elegant restaurant interior with people dining, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Inside Help",
+        "line": "For the robbery, Viccei secured inside help from the managing director, Parvez Latif.",
+        "speech": "",
+        "image": "assets/generated/valerio_viccei_and_the_knightsbridge_security_deposit_robbery_05.jpg",
+        "image_prompt": "Two men having a discreet conversation in an office lobby, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Entry Request",
+        "line": "On the day, two men entered and requested to rent a safe deposit box.",
+        "speech": "",
+        "image": "assets/generated/valerio_viccei_and_the_knightsbridge_security_deposit_robbery_06.jpg",
+        "image_prompt": "Exterior of a discreet safe deposit center entrance, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Vault Subdued",
+        "line": "In the vault, they drew handguns and subdued the manager and security guards.",
+        "speech": "",
+        "image": "assets/generated/valerio_viccei_and_the_knightsbridge_security_deposit_robbery_07.jpg",
+        "image_prompt": "Interior of a bank vault with open safety deposit boxes, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Boxes Opened",
+        "line": "They broke open many safe deposit boxes, leaving with an estimated £60 million hoard.",
+        "speech": "",
+        "image": "assets/generated/valerio_viccei_and_the_knightsbridge_security_deposit_robbery_08.jpg",
+        "image_prompt": "Tools scattered on the floor near an open vault, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Forensic Evidence",
+        "line": "Police recovered a bloody fingerprint traced to Valerio Viccei after the crime.",
+        "speech": "",
+        "image": "assets/generated/valerio_viccei_and_the_knightsbridge_security_deposit_robbery_09.jpg",
+        "image_prompt": "Crime scene investigator examining a surface with gloved hands, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Arrested Later",
+        "line": "Viccei fled to Latin America but was arrested later returning for his Ferrari.",
+        "speech": "",
+        "image": "assets/generated/valerio_viccei_and_the_knightsbridge_security_deposit_robbery_10.jpg",
+        "image_prompt": "A red sports car being loaded onto a cargo ship, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Prison Sentence",
+        "line": "Viccei was sentenced to 22 years, serving time in Parkhurst Prison.",
+        "speech": "",
+        "image": "assets/generated/valerio_viccei_and_the_knightsbridge_security_deposit_robbery_11.jpg",
+        "image_prompt": "Exterior view of a high-security prison wall, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Knightsbridge Security Deposit robbery",
+    "source_url": "https://en.wikipedia.org/wiki/Knightsbridge_Security_Deposit_robbery"
+  },
+  "charles_ponzi_the_scheme_of_deception": {
+    "title": "Charles Ponzi: The Scheme of Deception",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Massive Loss",
+        "line": "His fraudulent investment scheme cost investors $20 million in just over a year.",
+        "speech": "",
+        "image": "assets/generated/charles_ponzi_the_scheme_of_deception_01.jpg",
+        "image_prompt": "Old financial newspaper headlines, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Con Artist",
+        "line": "Charles Ponzi was an Italian charlatan and con artist operating in North America.",
+        "speech": "",
+        "image": "assets/generated/charles_ponzi_the_scheme_of_deception_02.jpg",
+        "image_prompt": "Vintage map of North America, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "New Beginnings",
+        "line": "Born in Lugo, Italy, Charles Ponzi arrived in Boston in 1903 with $2.50.",
+        "speech": "",
+        "image": "assets/generated/charles_ponzi_the_scheme_of_deception_03.jpg",
+        "image_prompt": "Old sailing ship approaching a port city, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Fired for Theft",
+        "line": "After odd jobs, he worked as a waiter, but was fired for theft and shortchanging customers.",
+        "speech": "",
+        "image": "assets/generated/charles_ponzi_the_scheme_of_deception_04.jpg",
+        "image_prompt": "Empty restaurant dining room at night, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Zarossi Bank",
+        "line": "In Montreal, he saw Banco Zarossi pay high interest from newly opened accounts, not profit.",
+        "speech": "",
+        "image": "assets/generated/charles_ponzi_the_scheme_of_deception_05.jpg",
+        "image_prompt": "Interior of an old bank, empty teller window, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Forged Check",
+        "line": "Ponzi later forged a check for $423.58, spending three years in federal prison.",
+        "speech": "",
+        "image": "assets/generated/charles_ponzi_the_scheme_of_deception_06.jpg",
+        "image_prompt": "Heavy iron prison gate, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Second Prison",
+        "line": "After release, he was caught smuggling immigrants and spent two more years in prison.",
+        "speech": "",
+        "image": "assets/generated/charles_ponzi_the_scheme_of_deception_07.jpg",
+        "image_prompt": "Exterior of an imposing brick prison building, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Business Failures",
+        "line": "He married Rose Maria Gnecco in 1918, but many of his businesses failed soon after.",
+        "speech": "",
+        "image": "assets/generated/charles_ponzi_the_scheme_of_deception_08.jpg",
+        "image_prompt": "Empty, small business office with a sign, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Reply Coupons",
+        "line": "In 1919, a letter from Spain revealed an arbitrage opportunity with postal reply coupons.",
+        "speech": "",
+        "image": "assets/generated/charles_ponzi_the_scheme_of_deception_09.jpg",
+        "image_prompt": "Old-fashioned letter with a coupon inside, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Arbitrage Plan",
+        "line": "He saw buying cheap Italian coupons and redeeming them for higher U.S. stamp values.",
+        "speech": "",
+        "image": "assets/generated/charles_ponzi_the_scheme_of_deception_10.jpg",
+        "image_prompt": "Vintage Italian and American postage stamps, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Big Profits",
+        "line": "Ponzi promised investors 50% profit within 45 days, or 100% profit within 90 days.",
+        "speech": "",
+        "image": "assets/generated/charles_ponzi_the_scheme_of_deception_11.jpg",
+        "image_prompt": "Stacks of old paper money on a table, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Ponzi Scheme",
+        "line": "In reality, he paid earlier investors using money from later investors, a fraudulent system.",
+        "speech": "",
+        "image": "assets/generated/charles_ponzi_the_scheme_of_deception_12.jpg",
+        "image_prompt": "Ledger book with money being counted, dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Charles Ponzi",
+    "source_url": "https://en.wikipedia.org/wiki/Charles_Ponzi"
+  },
+  "bernard_madoff_the_65_billion_ponzi_scheme": {
+    "title": "Bernard Madoff: The $65 Billion Ponzi Scheme",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "The Scheme",
+        "line": "Bernard Madoff masterminded the largest-known Ponzi scheme, estimated at $65 billion.",
+        "speech": "",
+        "image": "assets/generated/bernard_madoff_the_65_billion_ponzi_scheme_01.jpg",
+        "image_prompt": "Abstract representation of financial data streams., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Early Life",
+        "line": "He was born in Brooklyn, New York, and raised in Laurelton.",
+        "speech": "",
+        "image": "assets/generated/bernard_madoff_the_65_billion_ponzi_scheme_02.jpg",
+        "image_prompt": "A quiet residential street in a suburban neighborhood., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Founding Firm",
+        "line": "Madoff founded a penny stock brokerage that grew into Bernard L. Madoff Investment Securities.",
+        "speech": "",
+        "image": "assets/generated/bernard_madoff_the_65_billion_ponzi_scheme_03.jpg",
+        "image_prompt": "An old-fashioned ticker tape machine on a desk., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Nasdaq Chairman",
+        "line": "He was once the chairman of the Nasdaq stock exchange.",
+        "speech": "",
+        "image": "assets/generated/bernard_madoff_the_65_billion_ponzi_scheme_04.jpg",
+        "image_prompt": "The exterior of a modern stock exchange building., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Business Units",
+        "line": "The firm had two units: stock brokerage and a low-profile asset management business.",
+        "speech": "",
+        "image": "assets/generated/bernard_madoff_the_65_billion_ponzi_scheme_05.jpg",
+        "image_prompt": "Two different colored files stacked on a table., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Family Ties",
+        "line": "His brother, sons, and niece worked at the firm in various capacities.",
+        "speech": "",
+        "image": "assets/generated/bernard_madoff_the_65_billion_ponzi_scheme_06.jpg",
+        "image_prompt": "Silhouetted figures of people in an office setting., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Confession",
+        "line": "His sons told authorities their father confessed the asset management unit was a massive Ponzi scheme.",
+        "speech": "",
+        "image": "assets/generated/bernard_madoff_the_65_billion_ponzi_scheme_07.jpg",
+        "image_prompt": "Two people speaking in hushed tones in an office., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Guilty Plea",
+        "line": "Madoff pleaded guilty to 11 federal felonies, admitting to the massive Ponzi scheme.",
+        "speech": "",
+        "image": "assets/generated/bernard_madoff_the_65_billion_ponzi_scheme_08.jpg",
+        "image_prompt": "A judge's gavel resting on a wooden sounding block., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Investor Losses",
+        "line": "Thousands of investors were defrauded of billions, with actual losses estimated at $18 billion.",
+        "speech": "",
+        "image": "assets/generated/bernard_madoff_the_65_billion_ponzi_scheme_09.jpg",
+        "image_prompt": "A graph showing a steep decline in financial value., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Sentence",
+        "line": "Bernard Madoff received the maximum sentence of 150 years in prison.",
+        "speech": "",
+        "image": "assets/generated/bernard_madoff_the_65_billion_ponzi_scheme_10.jpg",
+        "image_prompt": "Bars on a prison cell window., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Death",
+        "line": "He died on April 14, 2021, at a federal medical center.",
+        "speech": "",
+        "image": "assets/generated/bernard_madoff_the_65_billion_ponzi_scheme_11.jpg",
+        "image_prompt": "A quiet, sterile hallway in a medical facility., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Bernie Madoff",
+    "source_url": "https://en.wikipedia.org/wiki/Bernie_Madoff"
+  },
+  "isabella_stewart_gardner_museum_theft_the_true_story": {
+    "title": "Isabella Stewart Gardner Museum theft: The True Story",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Reward Offered",
+        "line": "A $10 million reward is offered for the stolen art.",
+        "speech": "",
+        "image": "assets/generated/isabella_stewart_gardner_museum_theft_the_true_story_01.jpg",
+        "image_prompt": "Paper document on a table., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Museum Theft",
+        "line": "On March 18, 1990, 13 works were stolen from the Isabella Stewart Gardner Museum.",
+        "speech": "",
+        "image": "assets/generated/isabella_stewart_gardner_museum_theft_the_true_story_02.jpg",
+        "image_prompt": "Exterior view of a grand museum building at night., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "False Officers",
+        "line": "Two men posing as police were admitted by security guards into the museum.",
+        "speech": "",
+        "image": "assets/generated/isabella_stewart_gardner_museum_theft_the_true_story_03.jpg",
+        "image_prompt": "A security guard at an intercom desk, looking at a monitor., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Unsolved Crime",
+        "line": "The case remains unsolved; no arrests have been made and no works recovered.",
+        "speech": "",
+        "image": "assets/generated/isabella_stewart_gardner_museum_theft_the_true_story_04.jpg",
+        "image_prompt": "A detective's desk with scattered case files., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "High Value",
+        "line": "The stolen art is valued at hundreds of millions of dollars by experts.",
+        "speech": "",
+        "image": "assets/generated/isabella_stewart_gardner_museum_theft_the_true_story_05.jpg",
+        "image_prompt": "Empty art gallery walls with bright lighting., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Permanent Display",
+        "line": "The collector had procured these works for permanent museum display.",
+        "speech": "",
+        "image": "assets/generated/isabella_stewart_gardner_museum_theft_the_true_story_06.jpg",
+        "image_prompt": "Interior of a historic art museum gallery., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Vermeer Masterpiece",
+        "line": "Among them was The Concert by Vermeer, most valuable unrecovered painting.",
+        "speech": "",
+        "image": "assets/generated/isabella_stewart_gardner_museum_theft_the_true_story_07.jpg",
+        "image_prompt": "An empty rectangular frame hanging on a museum wall., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Rembrandt Seascape",
+        "line": "Rembrandt's only seascape, The Storm on the Sea of Galilee, was also stolen.",
+        "speech": "",
+        "image": "assets/generated/isabella_stewart_gardner_museum_theft_the_true_story_08.jpg",
+        "image_prompt": "Another empty frame on a wall, distinct from the previous one., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Puzzling Choice",
+        "line": "Experts found the artwork choice puzzling, as more valuable works were left.",
+        "speech": "",
+        "image": "assets/generated/isabella_stewart_gardner_museum_theft_the_true_story_09.jpg",
+        "image_prompt": "A group of art historians or curators discussing in a museum., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Empty Frames",
+        "line": "Empty frames remain hanging today as placeholders for their return.",
+        "speech": "",
+        "image": "assets/generated/isabella_stewart_gardner_museum_theft_the_true_story_10.jpg",
+        "image_prompt": "A long shot of several empty frames hanging in a museum gallery., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Gang Theory",
+        "line": "The FBI believes a criminal gang planned the robbery, focusing on the Boston Mafia.",
+        "speech": "",
+        "image": "assets/generated/isabella_stewart_gardner_museum_theft_the_true_story_11.jpg",
+        "image_prompt": "A federal building entrance or a police station exterior., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Isabella Stewart Gardner Museum theft",
+    "source_url": "https://en.wikipedia.org/wiki/Isabella_Stewart_Gardner_Museum_theft"
+  },
+  "victor_lustig_and_the_man_who_sold_the_eiffel_tower": {
+    "title": "Victor Lustig And The Man Who Sold The Eiffel Tower",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "The Notorious Con",
+        "line": "Victor Lustig is infamous for being the man who sold the Eiffel Tower twice during his criminal career.",
+        "speech": "",
+        "image": "assets/generated/victor_lustig_and_the_man_who_sold_the_eiffel_tower_01.jpg",
+        "image_prompt": "A tall iron lattice tower stands against an overcast sky in a European city., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Early Life",
+        "line": "Lustig was born in 1890 in Hostinné as the second of three children to his parents.",
+        "speech": "",
+        "image": "assets/generated/victor_lustig_and_the_man_who_sold_the_eiffel_tower_02.jpg",
+        "image_prompt": "A historic European market square surrounded by traditional old buildings., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Childhood Travels",
+        "line": "As a child, Lustig frequently travelled across Europe with his father on business trips to Prague and Zurich.",
+        "speech": "",
+        "image": "assets/generated/victor_lustig_and_the_man_who_sold_the_eiffel_tower_03.jpg",
+        "image_prompt": "Old cobblestone streets near a central European river with historic architecture., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Boarding School",
+        "line": "In 1904, Lustig was sent to a boarding school in Dresden where he learned several languages.",
+        "speech": "",
+        "image": "assets/generated/victor_lustig_and_the_man_who_sold_the_eiffel_tower_04.jpg",
+        "image_prompt": "The exterior of a classical European boarding school building with large windows., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Life of Crime",
+        "line": "Lustig applied his quick wit and fluency in several languages to embark on a life of crime.",
+        "speech": "",
+        "image": "assets/generated/victor_lustig_and_the_man_who_sold_the_eiffel_tower_05.jpg",
+        "image_prompt": "A vintage passport and old foreign currency resting on a dark wooden desk., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Atlantic Liners",
+        "line": "Many of Lustig's initial cons were committed on ocean liners sailing between the Atlantic ports and New York.",
+        "speech": "",
+        "image": "assets/generated/victor_lustig_and_the_man_who_sold_the_eiffel_tower_06.jpg",
+        "image_prompt": "A large vintage passenger steamship docked at a busy harbor., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Springfield Arrest",
+        "line": "In May 1922, Lustig visited a bank in Springfield, Missouri, and was later arrested in New York City.",
+        "speech": "",
+        "image": "assets/generated/victor_lustig_and_the_man_who_sold_the_eiffel_tower_07.jpg",
+        "image_prompt": "The exterior of a small-town American brick bank building from the early twentieth century., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "New Inspiration",
+        "line": "In 1925, Lustig stayed in Paris and read a newspaper article about the maintenance problems of the Eiffel Tower.",
+        "speech": "",
+        "image": "assets/generated/victor_lustig_and_the_man_who_sold_the_eiffel_tower_08.jpg",
+        "image_prompt": "An open vintage French newspaper resting on a café table next to a cup of coffee., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Scrap Metal Dealers",
+        "line": "Lustig invited a small group of scrap metal dealers to a confidential meeting at an expensive hotel.",
+        "speech": "",
+        "image": "assets/generated/victor_lustig_and_the_man_who_sold_the_eiffel_tower_09.jpg",
+        "image_prompt": "The interior of a luxurious hotel meeting room with velvet chairs and a wooden table., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Targeting Poisson",
+        "line": "Lustig found his mark in André Poisson, an insecure man who wished to rise up amongst Parisian businessmen.",
+        "speech": "",
+        "image": "assets/generated/victor_lustig_and_the_man_who_sold_the_eiffel_tower_10.jpg",
+        "image_prompt": "A well-dressed gentleman in a vintage suit looking thoughtfully out a large window., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Rumanian Box",
+        "line": "One of Lustig's most notable scams involved selling unsuspecting marks a money duplication machine called the Rumanian Box.",
+        "speech": "",
+        "image": "assets/generated/victor_lustig_and_the_man_who_sold_the_eiffel_tower_11.jpg",
+        "image_prompt": "A large wooden mahogany box with brass fixtures sitting on a plain table., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Demonstrating the Box",
+        "line": "Lustig demonstrated the machine by asking the mark for a bill and waiting for the device to work.",
+        "speech": "",
+        "image": "assets/generated/victor_lustig_and_the_man_who_sold_the_eiffel_tower_12.jpg",
+        "image_prompt": "A United States dollar bill resting on a polished wooden surface next to blank paper., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Victor Lustig",
+    "source_url": "https://en.wikipedia.org/wiki/Victor_Lustig"
+  },
+  "the_lufthansa_heist_inside_the_historic_1978_airport_robbery": {
+    "title": "The Lufthansa Heist: Inside the Historic 1978 Airport Robbery",
+    "category": "Crime",
+    "intro": "",
+    "outro": "",
+    "scenes": [
+      {
+        "label": "Astonishing Heist",
+        "line": "An estimated US$5.875 million was stolen in the Lufthansa heist, making it the largest cash robbery committed in U.S. history.",
+        "speech": "",
+        "image": "assets/generated/the_lufthansa_heist_inside_the_historic_1978_airport_robbery_01.jpg",
+        "image_prompt": "An airplane parked near a large cargo terminal building under a cloudy sky., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Origin",
+        "line": "The plot began when bookmaker Martin Krugman learned that Lufthansa flew currency into its cargo terminal at Kennedy Airport.",
+        "speech": "",
+        "image": "assets/generated/the_lufthansa_heist_inside_the_historic_1978_airport_robbery_02.jpg",
+        "image_prompt": "A person looking at documents inside a dimly lit room., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Crew Assembles",
+        "line": "James Burke selected six men to carry out the robbery at the airport on December 11, 1978.",
+        "speech": "",
+        "image": "assets/generated/the_lufthansa_heist_inside_the_historic_1978_airport_robbery_03.jpg",
+        "image_prompt": "A row of empty cars parked outside a brick building at night., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Entering the Terminal",
+        "line": "The crew drove a black Ford Econoline van to Building 261 and cut the padlock at the gate.",
+        "speech": "",
+        "image": "assets/generated/the_lufthansa_heist_inside_the_historic_1978_airport_robbery_04.jpg",
+        "image_prompt": "A metal gate with a broken chain hanging from the latch., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Taking Hostages",
+        "line": "Senior cargo agent John Murray was taken hostage inside the terminal and ordered to lie on the floor.",
+        "speech": "",
+        "image": "assets/generated/the_lufthansa_heist_inside_the_historic_1978_airport_robbery_05.jpg",
+        "image_prompt": "A quiet office interior with empty chairs and a desk., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Vault Access",
+        "line": "The robbers took night shift manager Rudi Eirich at gunpoint to the double-door vault.",
+        "speech": "",
+        "image": "assets/generated/the_lufthansa_heist_inside_the_historic_1978_airport_robbery_06.jpg",
+        "image_prompt": "A heavy metal vault door set inside a concrete wall., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Loot Stolen",
+        "line": "They removed 72 fifteen-pound cartons of untraceable money from the vault and placed them inside the van.",
+        "speech": "",
+        "image": "assets/generated/the_lufthansa_heist_inside_the_historic_1978_airport_robbery_07.jpg",
+        "image_prompt": "Cardboard storage boxes stacked neatly on a concrete floor., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Van Abandoned",
+        "line": "Driver Parnell Edwards parked the van in front of a fire hydrant instead of destroying it in New Jersey.",
+        "speech": "",
+        "image": "assets/generated/the_lufthansa_heist_inside_the_historic_1978_airport_robbery_08.jpg",
+        "image_prompt": "A delivery van parked beside a curb on a city street., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Police Discovery",
+        "line": "Police discovered the abandoned van two days after the heist and soon found Edwards' fingerprints inside.",
+        "speech": "",
+        "image": "assets/generated/the_lufthansa_heist_inside_the_historic_1978_airport_robbery_09.jpg",
+        "image_prompt": "Police officers examining the exterior of a parked vehicle., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "Eliminating Witnesses",
+        "line": "Burke resolved to kill anyone who could implicate him and ordered the murder of co-conspirators.",
+        "speech": "",
+        "image": "assets/generated/the_lufthansa_heist_inside_the_historic_1978_airport_robbery_10.jpg",
+        "image_prompt": "An empty suburban street viewed through a window at dusk., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      },
+      {
+        "label": "The Sole Conviction",
+        "line": "Louis Werner was the only person convicted in the heist and was sentenced to fifteen years in prison.",
+        "speech": "",
+        "image": "assets/generated/the_lufthansa_heist_inside_the_historic_1978_airport_robbery_11.jpg",
+        "image_prompt": "A wooden courtroom bench and table under fluorescent lighting., dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore"
+      }
+    ],
+    "verified": true,
+    "source_title": "Lufthansa heist",
+    "source_url": "https://en.wikipedia.org/wiki/Lufthansa_heist"
+  }
+}

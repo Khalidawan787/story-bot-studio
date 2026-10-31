@@ -1,0 +1,922 @@
+{
+  "the_invisible_blueprint_of_success": {
+    "title": "The Invisible Blueprint of Success",
+    "category": "Motivation",
+    "intro": "Ever wondered if your small, unnoticed efforts truly matter? What if every single thing you did, every seemingly insignificant step, was silently contributing to a grand design for your future? Prepare to uncover the secret architecture of success.",
+    "outro": "Your journey isn't a series of isolated events; it's a masterpiece in progress. Fuel every action with purpose, for the invisible blueprint of your ultimate triumph is always being drawn. Keep building, keep growing, keep shining.",
+    "scenes": [
+      {
+        "label": "Secret Architect",
+        "line": "Your smallest past efforts are silently designing your future triumphs.",
+        "speech": "",
+        "image": "assets/generated/the_invisible_blueprint_of_success_01.jpg",
+        "image_prompt": "A complex blueprint unfolding like a galaxy, with tiny, glowing threads connecting to a central bright star., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Dismissed Seeds",
+        "line": "We often undervalue diligent steps, dismissing them as trivial or unconnected to grand ambitions.",
+        "speech": "",
+        "image": "assets/generated/the_invisible_blueprint_of_success_02.jpg",
+        "image_prompt": "A person casually tossing a handful of tiny seeds onto barren ground, not expecting anything., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Unseen Practice",
+        "line": "Imagine mastering a niche skill, reading that obscure book, or helping a forgotten colleague.",
+        "speech": "",
+        "image": "assets/generated/the_invisible_blueprint_of_success_03.jpg",
+        "image_prompt": "A person diligently practicing an unusual instrument in a quiet, dimly lit room., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Fading Memories",
+        "line": "These seemingly isolated actions often fade into memory, feeling like wasted time or effort.",
+        "speech": "",
+        "image": "assets/generated/the_invisible_blueprint_of_success_04.jpg",
+        "image_prompt": "An old, dusty calendar with many days crossed off, implying time passing and things being forgotten., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Sudden Opening",
+        "line": "Then, without warning, a monumental opportunity materializes, demanding a unique combination of talents.",
+        "speech": "",
+        "image": "assets/generated/the_invisible_blueprint_of_success_05.jpg",
+        "image_prompt": "A vast, imposing door suddenly opening in a solid, featureless wall, revealing a bright light., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Perfect Fit",
+        "line": "Suddenly, the forgotten skill, the obscure knowledge, or that past connection becomes critically indispensable.",
+        "speech": "",
+        "image": "assets/generated/the_invisible_blueprint_of_success_06.jpg",
+        "image_prompt": "A complex lock mechanism clicking open as a perfectly shaped, unique key turns within it., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Blueprint Revealed",
+        "line": "What once felt like aimless wandering now unveils itself as a meticulously crafted, intricate pathway.",
+        "speech": "",
+        "image": "assets/generated/the_invisible_blueprint_of_success_07.jpg",
+        "image_prompt": "Glowing lines appearing on a barren landscape, connecting disparate points to form a clear, illuminated path., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Unlocked Potential",
+        "line": "You step forward, empowered by threads woven years ago, seizing a moment others could not.",
+        "speech": "",
+        "image": "assets/generated/the_invisible_blueprint_of_success_08.jpg",
+        "image_prompt": "A person confidently walking across a previously difficult chasm on a newly materialized, sturdy bridge., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Triumph's Dawn",
+        "line": "This isn't luck; it’s the profound realization of an invisible blueprint, patiently built by your own hands.",
+        "speech": "",
+        "image": "assets/generated/the_invisible_blueprint_of_success_09.jpg",
+        "image_prompt": "A triumphant silhouette standing atop a mountain peak as the sun rises, casting long shadows., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Every Effort Matters",
+        "line": "Every honest effort, every persistent exploration, each act of kindness, weaves into your success story.",
+        "speech": "",
+        "image": "assets/generated/the_invisible_blueprint_of_success_10.jpg",
+        "image_prompt": "Thousands of tiny, luminous threads gently weaving together to form a magnificent, shimmering tapestry., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Weave Your Future",
+        "line": "Stop dismissing the small steps; embrace them as essential investments in your inevitable future greatness.",
+        "speech": "",
+        "image": "assets/generated/the_invisible_blueprint_of_success_11.jpg",
+        "image_prompt": "A person actively and deliberately weaving colorful threads onto a loom, with focus and determination., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Your Legacy",
+        "line": "Start building your magnificent, invisible blueprint today, for the destiny only you can unfold.",
+        "speech": "",
+        "image": "assets/generated/the_invisible_blueprint_of_success_12.jpg",
+        "image_prompt": "A person looking out at a vast, beautiful landscape, with glowing pathways leading into the distance, suggesting endless possibilities., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      }
+    ]
+  },
+  "the_catalyst_within": {
+    "title": "The Catalyst Within",
+    "category": "Motivation",
+    "intro": "Every great journey begins with a spark—a moment of awakening where the ordinary transforms into the extraordinary. You stand at that precipice now, on the verge of discovering the most profound power you possess.",
+    "outro": "The world awaits the brilliance you hold. Stop waiting for the moment; create it. You are the catalyst. Unleash your legend.",
+    "scenes": [
+      {
+        "label": "Dormant Power",
+        "line": "What if the greatest power lies dormant within you?",
+        "speech": "",
+        "image": "assets/generated/the_catalyst_within_01.jpg",
+        "image_prompt": "Person looking intently at their own reflection in a slightly distorted mirror, a faint golden glow behind them., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "External Search",
+        "line": "Many chase external validation, seeking keys to unlock their potential from afar.",
+        "speech": "",
+        "image": "assets/generated/the_catalyst_within_02.jpg",
+        "image_prompt": "Silhouettes of people in a vast, open landscape, reaching towards a distant, shimmering light on the horizon., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Yearning Spark",
+        "line": "We yearn for a breakthrough, a spark to ignite the fire we believe is missing.",
+        "speech": "",
+        "image": "assets/generated/the_catalyst_within_03.jpg",
+        "image_prompt": "A person with a hopeful but slightly melancholic expression, looking at a single, unlit candle in their hand., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Inner Truth",
+        "line": "But the truth is, the catalyst you seek has always resided within your own spirit.",
+        "speech": "",
+        "image": "assets/generated/the_catalyst_within_04.jpg",
+        "image_prompt": "A hand gently placing a glowing, intricate gear into the chest of a translucent, determined figure., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Personal Choice",
+        "line": "It's not found in a book, a guru, or a magical formula; it's a decision.",
+        "speech": "",
+        "image": "assets/generated/the_catalyst_within_05.jpg",
+        "image_prompt": "A bold, illuminated 'DECIDE' button appearing before someone who looks determined, ready to press it., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Unwavering Belief",
+        "line": "It's the unwavering belief in your capacity, even when doubt whispers its familiar lies.",
+        "speech": "",
+        "image": "assets/generated/the_catalyst_within_06.jpg",
+        "image_prompt": "A person standing firm against a strong wind of shadowy doubts and questions, their inner light shining brighter., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Unleash Force",
+        "line": "This internal switch, once flipped, unleashes an unstoppable force of creation and purpose.",
+        "speech": "",
+        "image": "assets/generated/the_catalyst_within_07.jpg",
+        "image_prompt": "A powerful burst of vibrant energy emanating from a person's core, transforming their immediate surroundings with light., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Shatter Boundaries",
+        "line": "Imagine the boundaries you can shatter, the dreams you can materialize, with this newfound conviction.",
+        "speech": "",
+        "image": "assets/generated/the_catalyst_within_08.jpg",
+        "image_prompt": "A person effortlessly breaking through a massive, shimmering glass wall, with brilliant light pouring in from the other side., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Forge Resolve",
+        "line": "Every obstacle becomes a stepping stone, every setback a lesson forging unbreakable resolve.",
+        "speech": "",
+        "image": "assets/generated/the_catalyst_within_09.jpg",
+        "image_prompt": "A close-up of a powerful blacksmith's hammer striking a glowing piece of metal on an anvil, sparks flying dramatically., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Activate Drive",
+        "line": "Don't wait for permission; activate your inherent drive to sculpt the destiny you truly deserve.",
+        "speech": "",
+        "image": "assets/generated/the_catalyst_within_10.jpg",
+        "image_prompt": "A person's shadow self transforming into a vibrant, athletic figure taking off in a powerful sprint on a track., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Master Architect",
+        "line": "You are the master architect of your reality, equipped with extraordinary power to build.",
+        "speech": "",
+        "image": "assets/generated/the_catalyst_within_11.jpg",
+        "image_prompt": "A person confidently sketching a grand, futuristic city blueprint that instantly materializes into a stunning cityscape around them., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Erupt Potential",
+        "line": "Ignite that catalyst today, and watch your magnificent potential erupt into vibrant existence.",
+        "speech": "",
+        "image": "assets/generated/the_catalyst_within_12.jpg",
+        "image_prompt": "A magnificent, colorful bloom explosively growing from a tiny seed, reaching towards the sky with immense energy., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      }
+    ]
+  },
+  "the_gravity_of_what_if": {
+    "title": "The Gravity of 'What If'?",
+    "category": "Motivation",
+    "intro": "We all stand at the precipice of greatness, yet so often, an unseen force pulls us back. It’s not external obstacles, but the silent, heavy weight of our own unasked questions, the 'what ifs' that keep us from soaring. Today, we confront that gravity.",
+    "outro": "It's time to break free. The universe is not waiting for perfection, it's waiting for participation. Choose action over anxiety, courage over comfort, and turn every 'what if' into a resounding 'I did.' Your epic story starts now.",
+    "scenes": [
+      {
+        "label": "Shadow's Grip",
+        "line": "What if your greatest fear is just a shadow you cast?",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_what_if_01.jpg",
+        "image_prompt": "A person standing at the edge of a vast, misty canyon, casting a long, distorted shadow that seems to hold them back., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Dream's Prison",
+        "line": "Every ambitious dream, every unspoken desire, often begins imprisoned by the heavy gravity of 'what if.'",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_what_if_02.jpg",
+        "image_prompt": "A brilliant, glowing seed trapped under a massive, dark, abstract 'WHAT IF' boulder., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Invisible Walls",
+        "line": "We calculate risks, anticipate failures, and meticulously construct invisible walls around our true potential.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_what_if_03.jpg",
+        "image_prompt": "A person looking out from behind translucent, shimmering walls, watching others move freely., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Doubt's Anchor",
+        "line": "This constant hesitation whispers doubts, eroding confidence, keeping us anchored to the familiar, the safe, the small.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_what_if_04.jpg",
+        "image_prompt": "A majestic ship tethered to a tiny, rocky island by a huge, rusty anchor labeled 'DOUBT.', dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Unasked Questions",
+        "line": "But consider this: what if those 'what ifs' are not warnings, but simply unasked questions awaiting your bold answer?",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_what_if_05.jpg",
+        "image_prompt": "A lightbulb above a person's head, but instead of light, question marks are slowly transforming into exclamation points., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Shift Perspective",
+        "line": "The only way to break free from their oppressive weight is to shift your perspective and embrace the unknown with courage.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_what_if_06.jpg",
+        "image_prompt": "A person actively pushing away a heavy, shadowy cloud, revealing clear sky beyond., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Unleash Power",
+        "line": "Imagine the incredible power unleashed when you exchange paralyzing speculation for decisive, fearless action.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_what_if_07.jpg",
+        "image_prompt": "A person shattering a glass dome around them with a powerful, confident gesture, light radiating outwards., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Momentum Builds",
+        "line": "Every leap of faith, every attempt, even those that don't yield immediate success, builds unstoppable momentum.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_what_if_08.jpg",
+        "image_prompt": "A single snowball rolling down a hill, slowly growing larger and picking up speed., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Forged By Daring",
+        "line": "You are not defined by potential failures; you are forged by the audacious spirit that dares to try.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_what_if_09.jpg",
+        "image_prompt": "A person standing tall and strong, outlined by sparks from a forge, with a determined expression., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Silence Critic",
+        "line": "Silence the internal critic, step into the light, and prove to yourself what you are truly capable of achieving.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_what_if_10.jpg",
+        "image_prompt": "A person with hands over their ears, but their eyes are fixed on a bright, inviting path ahead., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Your Contribution",
+        "line": "The world awaits your unique contribution, your innovation, your courage to transform those 'what ifs' into 'what is.'",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_what_if_11.jpg",
+        "image_prompt": "A vibrant, diverse cityscape, with one prominent building glowing brightly, representing a new idea or creation., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Launch Destiny",
+        "line": "Stop orbiting the edge of your potential; ignite your purpose and launch into the stratosphere of your destiny.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_what_if_12.jpg",
+        "image_prompt": "A rocket, previously tethered to a launchpad, now powerfully ascending into a star-filled sky., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      }
+    ]
+  },
+  "the_weight_of_the_unlived_life": {
+    "title": "The Weight of the Unlived Life",
+    "category": "Motivation",
+    "intro": "Every sunrise offers a blank page, a fresh opportunity to author your most extraordinary story. But what if you never turn the page? What if the masterpiece within remains forever untold? There's a silent burden many carry, a heavy shadow cast by dreams deferred and potential left dormant. It's time to lighten that load.",
+    "outro": "Don't let the echo of 'what if' haunt your future. Your fullest life isn't a distant destination; it's forged by the deliberate, courageous steps you take today. Unleash your potential. Live your story. The world is waiting for your authentic roar.",
+    "scenes": [
+      {
+        "label": "Unlived Regret",
+        "line": "The biggest regret isn't failure, but never trying.",
+        "speech": "",
+        "image": "assets/generated/the_weight_of_the_unlived_life_01.jpg",
+        "image_prompt": "A person standing at a crossroads, looking back at a hazy, unchosen path with a somber expression., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Hidden Potential",
+        "line": "Deep within, lies a masterpiece yearning to be unveiled, a purpose waiting for your touch.",
+        "speech": "",
+        "image": "assets/generated/the_weight_of_the_unlived_life_02.jpg",
+        "image_prompt": "An abstract visual of glowing energy or light contained within a human silhouette, breaking free., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Silent Whispers",
+        "line": "But often, fear’s quiet whispers keep your boldest dreams confined, untouched by reality.",
+        "speech": "",
+        "image": "assets/generated/the_weight_of_the_unlived_life_03.jpg",
+        "image_prompt": "A person's shadow looming large over them, representing fear, in a dimly lit, quiet room., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Inner Fire",
+        "line": "Remember, the most profound power isn't found externally, it ignites from within your core.",
+        "speech": "",
+        "image": "assets/generated/the_weight_of_the_unlived_life_04.jpg",
+        "image_prompt": "A close-up of a human eye, with a small, intense flame reflected in the pupil, radiating warmth., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Your Choice",
+        "line": "Will you carry the heavy burden of 'what if,' or courageously chase 'what is possible'?",
+        "speech": "",
+        "image": "assets/generated/the_weight_of_the_unlived_life_05.jpg",
+        "image_prompt": "Hands holding two scales, one heavy with question marks, the other light with an open path ahead., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Break Free",
+        "line": "It's time to sever the chains of hesitation and liberate the dormant titan within you.",
+        "speech": "",
+        "image": "assets/generated/the_weight_of_the_unlived_life_06.jpg",
+        "image_prompt": "A strong, determined hand breaking free from rusted chains, showing raw power., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "First Step",
+        "line": "Begin with a single, deliberate step; momentum builds from the smallest commitment, not perfection.",
+        "speech": "",
+        "image": "assets/generated/the_weight_of_the_unlived_life_07.jpg",
+        "image_prompt": "A person taking a confident first step onto a challenging but clear path, light ahead., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Daily Action",
+        "line": "Let every sunrise be an invitation to pour effort into your aspirations, day by impactful day.",
+        "speech": "",
+        "image": "assets/generated/the_weight_of_the_unlived_life_08.jpg",
+        "image_prompt": "A beautiful sunrise over a vast landscape, with a silhouette of someone actively working on a project., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Embrace Growth",
+        "line": "Embrace every challenge as a crucible for resilience, forging a stronger, more capable you.",
+        "speech": "",
+        "image": "assets/generated/the_weight_of_the_unlived_life_09.jpg",
+        "image_prompt": "A delicate sapling growing through cracked concrete, symbolizing growth despite adversity., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Ripple Effect",
+        "line": "Your transformation inspires; your courage lights pathways for others yearning for their own breakthroughs.",
+        "speech": "",
+        "image": "assets/generated/the_weight_of_the_unlived_life_10.jpg",
+        "image_prompt": "A single drop creating widening ripples in a calm, reflective pool, extending far., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Live Fully",
+        "line": "This isn't just about achieving goals; it's about claiming the vibrant, extraordinary life you deserve.",
+        "speech": "",
+        "image": "assets/generated/the_weight_of_the_unlived_life_11.jpg",
+        "image_prompt": "A person standing on a mountain peak, arms outstretched, bathed in golden sunlight, feeling liberated., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Act Now",
+        "line": "The moment to live your fullest story, authentically and fearlessly, is always and only NOW.",
+        "speech": "",
+        "image": "assets/generated/the_weight_of_the_unlived_life_12.jpg",
+        "image_prompt": "A close-up of a clock face where the hands are blurred, but the word 'NOW' is clearly illuminated on the dial., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      }
+    ]
+  },
+  "the_first_ripple_unleashing_your_unstoppable_momentum": {
+    "title": "The First Ripple: Unleashing Your Unstoppable Momentum",
+    "category": "Motivation",
+    "intro": "Every monumental achievement begins not with a roar, but with a whisper—a single, audacious move. This is the story of that first ripple, and how it ignites an unstoppable cascade of change within you.",
+    "outro": "Stop waiting for the perfect storm; be the single drop that starts a revolution. Your potential isn't a distant shore, it's the very next step you choose to take. Start your ripple, ignite your world.",
+    "scenes": [
+      {
+        "label": "First Tremor",
+        "line": "Your biggest dream often begins with the smallest tremor.",
+        "speech": "",
+        "image": "assets/generated/the_first_ripple_unleashing_your_unstoppable_momentum_01.jpg",
+        "image_prompt": "A single dewdrop falling into a still pond, creating a perfect tiny ripple., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Waiting Game",
+        "line": "We constantly wait for grand opportunities or perfect conditions to ignite our journey.",
+        "speech": "",
+        "image": "assets/generated/the_first_ripple_unleashing_your_unstoppable_momentum_02.jpg",
+        "image_prompt": "A person sitting patiently on a mountaintop, overlooking a vast, untouched landscape at dawn., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Trapped Potential",
+        "line": "That endless anticipation often traps us, paralyzing our potential, keeping us perfectly still.",
+        "speech": "",
+        "image": "assets/generated/the_first_ripple_unleashing_your_unstoppable_momentum_03.jpg",
+        "image_prompt": "A person enclosed in a transparent, still bubble, looking out at a vibrant, moving world outside., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Unassuming Steps",
+        "line": "But what if the monumental leap you envision is simply a collection of unassuming first steps?",
+        "speech": "",
+        "image": "assets/generated/the_first_ripple_unleashing_your_unstoppable_momentum_04.jpg",
+        "image_prompt": "A winding path leading into a dense, sunlit forest, inviting exploration and discovery., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Flawless Myth",
+        "line": "Stop chasing flawless starts; they are myths that only delay your powerful, necessary evolution.",
+        "speech": "",
+        "image": "assets/generated/the_first_ripple_unleashing_your_unstoppable_momentum_05.jpg",
+        "image_prompt": "A clock with hands spinning wildly and blurring, showing the futility of waiting for the 'right' time., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Brave Ripple",
+        "line": "True momentum isn't found in a grand explosion, but in a single, brave, imperfect ripple.",
+        "speech": "",
+        "image": "assets/generated/the_first_ripple_unleashing_your_unstoppable_momentum_06.jpg",
+        "image_prompt": "A person's hand reaching out to gently touch the surface of a calm body of water, about to make a small disturbance., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "One Action",
+        "line": "Decide on one minuscule action, one tiny commitment you can execute *right now*.",
+        "speech": "",
+        "image": "assets/generated/the_first_ripple_unleashing_your_unstoppable_momentum_07.jpg",
+        "image_prompt": "A single handwritten word being underlined emphatically on a blank page with a pen., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Smallest Spark",
+        "line": "It could be a single email sent, one page written, or just five minutes of focused effort.",
+        "speech": "",
+        "image": "assets/generated/the_first_ripple_unleashing_your_unstoppable_momentum_08.jpg",
+        "image_prompt": "A single, weak spark igniting in a dark, expansive cavern, casting a tiny, hopeful glow., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Quiet Victory",
+        "line": "Feel the subtle shift, the quiet victory, as inertia gives way to a nascent, powerful flow.",
+        "speech": "",
+        "image": "assets/generated/the_first_ripple_unleashing_your_unstoppable_momentum_09.jpg",
+        "image_prompt": "A small stream of water beginning to flow over dry, cracked ground, slowly carving a path., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Expanding Impact",
+        "line": "That initial ripple will inevitably expand, gaining velocity, impacting everything around you.",
+        "speech": "",
+        "image": "assets/generated/the_first_ripple_unleashing_your_unstoppable_momentum_10.jpg",
+        "image_prompt": "Multiple concentric ripples spreading across a large, calm body of water, reaching far towards the edges., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Consistent Drops",
+        "line": "Your entire world transforms, not from a single tidal wave, but from consistent, persistent drops.",
+        "speech": "",
+        "image": "assets/generated/the_first_ripple_unleashing_your_unstoppable_momentum_11.jpg",
+        "image_prompt": "A time-lapse showing a barren landscape slowly becoming lush and green due to consistent, gentle rainfall., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Create Ocean",
+        "line": "Cast your first ripple today and witness the unstoppable ocean of change it creates.",
+        "speech": "",
+        "image": "assets/generated/the_first_ripple_unleashing_your_unstoppable_momentum_12.jpg",
+        "image_prompt": "A person standing on a beach, looking out at a vast, vibrant, dynamic ocean under a clear sky, with a sense of accomplishment and awe., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      }
+    ]
+  },
+  "the_gravity_of_the_unsent_message": {
+    "title": "The Gravity of the Unsent Message",
+    "category": "Motivation",
+    "intro": "In the quiet moments, we all hear it: the faint echo of what could have been. It's the story of the message never sent, the idea never shared, the dream never pursued. But what if we told you that silence isn't just absence, but a powerful force shaping your destiny?",
+    "outro": "The world is waiting for your voice, your talent, your unique contribution. Stop letting the fear of the unknown dictate your narrative. Unleash the powerful story within you. What message will you send today?",
+    "scenes": [
+      {
+        "label": "Hidden Costs",
+        "line": "Every unsaid word, every untried path, leaves a hollow in your future.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_the_unsent_message_01.jpg",
+        "image_prompt": "A person standing alone on a quiet, misty path leading into the unknown, looking pensive., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Trapped Potential",
+        "line": "That brilliant idea, that heartfelt compliment, that crucial apology – they remain locked inside.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_the_unsent_message_02.jpg",
+        "image_prompt": "A glowing light or idea encased within a transparent, but unbreakable, bubble or glass sphere., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Invisible Walls",
+        "line": "Each moment of hesitation, each fear-driven retreat, slowly builds an invisible wall around your true self.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_the_unsent_message_03.jpg",
+        "image_prompt": "A person trying to reach out, but an unseen barrier prevents them, faint shimmering lines appear around their hands., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Fading Dreams",
+        "line": "Soon, the vibrant colors of possibility fade, replaced by the muted tones of regret and 'what if'.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_the_unsent_message_04.jpg",
+        "image_prompt": "A vibrant painting slowly losing its colors, turning monochrome, feeling melancholic., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Missed Connections",
+        "line": "Relationships falter, opportunities vanish, and the world misses out on your unique contribution.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_the_unsent_message_05.jpg",
+        "image_prompt": "Two hands almost touching in a desolate landscape, but a subtle, growing gap remains between them., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "True Cost",
+        "line": "But here’s the truth: the greatest cost isn’t in failure, it's in the unattempted.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_the_unsent_message_06.jpg",
+        "image_prompt": "A single, fallen leaf on a barren path, symbolizing something that never bloomed or grew., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Break Silence",
+        "line": "Today, break the silent contract you’ve made with fear and uncertainty.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_the_unsent_message_07.jpg",
+        "image_prompt": "A person powerfully pushing through a shimmering, translucent wall, light bursting forth from behind them., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Speak Up",
+        "line": "Speak the compliment, share the idea, extend the apology, reach for the impossible.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_the_unsent_message_08.jpg",
+        "image_prompt": "A close-up of a mouth speaking, with glowing, energetic words forming and radiating outwards into the air., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Take Action",
+        "line": "Send that message, launch that project, take that uncomfortable first step.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_the_unsent_message_09.jpg",
+        "image_prompt": "A person's hand decisively pressing a 'send' button on a futuristic, glowing interface, or launching a small, sleek rocket., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Ripple Effect",
+        "line": "Watch as each courageous act sends ripples of transformation through your life and the lives around you.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_the_unsent_message_10.jpg",
+        "image_prompt": "A single stone dropping into perfectly still water, creating expanding, luminous ripples that spread across the surface., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Ignite Your Light",
+        "line": "Your potential isn't a shadow; it's a lighthouse waiting for you to ignite its beam.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_the_unsent_message_11.jpg",
+        "image_prompt": "A towering, magnificent lighthouse on a dramatic cliff at dawn, its powerful beam cutting through the dissipating darkness., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Your Time",
+        "line": "Don't let your story be defined by the messages you never sent. Your time is now.",
+        "speech": "",
+        "image": "assets/generated/the_gravity_of_the_unsent_message_12.jpg",
+        "image_prompt": "A person standing confidently at the beginning of a vibrant, sunlit path leading to a bright horizon, ready to step forward., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      }
+    ]
+  },
+  "the_shadow_of_the_almost": {
+    "title": "The Shadow of the Almost",
+    "category": "Motivation",
+    "intro": "We all stand on the precipice of 'almost,' where dreams nearly take flight, but hesitation holds them captive. This isn't just about what you *could* achieve; it's about reclaiming the power you surrender to inaction. Today, we confront the silent enemy that whispers 'not yet,' and ignite the courage to demand 'now!'",
+    "outro": "The 'almost' is a ghost of what could have been. Today, you are the author, the architect, the unstoppable force. Silence the shadow, seize the present, and live the extraordinary story that waits for *you*.",
+    "scenes": [
+      {
+        "label": "Unseen Regret",
+        "line": "What if your greatest regret isn't failure, but 'almost'?",
+        "speech": "",
+        "image": "assets/generated/the_shadow_of_the_almost_01.jpg",
+        "image_prompt": "A silhouette of a person standing at a crossroads, looking back at a hazy path., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "The Brink",
+        "line": "We've all felt the quiet ache of a dream left just shy of completion.",
+        "speech": "",
+        "image": "assets/generated/the_shadow_of_the_almost_02.jpg",
+        "image_prompt": "A solitary figure looking at a half-built magnificent structure in the fog., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Silent Surrender",
+        "line": "The 'almost' isn't a destination; it's a silent surrender to uncertainty.",
+        "speech": "",
+        "image": "assets/generated/the_shadow_of_the_almost_03.jpg",
+        "image_prompt": "A hand almost reaching another, but hesitating mid-air, with a blurred background., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Invisible Barrier",
+        "line": "It’s the invisible barrier built from fear, doubt, and the whispers of what-if.",
+        "speech": "",
+        "image": "assets/generated/the_shadow_of_the_almost_04.jpg",
+        "image_prompt": "Transparent, shimmering wall blocking a path, seen from a first-person perspective., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Untold Stories",
+        "line": "Imagine the countless innovations, connections, and triumphs that remain unfulfilled.",
+        "speech": "",
+        "image": "assets/generated/the_shadow_of_the_almost_05.jpg",
+        "image_prompt": "A vast, empty library with dust motes dancing in sunbeams, implying unwritten books., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Unwritten Chapters",
+        "line": "Each 'almost' is a chapter unwritten, a masterpiece left unfinished, a voice unheard.",
+        "speech": "",
+        "image": "assets/generated/the_shadow_of_the_almost_06.jpg",
+        "image_prompt": "A blank canvas on an easel in a vibrant art studio, waiting for color., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Ignite Action",
+        "line": "But what if you could transform that hesitation into an unstoppable surge of action?",
+        "speech": "",
+        "image": "assets/generated/the_shadow_of_the_almost_07.jpg",
+        "image_prompt": "A spark igniting a fuse that rapidly travels towards a dark, unlit area., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Defiant Step",
+        "line": "It begins with a single, defiant step past the edge of your comfort zone.",
+        "speech": "",
+        "image": "assets/generated/the_shadow_of_the_almost_08.jpg",
+        "image_prompt": "A foot stepping off a narrow, brightly lit path into a slightly darker but inviting space., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Face Fear",
+        "line": "Acknowledge the fear, but refuse to let it dictate your ultimate potential.",
+        "speech": "",
+        "image": "assets/generated/the_shadow_of_the_almost_09.jpg",
+        "image_prompt": "A person with determined eyes looking directly into a swirling, shadowy mist., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Rewrite Narrative",
+        "line": "This is your moment to rewrite the narrative, to shatter the 'almost' forever.",
+        "speech": "",
+        "image": "assets/generated/the_shadow_of_the_almost_10.jpg",
+        "image_prompt": "A hand vigorously erasing a word 'ALMOST' from a chalkboard, leaving a clean slate., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Embrace Growth",
+        "line": "Embrace the discomfort, because true growth lives just beyond your perceived limits.",
+        "speech": "",
+        "image": "assets/generated/the_shadow_of_the_almost_11.jpg",
+        "image_prompt": "A small seedling bursting through cracked, dry earth, reaching for sunlight., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Seize Destiny",
+        "line": "Stop leaving your destiny to chance; cross the finish line that you once only dreamed about.",
+        "speech": "",
+        "image": "assets/generated/the_shadow_of_the_almost_12.jpg",
+        "image_prompt": "An athlete triumphantly breaking through a finish line banner, arms raised high., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      }
+    ]
+  },
+  "the_unwritten_chapter_your_story_starts_now": {
+    "title": "The Unwritten Chapter: Your Story Starts Now",
+    "category": "Motivation",
+    "intro": "Every life is a book, but what if your greatest chapters are still waiting, unpenned, just beyond your current view?",
+    "outro": "The pen is in your hand. This moment, right now, is your blank page. Write a story worthy of your extraordinary potential.",
+    "scenes": [
+      {
+        "label": "Your Story",
+        "line": "What if the most epic story of your life hasn't even begun?",
+        "speech": "",
+        "image": "assets/generated/the_unwritten_chapter_your_story_starts_now_01.jpg",
+        "image_prompt": "A solitary figure standing at the edge of a vast, unblemished landscape, holding a blank, open book., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Hidden Potential",
+        "line": "We often let fear or doubt bind our potential, leaving our most thrilling narratives unexplored.",
+        "speech": "",
+        "image": "assets/generated/the_unwritten_chapter_your_story_starts_now_02.jpg",
+        "image_prompt": "Silhouettes of people watching a grand adventure unfold from behind a translucent, shimmering barrier., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Comfort Zone",
+        "line": "The comfort of the familiar often dictates our path, shielding us from the unknown.",
+        "speech": "",
+        "image": "assets/generated/the_unwritten_chapter_your_story_starts_now_03.jpg",
+        "image_prompt": "A person curled up in a cozy, warm blanket in a small, well-lit room, while outside a vibrant, active world awaits., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Inner Voice",
+        "line": "Yet, a quiet whisper deep within constantly urges us toward something more, something grander.",
+        "speech": "",
+        "image": "assets/generated/the_unwritten_chapter_your_story_starts_now_04.jpg",
+        "image_prompt": "A single, glowing ember emitting a faint light in the center of a dark, vast cavern., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Your Calling",
+        "line": "It's the yearning for the story you know you're capable of living, but haven't dared to write.",
+        "speech": "",
+        "image": "assets/generated/the_unwritten_chapter_your_story_starts_now_05.jpg",
+        "image_prompt": "A person's hand reaching out towards a distant, shimmering light on a horizon., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Seize The Pen",
+        "line": "This is your moment to seize the pen, to choose a different narrative, a bolder journey.",
+        "speech": "",
+        "image": "assets/generated/the_unwritten_chapter_your_story_starts_now_06.jpg",
+        "image_prompt": "A hand firmly gripping a quill pen, poised over a blank, aged parchment., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "First Word",
+        "line": "Don't let the daunting blankness of the page paralyze you; begin with a single word, a single step.",
+        "speech": "",
+        "image": "assets/generated/the_unwritten_chapter_your_story_starts_now_07.jpg",
+        "image_prompt": "The very first letter, bold and illuminated, appearing on a stark white page., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Bold Choices",
+        "line": "Every small action, every courageous choice, adds another vibrant sentence to your epic.",
+        "speech": "",
+        "image": "assets/generated/the_unwritten_chapter_your_story_starts_now_08.jpg",
+        "image_prompt": "A series of footsteps confidently traversing an untrodden path through a lush forest., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Fear To Fuel",
+        "line": "Watch as your courage transforms fear into fuel, and hesitation into unstoppable momentum.",
+        "speech": "",
+        "image": "assets/generated/the_unwritten_chapter_your_story_starts_now_09.jpg",
+        "image_prompt": "A small spark igniting a powerful, controlled flame, radiating warmth and light., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Inspire Others",
+        "line": "Your journey isn't just for you; it inspires others to finally pick up their own pens.",
+        "speech": "",
+        "image": "assets/generated/the_unwritten_chapter_your_story_starts_now_10.jpg",
+        "image_prompt": "A ripple effect spreading across a calm body of water, originating from a single drop., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Live Fully",
+        "line": "Live with such passion and purpose that every day becomes a testament to your magnificent will.",
+        "speech": "",
+        "image": "assets/generated/the_unwritten_chapter_your_story_starts_now_11.jpg",
+        "image_prompt": "A person standing arms outstretched on a mountaintop at sunrise, feeling the wind and light., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Write Your Legend",
+        "line": "Remember, the most profound adventures begin when you finally commit to writing your own legend.",
+        "speech": "",
+        "image": "assets/generated/the_unwritten_chapter_your_story_starts_now_12.jpg",
+        "image_prompt": "A hand closing a richly bound, ancient-looking book titled \"My Legend\", with a look of profound satisfaction., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      }
+    ]
+  },
+  "the_currency_of_regret": {
+    "title": "The Currency of Regret",
+    "category": "Motivation",
+    "intro": "Every morning you wake up with a bank account of endless time, yet you spend it on fear.",
+    "outro": "Stop saving your greatness for tomorrow and cash it in today.",
+    "scenes": [
+      {
+        "label": "The Ultimate Cost",
+        "line": "Death is not your greatest loss.",
+        "speech": "",
+        "image": "assets/generated/the_currency_of_regret_01.jpg",
+        "image_prompt": "A solitary hourglass sitting on a dark wooden table with sand pouring rapidly through the center., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Buried Potential",
+        "line": "Your greatest loss is the person you could have become dying quietly inside you.",
+        "speech": "",
+        "image": "assets/generated/the_currency_of_regret_02.jpg",
+        "image_prompt": "A translucent human silhouette fading into mist against a stormy grey horizon., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "The Silent Thief",
+        "line": "Comfort is the silent thief that steals your destiny while you sleep.",
+        "speech": "",
+        "image": "assets/generated/the_currency_of_regret_03.jpg",
+        "image_prompt": "A plush, inviting armchair covered in thick layers of heavy dust and spiderwebs., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Break the Illusion",
+        "line": "Stop waiting for the perfect moment because the storm is your only teacher.",
+        "speech": "",
+        "image": "assets/generated/the_currency_of_regret_04.jpg",
+        "image_prompt": "A lone figure standing fearlessly on a cliff edge facing massive, powerful ocean waves., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Embrace the Fire",
+        "line": "Pain is just the heavy price of admission to a truly extraordinary life.",
+        "speech": "",
+        "image": "assets/generated/the_currency_of_regret_05.jpg",
+        "image_prompt": "Bare hands forging glowing molten metal on an anvil with bright sparks flying., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Burn the Boats",
+        "line": "Burn the bridge of your excuses and watch how fast your survival instincts kick in.",
+        "speech": "",
+        "image": "assets/generated/the_currency_of_regret_06.jpg",
+        "image_prompt": "A wooden boat engulfed in bright flames on a dark beach at night., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Own Your Power",
+        "line": "Nobody is coming to rescue you from the cage you built yourself.",
+        "speech": "",
+        "image": "assets/generated/the_currency_of_regret_07.jpg",
+        "image_prompt": "An open iron cage door with bright sunlight streaming directly through the bars., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Rise and Grind",
+        "line": "Every drop of sweat you shed today is a victory purchased from tomorrow.",
+        "speech": "",
+        "image": "assets/generated/the_currency_of_regret_08.jpg",
+        "image_prompt": "Close-up of a determined athlete's face covered in sweat under harsh gym lights., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Slay the Doubt",
+        "line": "Kill the voice inside your head that whispers you are not ready yet.",
+        "speech": "",
+        "image": "assets/generated/the_currency_of_regret_09.jpg",
+        "image_prompt": "A dark shadow cast against a brick wall shattering into glowing shards of light., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Claim Your Crown",
+        "line": "You were born to command your own destiny, not to follow the crowd.",
+        "speech": "",
+        "image": "assets/generated/the_currency_of_regret_10.jpg",
+        "image_prompt": "A solitary figure walking up a steep mountain path toward a golden sunrise., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Unleash the Beast",
+        "line": "Unleash the relentless hunger that separates the legends from the forgotten crowd.",
+        "speech": "",
+        "image": "assets/generated/the_currency_of_regret_11.jpg",
+        "image_prompt": "A fierce wolf howling powerfully at a bright full moon in a starry sky., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Forge Your Legacy",
+        "line": "Make the world remember the exact day you decided to become unstoppable.",
+        "speech": "",
+        "image": "assets/generated/the_currency_of_regret_12.jpg",
+        "image_prompt": "A powerful silhouette of a person standing triumphantly on a mountain peak with arms raised., dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      }
+    ]
+  },
+  "the_architecture_of_tomorrow": {
+    "title": "The Architecture of Tomorrow",
+    "category": "Motivation",
+    "intro": "Every great empire in history started as a dangerous whisper in a quiet, empty room.",
+    "outro": "Stop waiting for permission to build the life your future self is begging you to create.",
+    "scenes": [
+      {
+        "label": "The Quiet Room",
+        "line": "What if your wildest dreams are just waiting for your permission to breathe?",
+        "speech": "",
+        "image": "assets/generated/the_architecture_of_tomorrow_01.jpg",
+        "image_prompt": "A solitary figure standing in a dimly lit industrial loft looking at a city skyline at dawn, dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "The Heavy Air",
+        "line": "Right now, invisible walls are holding you back, built entirely from your own hesitation.",
+        "speech": "",
+        "image": "assets/generated/the_architecture_of_tomorrow_02.jpg",
+        "image_prompt": "Close up of a person's hands gripping a metal window frame with morning fog outside, dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "The Blueprint",
+        "line": "Every master architect began with a blank page and the courage to draw a line.",
+        "speech": "",
+        "image": "assets/generated/the_architecture_of_tomorrow_03.jpg",
+        "image_prompt": "A rustic wooden desk covered in scattered architectural blueprints and a glowing desk lamp, dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Breaking the Mold",
+        "line": "You cannot build a masterpiece while desperately trying to fit inside a tiny box.",
+        "speech": "",
+        "image": "assets/generated/the_architecture_of_tomorrow_04.jpg",
+        "image_prompt": "A hammer striking through a fragile plaster wall with dust particles floating in a sunbeam, dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "The Daily Grind",
+        "line": "True greatness is forged in the silent hours when nobody is watching your struggle.",
+        "speech": "",
+        "image": "assets/generated/the_architecture_of_tomorrow_05.jpg",
+        "image_prompt": "A determined runner tying their shoelaces on a wet asphalt track under heavy rain, dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Embracing the Pain",
+        "line": "Every single obstacle you face is just raw material waiting to be conquered.",
+        "speech": "",
+        "image": "assets/generated/the_architecture_of_tomorrow_06.jpg",
+        "image_prompt": "A close up of a blacksmith striking glowing hot iron on an anvil with sparks flying, dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "The Turning Point",
+        "line": "Pain is simply weakness leaving your body and making room for unstoppable power.",
+        "speech": "",
+        "image": "assets/generated/the_architecture_of_tomorrow_07.jpg",
+        "image_prompt": "An exhausted climber reaching the sunlit summit of a steep rocky mountain peak, dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Sustained Momentum",
+        "line": "Momentum is a fragile beast that demands your absolute dedication every single morning.",
+        "speech": "",
+        "image": "assets/generated/the_architecture_of_tomorrow_08.jpg",
+        "image_prompt": "A heavy cargo train accelerating down a straight track cutting through a misty valley, dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Silencing Doubt",
+        "line": "Let the deafening noise of your massive ambitions drown out the whispers of doubt.",
+        "speech": "",
+        "image": "assets/generated/the_architecture_of_tomorrow_09.jpg",
+        "image_prompt": "A focused musician playing a grand piano with intense passion in a grand empty hall, dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "The Rising Tide",
+        "line": "When you finally decide to rise, the entire universe bends to clear your path.",
+        "speech": "",
+        "image": "assets/generated/the_architecture_of_tomorrow_10.jpg",
+        "image_prompt": "A majestic eagle soaring high above dense green forest canopy against a golden sun, dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "Claiming Your Crown",
+        "line": "Your destiny is not a prize to be found, but a reality to be commanded.",
+        "speech": "",
+        "image": "assets/generated/the_architecture_of_tomorrow_11.jpg",
+        "image_prompt": "A confident person standing tall on a cliff edge overlooking a vast ocean horizon, dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      },
+      {
+        "label": "The Ultimate Legacy",
+        "line": "Step into the arena today and let the world witness how a legend is born.",
+        "speech": "",
+        "image": "assets/generated/the_architecture_of_tomorrow_12.jpg",
+        "image_prompt": "A glowing city skyline at night with streaks of light from moving traffic below, dark cinematic film still, lone silhouetted figure, moody low-key light, mist or rain or city at night, mountains, desaturated with teal shadows, photorealistic"
+      }
+    ]
+  }
+}
