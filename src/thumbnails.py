@@ -872,6 +872,13 @@ def compose_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Path,
             return compose_news_thumbnail(lesson, art_path, output_path, channel, content_type)
         except Exception as exc:
             print(f"[thumbnail] news layout failed, using the plain one: {exc}")
+    if getattr(channel, "story_thumbnail", False):
+        try:
+            from .story_thumbnail import compose_story_thumbnail
+
+            return compose_story_thumbnail(lesson, art_path, output_path, channel, content_type)
+        except Exception as exc:
+            print(f"[thumbnail] story layout failed, using the plain one: {exc}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     font = _font_path()
     font_arg = f":fontfile='{_escape(font)}'" if font else ""

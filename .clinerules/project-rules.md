@@ -46,3 +46,4 @@ This file and `.clinerules/project-rules.md` hold the same text. When you change
 
 ## Channel: World Valor Chronicles
 - Heroes country by country: 100 Shorts for each country, USA first (`verified_facts.VIDEOS_PER_COUNTRY`).
+- Thumbnail (`src/story_thumbnail.py`, `"story_thumbnail": true`): dark left side, the hero's own free Wikipedia photo on the right, then "The story of", the short name (ROOSEVELT) and one 2-5 word fact from the script, in a gold-and-cream serif. YouTube shows it only once the channel is verified (youtube.com/verify) and "Thumbnails Are Verified" is pressed on the dashboard.

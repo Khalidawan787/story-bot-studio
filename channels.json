@@ -187,7 +187,8 @@
       "verified_facts": true,
       "created_by": "factory",
       "created_at": "2026-10-12T13:35:46",
-      "focus_country": "world"
+      "focus_country": "world",
+      "story_thumbnail": true
     },
     {
       "id": "snugglemoon_stories",

@@ -57,6 +57,9 @@ class Channel:
     presenter: bool = False
     # The framed news thumbnail, with the anchor on long videos (news_thumbnail.py).
     news_thumbnail: bool = False
+    # The biography thumbnail: the hero's photo, a short name and one fact
+    # (story_thumbnail.py).
+    story_thumbnail: bool = False
     # The lip-synced news anchor on a few scenes of each long video, made on
     # Kaggle (anchor_lipsync.py).
     anchor_lipsync: bool = False
