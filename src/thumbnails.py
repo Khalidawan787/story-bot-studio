@@ -731,6 +731,9 @@ def _thumbnail_provider_order(channel=None) -> list[str]:
     # first; the real-world channels keep Pexels photos first.
     if genre == "kids":
         return [*lead, "openai", "cloudflare", "pollinations", "pexels"]
+    # A cartoon channel (SnuggleMoon Stories) gets drawn art, never a stock photo.
+    if getattr(channel, "visuals", "") == "cartoon":
+        return [*lead, "cloudflare", "openai", "pollinations"]
     return [*lead, "pexels", "cloudflare", "openai", "pollinations"]
 
 

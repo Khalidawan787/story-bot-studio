@@ -46,6 +46,11 @@ def stock_video_wanted(channel=None) -> bool:
     channel_id = str(getattr(channel, "id", "") or "").lower()
     if not channel_id:
         return False
+    # A cartoon channel never gets stock footage. Under STOCK_VIDEO_CHANNELS=all
+    # SnuggleMoon Stories got real Pexels clips, and on 30 Oct 2026 a Facebook
+    # Reel was blocked worldwide: someone had claimed its moon clip.
+    if getattr(channel, "visuals", "") == "cartoon":
+        return False
     if getattr(channel, "visuals", "") == "stock" or channel_id in settings.stock_video_channels:
         return True
     kids = channel_id == "kids" or bool(getattr(channel, "made_for_kids", False))

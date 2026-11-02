@@ -10,6 +10,8 @@ Re-run it whenever a token or key changes on this PC.
 """
 from __future__ import annotations
 
+import os
+import re
 import shutil
 import subprocess
 import sys
@@ -39,6 +41,27 @@ def _check_auth(gh: str) -> None:
         raise SystemExit("Not signed in to GitHub. Run:  gh auth login")
 
 
+def owner_env(gh: str) -> dict[str, str]:
+    """Environment that makes gh act as the repository's owner.
+
+    gh is signed in with more than one GitHub account on the owner's PC, and the
+    active one may belong to another bot. The secret must always go to this
+    repository's owner (the account in `git remote get-url origin`), whichever
+    account is active. Falls back to the active account when the owner's token
+    is not in gh.
+    """
+    env = dict(os.environ)
+    remote = subprocess.run(["git", "remote", "get-url", "origin"], cwd=ROOT,
+                            capture_output=True, text=True).stdout.strip()
+    match = re.search(r"github\.com[:/]([^/]+)/", remote)
+    if match:
+        token = subprocess.run([gh, "auth", "token", "--user", match.group(1)],
+                               capture_output=True, text=True)
+        if token.returncode == 0 and token.stdout.strip():
+            env["GH_TOKEN"] = token.stdout.strip()
+    return env
+
+
 def main() -> None:
     gh = _gh()
     _check_auth(gh)
@@ -54,7 +77,7 @@ def main() -> None:
     print(f"\nUploading {len(blob) // 1024} KB to the repository secret {SECRET_NAME} ...")
     result = subprocess.run(
         [gh, "secret", "set", SECRET_NAME],
-        input=blob, text=True, cwd=ROOT, capture_output=True,
+        input=blob, text=True, cwd=ROOT, capture_output=True, env=owner_env(gh),
     )
     if result.returncode != 0:
         raise SystemExit(f"gh secret set failed:\n{result.stderr.strip()}")
