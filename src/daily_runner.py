@@ -4,7 +4,7 @@ import json
 import random
 import sqlite3
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from .config import settings
 from .db import acquire_generation_lock, release_generation_lock
@@ -512,10 +512,37 @@ def run_daily_catchup(target_count: int = 3, upload: bool = True, start_hour: in
     return run_daily_batch(count=missing, upload=upload, channel=channel, queue=queue)
 
 def long_videos_generated_today_count(channel_id: str) -> int:
-    """Count today's completed/attempted long-form jobs independently of Shorts."""
+    """Count today's completed/attempted long-form jobs independently of Shorts.
+
+    A channel with long_days counts its day in the dashboard's time zone, the
+    same day long_day_today() checks. Counting in UTC let Ain News make two long
+    videos on Friday 30 Oct 2026 (US Eastern): one before UTC midnight, one after.
+    """
     if not settings.db_path.exists():
         return 0
-    today = datetime.now().date()
+    zone = None
+    try:
+        from .channels import get_channel
+
+        if getattr(get_channel(channel_id), "long_days", ()):
+            from .slots import _zone
+
+            zone = _zone()
+    except Exception:
+        zone = None
+    if zone is not None:
+        today = datetime.now(zone).date()
+
+        def day_of(created_at: str):
+            moment = datetime.fromisoformat(created_at)
+            if moment.tzinfo is None:
+                moment = moment.replace(tzinfo=timezone.utc)
+            return moment.astimezone(zone).date()
+    else:
+        today = datetime.now().date()
+
+        def day_of(created_at: str):
+            return datetime.fromisoformat(created_at).date()
     conn = sqlite3.connect(settings.db_path)
     try:
         rows = conn.execute(
@@ -528,7 +555,7 @@ def long_videos_generated_today_count(channel_id: str) -> int:
         conn.close()
     return sum(
         1 for (created_at,) in rows
-        if created_at and datetime.fromisoformat(created_at).date() == today
+        if created_at and day_of(created_at) == today
     )
 
 
