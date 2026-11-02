@@ -109,8 +109,14 @@ def due_slots(now: datetime | None = None) -> set[int]:
     now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
     minutes = now.hour * 60 + now.minute
     passed = {i for i, (h, m) in enumerate(SLOTS_UTC) if h * 60 + m <= minutes}
-    # Before the day's first slot, a run is yesterday's last slot arriving late.
-    return passed or {len(SLOTS_UTC) - 1}
+    # The last slot (22:30) is the one most often lost: its run starts late or
+    # is dropped, and the next run, after midnight, used to build only slot 0.
+    # World Trending (slot 9) made 3 videos from 30 Oct to 2 Nov 2026. So the
+    # night runs, until the 06:30-10:30 gap, also build the last slot; a
+    # channel that already has today's video is still skipped.
+    if minutes < 6 * 60 + 30:
+        passed.add(len(SLOTS_UTC) - 1)
+    return passed
 
 
 def wanted_slots(value: str | None) -> set[int] | None:
