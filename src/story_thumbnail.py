@@ -64,8 +64,9 @@ def name_and_fact(lesson: Lesson, run_dir: Path) -> tuple[str, str]:
         raw = _script_json(
             "For a YouTube thumbnail about a real person, return the short name people "
             "know them by (1-2 words, e.g. 'Napoleon', 'Roosevelt', 'Abdus Salam', "
-            "'Helen Keller') and ONE striking fact of 2-5 words from the script "
-            "(e.g. 'The 32nd US President', 'Nobel Prize in Physics', 'Blind and Deaf Author'). "
+            "'Helen Keller') and, in 2-5 words, the ONE thing from the script they are most "
+            "famous for: a title, a prize or a record, not a minor detail "
+            "(e.g. '35th US President', 'Nobel Prize in Physics', '1971 World Series MVP'). "
             "Use only what the script says: no new names, numbers or claims.\n"
             f"Person: {subject}\nTitle: {lesson.title}\nScript: {script}\n"
             'Return ONLY JSON: {"name": str, "fact": str}'
