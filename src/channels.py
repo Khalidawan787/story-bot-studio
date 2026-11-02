@@ -60,6 +60,9 @@ class Channel:
     # The biography thumbnail: the hero's photo, a short name and one fact
     # (story_thumbnail.py).
     story_thumbnail: bool = False
+    # The World Trending thumbnail: framed picture, slanted badge, navy band
+    # (trend_thumbnail.py).
+    trend_thumbnail: bool = False
     # The lip-synced news anchor on a few scenes of each long video, made on
     # Kaggle (anchor_lipsync.py).
     anchor_lipsync: bool = False

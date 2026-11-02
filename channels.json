@@ -102,7 +102,8 @@
       "client_secret": "client_secret_trending.json",
       "token": "token_trending.json",
       "topics_per_day": 2,
-      "slot": 2
+      "slot": 2,
+      "trend_thumbnail": true
     },
     {
       "id": "kitchen_novice",
