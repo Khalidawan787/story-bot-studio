@@ -137,27 +137,41 @@ def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, obj
         status_body["containsSyntheticMedia"] = True
 
     youtube = _youtube(client_secret_file, token_file)
-    request = youtube.videos().insert(
-        part="snippet,status",
-        body={
-            "snippet": {
-                "title": metadata["title"],
-                "description": youtube_description(str(metadata["description"])),
-                "tags": metadata["tags"],
-                "categoryId": category_id,
-                # Tells YouTube which language the title and the voice are in.
-                "defaultLanguage": str(metadata.get("language") or "en"),
-                "defaultAudioLanguage": str(metadata.get("language") or "en"),
+
+    def insert():
+        return youtube.videos().insert(
+            part="snippet,status",
+            body={
+                "snippet": {
+                    "title": metadata["title"],
+                    "description": youtube_description(str(metadata["description"])),
+                    "tags": metadata["tags"],
+                    "categoryId": category_id,
+                    # Tells YouTube which language the title and the voice are in.
+                    "defaultLanguage": str(metadata.get("language") or "en"),
+                    "defaultAudioLanguage": str(metadata.get("language") or "en"),
+                },
+                "status": status_body,
             },
-            "status": status_body,
-        },
-        media_body=MediaFileUpload(str(video_path), chunksize=8 * 1024 * 1024, resumable=True),
-    )
+            media_body=MediaFileUpload(str(video_path), chunksize=8 * 1024 * 1024, resumable=True),
+        )
+
+    request = insert()
     response = None
     if progress_callback:
         progress_callback(0)
     while response is None:
-        status, response = request.next_chunk()
+        try:
+            status, response = request.next_chunk()
+        except HttpError as exc:
+            # The synthetic-media flag must never cost the upload: if YouTube
+            # refuses it (the token's scope, say), upload again without it and
+            # the owner sets the label in Studio.
+            if not status_body.pop("containsSyntheticMedia", None):
+                raise
+            print(f"[youtube] upload refused with the synthetic-media label ({exc}); "
+                  "uploading without it, set 'Altered content' in Studio")
+            request, status = insert(), None
         if status is not None and progress_callback:
             progress_callback(max(1, min(99, int(status.progress() * 100))))
     if progress_callback:
