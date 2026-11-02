@@ -39,6 +39,7 @@ This file and `.clinerules/project-rules.md` hold the same text. When you change
 
 ## Channel: SnuggleMoon Stories (`snugglemoon_stories`)
 - A sleep-story channel, not a cartoon-only one: it keeps calm stock clips (night sky, moon) as well as drawn pictures (the owner's decision, 2026-11-02). On 2026-10-30 a Facebook Reel with a Pexels moon clip was blocked worldwide by a copyright claim from "Roya"; the owner disputed it.
+- Thumbnail (`src/sleep_thumbnail.py`, `"sleep_thumbnail": true`): a cosy painted scene made for the story (Cloudflare FLUX first, no people, no lettering; `sleep_thumbnail.art_prompt`), darker at the top, with the title in cream serif capitals with a soft gold glow and a smaller line under it (the title's own subtitle or "A Calming Bedtime Story"), like "The Honey House: A Gentle Victorian Sleep Story" (the owner's design, 2026-11-02). YouTube shows it only after the channel is verified (youtube.com/verify) and "Thumbnails Are Verified" is pressed.
 
 ## GitHub account
 - This bot always uses the GitHub account **Khalidawan787**. gh on this PC is also signed in to another bot's account, so `scripts/setup_github_actions.py` sends secrets as the repo owner, and git push in this folder uses Khalidawan787 (local `credential.helper`).

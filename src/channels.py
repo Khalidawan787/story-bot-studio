@@ -69,6 +69,9 @@ class Channel:
     # The Daily Motivation thumbnail: gold frame, glowing slogan
     # (motivation_thumbnail.py).
     motivation_thumbnail: bool = False
+    # The SnuggleMoon thumbnail: a cosy painted scene and a glowing
+    # storybook title (sleep_thumbnail.py).
+    sleep_thumbnail: bool = False
     # The lip-synced news anchor on a few scenes of each long video, made on
     # Kaggle (anchor_lipsync.py).
     anchor_lipsync: bool = False

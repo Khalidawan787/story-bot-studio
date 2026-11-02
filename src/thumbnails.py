@@ -286,6 +286,10 @@ def _is_crime_lesson(lesson: Lesson, channel=None) -> bool:
 
 def build_thumbnail_prompt(lesson: Lesson, channel=None, content_type: str = "short") -> str:
     """A 16:9 prompt about THIS video's topic, with room left for the title."""
+    if getattr(channel, "sleep_thumbnail", False):
+        from .sleep_thumbnail import art_prompt
+
+        return art_prompt(lesson)
     genre = str(getattr(channel, "genre", "kids") or "kids").lower()
     style = _GENRE_ART_STYLE.get(genre, _GENRE_ART_STYLE["kids"])
     subject = _thumbnail_subject(lesson, channel)
@@ -731,6 +735,9 @@ def _thumbnail_provider_order(channel=None) -> list[str]:
     # first; the real-world channels keep Pexels photos first.
     if genre == "kids":
         return [*lead, "openai", "cloudflare", "pollinations", "pexels"]
+    # A sleep-story channel's thumbnail is a painted scene, not a stock photo.
+    if getattr(channel, "sleep_thumbnail", False):
+        return [*lead, "cloudflare", "openai", "pollinations", "pexels"]
     return [*lead, "pexels", "cloudflare", "openai", "pollinations"]
 
 
@@ -880,6 +887,13 @@ def compose_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Path,
             return compose_news_thumbnail(lesson, art_path, output_path, channel, content_type)
         except Exception as exc:
             print(f"[thumbnail] news layout failed, using the plain one: {exc}")
+    if getattr(channel, "sleep_thumbnail", False):
+        try:
+            from .sleep_thumbnail import compose_sleep_thumbnail
+
+            return compose_sleep_thumbnail(lesson, art_path, output_path, channel, content_type)
+        except Exception as exc:
+            print(f"[thumbnail] sleep layout failed, using the plain one: {exc}")
     if getattr(channel, "story_thumbnail", False):
         try:
             from .story_thumbnail import compose_story_thumbnail
