@@ -35,7 +35,13 @@ This file and `.clinerules/project-rules.md` hold the same text. When you change
 - Long-video thumbnails also show the anchor in a box on the right (`src/news_thumbnail.py`, `"news_thumbnail": true`); Shorts do not. She is the one allowed exception to the "Real people" rule on a crime thumbnail (the owner's decision, 2026-10-30), so a crime headline drops any name the script gives.
 - The anchor's motion: head, eyes and lips only, with NO hand movement (the owner's decision, 2026-10-30). Of the six idle
   clips (Kaggle kernel `ain-anchor-idles`), use 1, 2, 3, 4 and 6. Never use clip 5, the hand gesture.
-- The AI anchor (a fictional woman, navy blazer, news desk) appears only in long videos: 5 parts lip-synced on Kaggle (LatentSync 1.5, free T4 GPU) and overlaid at each scene's start time. A video with the anchor needs YouTube's "altered or synthetic content" label, which the owner sets in Studio.
+- The AI anchor (a fictional woman, navy blazer, news desk) appears only in long videos, automatically (`src/anchor_lipsync.py`, `"anchor_lipsync": true`): 5 scenes are lip-synced on Kaggle (LatentSync 1.5, free T4 GPU, kernel `ain-anchor-lipsync`) while the video renders, then laid full screen over each scene from its narration start with an "AIN NEWS" lower third. It needs `KAGGLE_USERNAME` and `KAGGLE_API_TOKEN` in `.env`; GitHub installs the kaggle CLI. If Kaggle fails or takes over 150 minutes, the video goes out without her. A video with her is uploaded with YouTube's "altered or synthetic content" flag (`containsSyntheticMedia`).
+
+## Channel: SnuggleMoon Stories (`snugglemoon_stories`)
+- A sleep-story channel, not a cartoon-only one: it keeps calm stock clips (night sky, moon) as well as drawn pictures (the owner's decision, 2026-11-02). On 2026-10-30 a Facebook Reel with a Pexels moon clip was blocked worldwide by a copyright claim from "Roya"; the owner disputed it.
+
+## GitHub account
+- This bot always uses the GitHub account **Khalidawan787**. gh on this PC is also signed in to another bot's account, so `scripts/setup_github_actions.py` sends secrets as the repo owner, and git push in this folder uses Khalidawan787 (local `credential.helper`).
 - Facebook posting runs from GitHub only (the `facebook-video-post` and `facebook-picture-post` workflows).
 
 ## Channel: World Valor Chronicles

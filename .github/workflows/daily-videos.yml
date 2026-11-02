@@ -99,6 +99,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip -q
           pip install -q -r requirements.txt
+          # Only for the Ain News anchor (src/anchor_lipsync.py); not needed on the PC.
+          pip install -q kaggle
 
       - name: Restore private files
         env:
@@ -187,6 +189,7 @@ jobs:
           path: |
             runs/**/video.mp4
             runs/**/thumbnail.jpg
+            runs/**/synthetic_media.txt
           retention-days: 7
           if-no-files-found: ignore
 

@@ -20,7 +20,8 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-KEPT_FILES = ("video.mp4", "thumbnail.jpg")
+# synthetic_media.txt: the AI anchor is in the video (anchor_lipsync.py).
+KEPT_FILES = ("video.mp4", "thumbnail.jpg", "synthetic_media.txt")
 
 
 class _DropAuthOnRedirect(urllib.request.HTTPRedirectHandler):

@@ -263,7 +263,8 @@
         "Fri"
       ],
       "long_scenes": 65,
-      "news_thumbnail": true
+      "news_thumbnail": true,
+      "anchor_lipsync": true
     }
   ]
 }

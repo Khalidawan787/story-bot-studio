@@ -57,6 +57,9 @@ class Channel:
     presenter: bool = False
     # The framed news thumbnail, with the anchor on long videos (news_thumbnail.py).
     news_thumbnail: bool = False
+    # The lip-synced news anchor on a few scenes of each long video, made on
+    # Kaggle (anchor_lipsync.py).
+    anchor_lipsync: bool = False
     # A news channel's audience: ("US", "EU") reads American, then European
     # sources (trending._REGION_FEEDS). Empty keeps the world mix.
     news_regions: tuple = ()

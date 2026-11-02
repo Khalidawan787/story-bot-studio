@@ -273,11 +273,20 @@ def run_pipeline(
         scene_marks.append(marks)
     full_voice = run_dir / "voice.mp3"
     audio_path = full_voice if full_voice.exists() and full_voice.stat().st_size > 10_000 else generate_voice(lesson.spoken_narration, full_voice, voice=voice, **prosody)
+    from .anchor_lipsync import finish_anchor_job, start_anchor_job
+
+    # Kaggle lip-syncs the anchor while the video renders.
+    anchor_job = start_anchor_job(channel, run_dir, scene_audio_paths, content_type)
     video_path = render_video(
         lesson, audio_path, run_dir / "video.mp4", run_dir,
         scene_audio_paths=scene_audio_paths, channel=channel,
         scene_marks=scene_marks, content_type=content_type,
     )
+    if anchor_job:
+        try:
+            video_path = finish_anchor_job(anchor_job, video_path, run_dir, lesson, scene_audio_paths)
+        except Exception as exc:
+            print(f"[anchor] left out of this video: {exc}")
     from .presenter import add_presenter, presenter_enabled
 
     if presenter_enabled(channel):

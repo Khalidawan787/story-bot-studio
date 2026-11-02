@@ -132,6 +132,9 @@ def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, obj
     if publish_at is not None:
         status_body["privacyStatus"] = "private"
         status_body["publishAt"] = publish_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    # The AI news anchor (anchor_lipsync.py): YouTube's "altered or synthetic content".
+    if (Path(video_path).parent / "synthetic_media.txt").exists():
+        status_body["containsSyntheticMedia"] = True
 
     youtube = _youtube(client_secret_file, token_file)
     request = youtube.videos().insert(
