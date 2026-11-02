@@ -28,6 +28,16 @@ _YELLOW = "0xffd21a"
 _TEXT_X = 610
 _TEXT_LIMIT = 620
 _PHOTO_W = 700
+# No-people crime pictures (police tape, prison bars, evidence, police lights;
+# made once with Cloudflare FLUX) for a case with no photo and no art.
+BACKDROPS = settings.root / "data" / "thumbnail_backdrops" / "crime"
+
+
+def backdrop(seed: str) -> Path | None:
+    import zlib
+
+    pictures = sorted(BACKDROPS.glob("*.jpg"))
+    return pictures[zlib.crc32(seed.encode("utf-8")) % len(pictures)] if pictures else None
 
 
 def _subject(run_dir: Path) -> str:
@@ -57,6 +67,9 @@ def split_headline(lesson: Lesson, subject: str) -> tuple[list[str], str]:
         # No name in it: the last word, or two when the last is short.
         cut = len(words) - (2 if len(words) > 2 and len(words[-1]) <= 4 else 1)
         rest, highlight = " ".join(words[:max(cut, 0)]), " ".join(words[max(cut, 0):])
+    if rest in {"THE", "A", "AN"}:
+        # "THE" alone on a white line looks lost; it joins the yellow part.
+        rest, highlight = "", f"{rest} {highlight}"
     rest_words = rest.split()
     if len(rest) > 16 and len(rest_words) > 1:
         half = (len(rest_words) + 1) // 2
@@ -90,6 +103,8 @@ def compose_crime_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
 
     photo = run_dir / "article_photo.jpg"
     has_photo = photo.is_file()
+    if not has_photo and not (art_path and Path(art_path).exists()):
+        art_path = backdrop(run_dir.name)
     inputs = ["-f", "lavfi", "-i", f"color=c=0x0b0707:s={THUMB_WIDTH}x{THUMB_HEIGHT}"]
     parts = [
         # Dark backdrop with a red glow on the right.

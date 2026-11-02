@@ -892,7 +892,24 @@ def compose_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Path,
 
             return compose_crime_thumbnail(lesson, art_path, output_path, channel, content_type)
         except Exception as exc:
-            print(f"[thumbnail] crime layout failed, using the plain one: {exc}")
+            print(f"[thumbnail] crime layout failed ({exc}); trying it on a stock crime backdrop")
+        # The owner wants this layout every time, never the old one: try once
+        # more without the photo or art, on one of the no-people backdrops.
+        try:
+            from .crime_thumbnail import backdrop, compose_crime_thumbnail
+
+            (output_path.parent / "article_photo.jpg").unlink(missing_ok=True)
+            return compose_crime_thumbnail(lesson, backdrop(output_path.parent.name), output_path,
+                                           channel, content_type)
+        except Exception as exc:
+            print(f"[thumbnail] crime layout failed again, using the plain one: {exc}")
+    if getattr(channel, "motivation_thumbnail", False):
+        try:
+            from .motivation_thumbnail import compose_motivation_thumbnail
+
+            return compose_motivation_thumbnail(lesson, art_path, output_path, channel, content_type)
+        except Exception as exc:
+            print(f"[thumbnail] motivation layout failed, using the plain one: {exc}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     font = _font_path()
     font_arg = f":fontfile='{_escape(font)}'" if font else ""

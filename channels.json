@@ -86,7 +86,8 @@
       "client_secret": "client_secret_motivation.json",
       "token": "token_motivation.json",
       "topics_per_day": 2,
-      "slot": 5
+      "slot": 5,
+      "motivation_thumbnail": true
     },
     {
       "id": "trending",

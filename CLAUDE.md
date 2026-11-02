@@ -45,7 +45,10 @@ This file and `.clinerules/project-rules.md` hold the same text. When you change
 - Facebook posting runs from GitHub only (the `facebook-video-post` and `facebook-picture-post` workflows).
 
 ## Channel: Crime Files (`crime`), YouTube "Crime Chronicles"
-- Thumbnail (`src/crime_thumbnail.py`, `"crime_thumbnail": true`): the case's own free Wikipedia photo on the left, fading into a dark red backdrop; a "CRIME CHRONICLES" mark in red corner brackets top left; a slanted red "CRIME FILES" badge top right; the headline in white Anton capitals with the person's name (or the last words) in black on a tilted yellow stripe (the owner's design, 2026-11-02). Never a stranger's photo: without the subject's own photo the backdrop is the no-people art.
+- Thumbnail (`src/crime_thumbnail.py`, `"crime_thumbnail": true`): the case's own free Wikipedia photo on the left, fading into a dark red backdrop; a "CRIME CHRONICLES" mark in red corner brackets top left; a slanted red "CRIME FILES" badge top right; the headline in white Anton capitals with the person's name (or the last words) in black on a tilted yellow stripe (the owner's design, 2026-11-02). Never a stranger's photo, and never the old layout (the owner's decision): without the subject's own photo or art, one of the no-people crime backdrops in `data/thumbnail_backdrops/crime/` is used.
+
+## Channel: Daily Motivation (`motivation`), YouTube "Risevion"
+- Thumbnail (`src/motivation_thumbnail.py`, `"motivation_thumbnail": true`): the picture in a thin gold frame, darker on the left; a slanted gold "DAILY MOTIVATION" badge; a 2-4 word slogan ("PAIN CREATES POWER") one word a line in heavy white slanted capitals with an orange edge and glow (the owner's design, 2026-11-02).
 
 ## Channel: World Trending (`trending`), "TrendNerve Global" on Facebook and TikTok
 - Thumbnail (`src/trend_thumbnail.py`, `"trend_thumbnail": true`): the picture in a thin blue frame, a slanted blue "WORLD TRENDING" badge with a red slash top left, and a navy band at the bottom with the headline in white slanted capitals, a dotted map texture and a red line (the owner's design, 2026-11-02).
