@@ -22,7 +22,7 @@ from pathlib import Path
 from .config import settings
 from .models import Lesson
 from .presenter import _escape, _text_width
-from .thumbnails import THUMB_HEIGHT, THUMB_WIDTH
+from .thumbnails import SAFE_MARGIN, THUMB_HEIGHT, THUMB_WIDTH
 
 FONT = settings.root / "fonts" / "ArchivoBlack-Regular.ttf"
 ANCHOR_IMAGE = settings.root / "data" / "presenter" / "anchor.jpg"
@@ -131,7 +131,7 @@ def compose_ain_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Pa
         bars.append(_bar(Path(f"{stem}.ainSub.txt"), sub,
                          _fit(sub, Path(f"{stem}.ainSub.txt"), limit, 48, 26, 20), _YELLOW, "black", 20))
     total = sum(height for _chain, _w, height in bars) + 10 * (len(bars) - 1)
-    y = THUMB_HEIGHT - 40 - total
+    y = THUMB_HEIGHT - SAFE_MARGIN - total
 
     inputs = ["-f", "lavfi", "-i", f"color=c={_NAVY}:s={THUMB_WIDTH}x{THUMB_HEIGHT}"]
     picture_index = 1
@@ -201,10 +201,10 @@ def compose_ain_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Pa
     badge_chain, badge_w, _badge_h = _bar(Path(f"{stem}.ainBadge.txt"), "WORLD NEWS", 38, _RED, "white", 20)
     parts += [
         f"{ain_chain}[ain]", f"{the_chain}[the]", f"{exp_chain}[exp]", f"{badge_chain}[badge]",
-        f"[{current}][ain]overlay={mark_x}:28[m1]",
-        f"[m1][the]overlay={mark_x}:104[m2]",
-        f"[m2][exp]overlay={mark_x + the_w - the_h // 2 - 6}:104[m3]",
-        f"[m3][badge]overlay={THUMB_WIDTH - badge_w - 30}:32",
+        f"[{current}][ain]overlay={mark_x}:{SAFE_MARGIN - 6}[m1]",
+        f"[m1][the]overlay={mark_x}:{SAFE_MARGIN + 68}[m2]",
+        f"[m2][exp]overlay={mark_x + the_w - the_h // 2 - 6}:{SAFE_MARGIN + 68}[m3]",
+        f"[m3][badge]overlay={THUMB_WIDTH - badge_w - 30}:{SAFE_MARGIN}",
     ]
     subprocess.run(
         [settings.ffmpeg_bin, "-y", *inputs, "-filter_complex", ";".join(parts),

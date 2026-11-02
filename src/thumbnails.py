@@ -33,6 +33,9 @@ from .models import Lesson
 
 
 THUMB_WIDTH, THUMB_HEIGHT = 1280, 720
+# The same empty space above the top element and below the bottom one, on
+# every layout (the owner's rule, 2026-11-02): nothing may hug an edge.
+SAFE_MARGIN = 36
 # Text may not run edge to edge or YouTube's duration badge / progress bar
 # covers it. This is the usable width for the title.
 SAFE_TEXT_WIDTH = 1130

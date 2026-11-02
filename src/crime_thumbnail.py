@@ -20,7 +20,7 @@ from pathlib import Path
 from .config import settings
 from .models import Lesson
 from .presenter import _escape, _text_width
-from .thumbnails import THUMB_HEIGHT, THUMB_WIDTH
+from .thumbnails import SAFE_MARGIN, THUMB_HEIGHT, THUMB_WIDTH
 
 FONT = settings.root / "fonts" / "Anton-Regular.ttf"
 _RED = "0xe0141e"
@@ -98,8 +98,16 @@ def compose_crime_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
     y_files = [output_path.with_suffix(f".cy{i}.txt") for i in range(len(yellow_lines))]
     w_size = min([_fit(t, f, _TEXT_LIMIT, 100, 52) for t, f in zip(white, w_files)] or [100])
     y_size = min(_fit(t, f, _TEXT_LIMIT - 60, 118, 60) for t, f in zip(yellow_lines, y_files))
-    total = len(white) * int(w_size * 1.05) + len(yellow_lines) * int(y_size * 1.08) + 30
-    top = max(130, (THUMB_HEIGHT - total) // 2 + 40)
+    import math
+
+    stripe_h = len(yellow_lines) * int(y_size * 1.08) + 26
+    stripe_w = max(_text_width(f, str(FONT), y_size) for f in y_files) + 70
+    tilt = math.radians(2.2)
+    stripe_drawn_h = int(stripe_h * math.cos(tilt) + stripe_w * math.sin(tilt)) + 2
+    # The block (white lines, then the tilted stripe) ends at the bottom
+    # margin, as far from the bottom as the logo and badge are from the top.
+    block = len(white) * int(w_size * 1.05) + stripe_drawn_h
+    top = max(SAFE_MARGIN + 100 + 14, THUMB_HEIGHT - SAFE_MARGIN - block)
 
     photo = run_dir / "article_photo.jpg"
     has_photo = photo.is_file()
@@ -134,8 +142,6 @@ def compose_crime_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
 
     # The yellow brush stripe behind the name, tilted a little.
     y_top = top + len(white) * int(w_size * 1.05) + 14
-    stripe_h = len(yellow_lines) * int(y_size * 1.08) + 26
-    stripe_w = max(_text_width(f, str(FONT), y_size) for f in y_files) + 70
     parts.append(
         f"color=c={_YELLOW}:s={stripe_w}x{stripe_h},format=rgba,"
         f"geq=r=255:g=210:b=26:a='255*(1-0.35*lt(mod(X*7+Y*3\\,53)\\,4)*lt(Y\\,10))*"
@@ -155,15 +161,17 @@ def compose_crime_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
     mark[1].write_text("CHRONICLES", encoding="utf-8")
     mark[2].write_text("CRIME FILES", encoding="utf-8")
     right = 48 + _text_width(mark[1], str(FONT), 32) + 14
+    m = SAFE_MARGIN + 8
     drawn = [
         # A dark plate keeps the mark readable on a light photo.
-        f"drawbox=x=14:y=14:w={right}:h=100:color=black@0.55:t=fill",
+        f"drawbox=x=14:y={SAFE_MARGIN}:w={right}:h=100:color=black@0.55:t=fill",
         # Red corner brackets round the mark, like a case-file stamp.
         *(f"drawbox=x={x}:y={y}:w={w}:h={h}:color={_RED}:t=fill" for x, y, w, h in (
-            (24, 22, 34, 5), (24, 22, 5, 34), (24, 101, 34, 5), (24, 72, 5, 34),
-            (right - 34, 22, 34, 5), (right - 5, 22, 5, 34), (right - 34, 101, 34, 5), (right - 5, 72, 5, 34))),
-        text(mark[0], 40, 48, 26, "white", "black@0.6"),
-        text(mark[1], 32, 48, 66, _RED, "black@0.6"),
+            (24, m, 34, 5), (24, m, 5, 34), (24, m + 79, 34, 5), (24, m + 50, 5, 34),
+            (right - 34, m, 34, 5), (right - 5, m, 5, 34), (right - 34, m + 79, 34, 5),
+            (right - 5, m + 50, 5, 34))),
+        text(mark[0], 40, 48, m + 4, "white", "black@0.6"),
+        text(mark[1], 32, 48, m + 44, _RED, "black@0.6"),
         *(text(f, w_size, _TEXT_X, top + i * int(w_size * 1.05), "white", "black@0.85")
           for i, f in enumerate(w_files)),
         *(text(f, y_size, _TEXT_X + 6, y_top + i * int(y_size * 1.08), "black", "black@0")
@@ -177,7 +185,7 @@ def compose_crime_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
         f"x=25:y=(66-text_h)/2,format=rgba,pad=w=iw+30:h=ih:x=15:y=0:color=black@0,"
         f"shear=shx=0.2:fillcolor=black@0,format=rgba[badge]"
     )
-    parts.append(f"[texted][badge]overlay={THUMB_WIDTH - badge_w - 60}:28")
+    parts.append(f"[texted][badge]overlay={THUMB_WIDTH - badge_w - 60}:{SAFE_MARGIN}")
     subprocess.run(
         [settings.ffmpeg_bin, "-y", *inputs, "-filter_complex", ";".join(parts),
          "-frames:v", "1", "-update", "1", "-q:v", "2", str(output_path)],

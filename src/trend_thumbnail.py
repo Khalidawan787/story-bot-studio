@@ -16,7 +16,7 @@ from pathlib import Path
 from .config import settings
 from .models import Lesson
 from .presenter import _escape, _text_width
-from .thumbnails import THUMB_HEIGHT, THUMB_WIDTH
+from .thumbnails import SAFE_MARGIN, THUMB_HEIGHT, THUMB_WIDTH
 
 FONT = settings.root / "fonts" / "ArchivoBlack-Regular.ttf"
 BADGE_TEXT = "WORLD TRENDING"
@@ -100,13 +100,13 @@ def compose_trend_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
         f"[framed][dots]overlay={THUMB_WIDTH - _MARGIN - 520}:{_BAND_TOP + 6}[withdots]",
         # The red line under the headline, fading out to the right.
         f"color=c={_RED}:s=620x5,format=rgba,geq=r=227:g=25:b=43:a='255*(1-X/W)'[red]",
-        f"[withdots][red]overlay={_TEXT_X}:{THUMB_HEIGHT - _MARGIN - 18}[lined]",
+        f"[withdots][red]overlay={_TEXT_X}:{THUMB_HEIGHT - SAFE_MARGIN - 5}[lined]",
         f"color=c=black@0:s={_TEXT_LIMIT + 80}x{block_h},format=rgba,{text_layer},"
         f"shear=shx={_SLANT}:fillcolor=black@0,format=rgba[text]",
         f"color=c={_BLUE}:s={badge_w + 14}x70,{badge_layer},"
         f"shear=shx={_SLANT}:fillcolor=black@0,format=rgba[badge]",
         f"[lined][text]overlay={_TEXT_X - 40}:{text_top}[t1]",
-        f"[t1][badge]overlay=24:{_MARGIN + 22}",
+        f"[t1][badge]overlay=24:{SAFE_MARGIN}",
     ])
     subprocess.run(
         [settings.ffmpeg_bin, "-y", "-f", "lavfi", "-i", "color=c=black:s=16x16", *inputs,

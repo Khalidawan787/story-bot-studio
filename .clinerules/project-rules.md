@@ -26,6 +26,7 @@ This file and `.clinerules/project-rules.md` hold the same text. When you change
 - Clips must match the sentence. No cartoons or graphics on real-world channels. A scene with no match shows its own picture.
 - **Kids** channels stay made-for-kids. News stays factual and neutral, with no invented quotes or numbers.
 - YouTube rejects a description over 5000 bytes; `youtube_upload.youtube_description` trims it.
+- **Thumbnails: the same empty space at the top and the bottom** (the owner's rule, 2026-11-02). The top element (logo, badge) starts `thumbnails.SAFE_MARGIN` (36 px) from the top, and the bottom element (headline bar, stripe, last line) ends 36 px from the bottom. Nothing may hug an edge. Every layout uses SAFE_MARGIN.
 
 ## Channel: Ain News Alert (`ain_news_alert`), YouTube "Ain The Explainer"
 - Genre `trending`, `news_regions: ["US", "EU"]` (US news first), voice `en-US-AriaNeural`, music in `data/music/ain_news_alert/`.

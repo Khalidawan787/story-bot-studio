@@ -16,7 +16,7 @@ from pathlib import Path
 from .config import settings
 from .models import Lesson
 from .presenter import _escape, _text_width
-from .thumbnails import THUMB_HEIGHT, THUMB_WIDTH
+from .thumbnails import SAFE_MARGIN, THUMB_HEIGHT, THUMB_WIDTH
 
 FONT = settings.root / "fonts" / "ArchivoBlack-Regular.ttf"
 BADGE_TEXT = "DAILY MOTIVATION"
@@ -84,7 +84,10 @@ def compose_motivation_thumbnail(lesson: Lesson, art_path: Path | None, output_p
     size = max(70, min(150, min(100 * _TEXT_LIMIT // _text_width(f, str(FONT), 100) for f in files)))
     gap = int(size * 1.05)
     block_h = gap * len(lines) + 40
-    top = max(110, 110 + (THUMB_HEIGHT - 130 - block_h) // 2)
+    # The words start 20 px into their layer and end at the bottom margin,
+    # as far from the bottom as the badge is from the top.
+    words_h = gap * (len(lines) - 1) + int(size * 0.95)
+    top = max(SAFE_MARGIN + 64 + 4, THUMB_HEIGHT - SAFE_MARGIN - words_h - 20)
 
     badge_file = output_path.with_suffix(".motbadge.txt")
     badge_file.write_text(BADGE_TEXT, encoding="utf-8")
@@ -118,7 +121,7 @@ def compose_motivation_thumbnail(lesson: Lesson, art_path: Path | None, output_p
         f"drawtext=fontfile='{font}':textfile='{_escape(badge_file)}':fontsize=38:fontcolor=0x111111:"
         f"x=26:y=(64-text_h)/2,format=rgba,pad=w=iw+30:h=ih:x=15:y=0:color=black@0,"
         f"shear=shx=0.2:fillcolor=black@0,format=rgba[badge]",
-        f"[withtext][badge]overlay=36:40,"
+        f"[withtext][badge]overlay=36:{SAFE_MARGIN},"
         f"drawbox=x=10:y=10:w={THUMB_WIDTH - 20}:h={THUMB_HEIGHT - 20}:color={_GOLD}:t=4",
     ])
     subprocess.run(
