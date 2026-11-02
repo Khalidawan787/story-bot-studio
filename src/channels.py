@@ -63,6 +63,9 @@ class Channel:
     # The World Trending thumbnail: framed picture, slanted badge, navy band
     # (trend_thumbnail.py).
     trend_thumbnail: bool = False
+    # The Crime Chronicles thumbnail: the case's own photo, red backdrop,
+    # the name on a yellow stripe (crime_thumbnail.py).
+    crime_thumbnail: bool = False
     # The lip-synced news anchor on a few scenes of each long video, made on
     # Kaggle (anchor_lipsync.py).
     anchor_lipsync: bool = False

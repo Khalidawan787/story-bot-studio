@@ -34,7 +34,8 @@
       "topics_per_day": 2,
       "slot": 4,
       "verified_facts": true,
-      "tone": "calm, factual documentary narrator; suspenseful but respectful"
+      "tone": "calm, factual documentary narrator; suspenseful but respectful",
+      "crime_thumbnail": true
     },
     {
       "id": "love",

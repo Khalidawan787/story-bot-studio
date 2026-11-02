@@ -44,6 +44,9 @@ This file and `.clinerules/project-rules.md` hold the same text. When you change
 - This bot always uses the GitHub account **Khalidawan787**. gh on this PC is also signed in to another bot's account, so `scripts/setup_github_actions.py` sends secrets as the repo owner, and git push in this folder uses Khalidawan787 (local `credential.helper`).
 - Facebook posting runs from GitHub only (the `facebook-video-post` and `facebook-picture-post` workflows).
 
+## Channel: Crime Files (`crime`), YouTube "Crime Chronicles"
+- Thumbnail (`src/crime_thumbnail.py`, `"crime_thumbnail": true`): the case's own free Wikipedia photo on the left, fading into a dark red backdrop; a "CRIME CHRONICLES" mark in red corner brackets top left; a slanted red "CRIME FILES" badge top right; the headline in white Anton capitals with the person's name (or the last words) in black on a tilted yellow stripe (the owner's design, 2026-11-02). Never a stranger's photo: without the subject's own photo the backdrop is the no-people art.
+
 ## Channel: World Trending (`trending`), "TrendNerve Global" on Facebook and TikTok
 - Thumbnail (`src/trend_thumbnail.py`, `"trend_thumbnail": true`): the picture in a thin blue frame, a slanted blue "WORLD TRENDING" badge with a red slash top left, and a navy band at the bottom with the headline in white slanted capitals, a dotted map texture and a red line (the owner's design, 2026-11-02).
 
