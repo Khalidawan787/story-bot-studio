@@ -31,7 +31,7 @@ This file and `.clinerules/project-rules.md` hold the same text. When you change
 - Genre `trending`, `news_regions: ["US", "EU"]` (US news first), voice `en-US-AriaNeural`, music in `data/music/ain_news_alert/`.
 - 2 Shorts a day **without the anchor**. Long videos on Mon/Wed/Fri, 65 scenes (12-18 minutes), written in parts.
 - Titles are plain: no "Reels From" or "Amidst" filler, and never the words Reels or Shorts.
-- Thumbnails are BBC style: a red frame (breaking news) or a purple one (explainer), a white two-line headline and an "AIN NEWS" badge. No BBC logo or font.
+- Thumbnails (`src/ain_thumbnail.py`, the owner's design 2026-11-02): long videos show the anchor on the left over navy with a dotted map, a slanted red-and-white edge and the news picture on the right; Shorts have no anchor and the picture fills the frame. An "Ain The Explainer" mark, a slanted red "WORLD NEWS" badge, and the headline in three slanted bars: white on red (context), big navy on white (key word), black on yellow (rest or "What It Means"). The words come from the title only and in its own order. The older BBC-style framed layout (`src/news_thumbnail.py`) is only the fallback.
 - Long-video thumbnails also show the anchor in a box on the right (`src/news_thumbnail.py`, `"news_thumbnail": true`); Shorts do not. She is the one allowed exception to the "Real people" rule on a crime thumbnail (the owner's decision, 2026-10-30), so a crime headline drops any name the script gives.
 - The anchor's motion: head, eyes and lips only, with NO hand movement (the owner's decision, 2026-10-30). Of the six idle
   clips (Kaggle kernel `ain-anchor-idles`), use 1, 2, 3, 4 and 6. Never use clip 5, the hand gesture.

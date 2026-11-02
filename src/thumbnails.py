@@ -866,6 +866,14 @@ def compose_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Path,
                       channel=None, content_type: str = "short") -> Path:
     """Burn the headline + channel badge onto the artwork at 1280x720."""
     if getattr(channel, "news_thumbnail", False):
+        # The owner's newer design first (anchor, picture, three bars), then the
+        # older framed one.
+        try:
+            from .ain_thumbnail import compose_ain_thumbnail
+
+            return compose_ain_thumbnail(lesson, art_path, output_path, channel, content_type)
+        except Exception as exc:
+            print(f"[thumbnail] Ain layout failed, using the framed one: {exc}")
         try:
             from .news_thumbnail import compose_news_thumbnail
 
