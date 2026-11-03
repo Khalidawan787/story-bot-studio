@@ -875,6 +875,15 @@ def _title_layers(lines: list[str], font_size: int, style: dict, font_arg: str,
 def compose_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Path,
                       channel=None, content_type: str = "short") -> Path:
     """Burn the headline + channel badge onto the artwork at 1280x720."""
+    if content_type == "short":
+        # Shorts show an upright card: a 16:9 one lost its sides (short_thumbnail.py).
+        from .short_thumbnail import compose_short_thumbnail, style_of
+
+        if style_of(channel):
+            try:
+                return compose_short_thumbnail(lesson, art_path, output_path, channel)
+            except Exception as exc:
+                print(f"[thumbnail] upright Shorts layout failed, using the wide one: {exc}")
     if getattr(channel, "news_thumbnail", False):
         # The owner's newer design first (anchor, picture, three bars), then the
         # older framed one.

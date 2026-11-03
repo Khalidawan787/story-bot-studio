@@ -31,6 +31,7 @@ This file and `.clinerules/project-rules.md` hold the same text. When you change
 - **Long videos end with a 20-second "WATCH NEXT / SUBSCRIBE" outro** (`video.add_end_screen`), appended after the narration. The owner places YouTube's end-screen elements on it in Studio (the API cannot).
 - **Every description has "WATCH NEXT" links** to the same channel's 3 latest public videos (`seo.watch_next_block`); scheduled or private ones are never linked.
 - **New channels** (`channel_factory`): 2 Shorts a day and a long video on Mon/Wed/Fri.
+- **Shorts get an upright 1080x1920 thumbnail** in the channel's own style (`src/short_thumbnail.py`, the owner's request 2026-11-03): YouTube shows Shorts as tall cards, so a 16:9 thumbnail lost its sides. The badge sits at the top, the picture fills the card, and the headline is smaller and centred, fitted whole at the bottom (SnuggleMoon: at the top). It uses the same words as the wide layout. Long videos keep the 16:9 layouts.
 - **Thumbnails: the same empty space at the top and the bottom** (the owner's rule, 2026-11-02). The top element (logo, badge) starts `thumbnails.SAFE_MARGIN` (36 px) from the top, and the bottom element (headline bar, stripe, last line) ends 36 px from the bottom. Nothing may hug an edge. Every layout uses SAFE_MARGIN.
 
 ## Channel: Ain News Alert (`ain_news_alert`), YouTube "Ain The Explainer"
