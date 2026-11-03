@@ -245,6 +245,15 @@ def build_metadata(lesson: Lesson, channel=None, content_type: str = "short") ->
     from .language import channel_language
 
     metadata["language"] = channel_language(channel) if channel is not None else "en"
+    if channel is not None:
+        # Real YouTube search phrases about the subject (youtube_insights.py),
+        # after the strongest tags so they never push those out.
+        from .youtube_insights import search_tags
+
+        found = search_tags(channel, lesson.title)
+        if found:
+            tags = list(metadata["tags"])
+            metadata["tags"] = _pack_tags(tags[:6] + found + tags[6:])
     block = watch_next_block(channel, lesson)
     if block:
         # Under the first paragraph, where it shows before "...more" is opened.

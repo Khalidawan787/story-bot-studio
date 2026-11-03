@@ -382,11 +382,12 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT
     raw: dict = {}
     clash: str | None = None
     clashes: list[str] = []
+    insights = _insights_note(channel)
     problem: str | None = None
     for _try in range(_FRESH_TRIES + 1):
         note = (f"\nThe previous draft was rejected because it was not whole ({problem}). "
                 f"Write all {scenes} scenes in full.") if problem else ""
-        raw = _script_json(prompt + already_exist_note(clashes) + note)
+        raw = _script_json(prompt + insights + already_exist_note(clashes) + note)
         clash = title_clash(channel, str(raw.get("title") or ""), avoid_titles)
         if clash:
             print(f"[genre_topics] {channel.id}: '{str(raw.get('title'))[:60]}' repeats "
@@ -424,6 +425,22 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT
         "outro": raw.get("outro", ""),
         "scenes": lesson_scenes,
     }
+
+
+def _insights_note(channel: Channel) -> str:
+    """Best-viewed titles and real search phrases (youtube_insights.py) for a story channel.
+
+    Not for news: a news title must say what happened, not what people search.
+    """
+    if str(channel.genre).lower() == "trending":
+        return ""
+    try:
+        from .youtube_insights import prompt_note
+
+        return prompt_note(channel)
+    except Exception as exc:
+        print(f"[insights] skipped ({exc})")
+        return ""
 
 
 def _speech_field(channel: Channel) -> str:
@@ -631,6 +648,7 @@ def _draft_script(channel: Channel, user_prompt: str, scenes: int, long_form: bo
         f"'label' = a 2-4 word on-screen caption. 'image_prompt' = a visual description "
         f"of that scene (scene only, no art-style words)."
         + script_rules(channel)
+        + _insights_note(channel)
         + already_exist_note(avoid)
     )
     if is_urdu(channel):

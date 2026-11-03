@@ -113,6 +113,12 @@ jobs:
           echo "FFMPEG_BIN=$(which ffmpeg)"   >> .env
           echo "FFPROBE_BIN=$(which ffprobe)" >> .env
 
+      # Real view counts, so the next topics follow what was watched most
+      # (youtube_insights.best_titles). Costs about one quota unit per 50 videos.
+      - name: Read view counts from YouTube
+        continue-on-error: true
+        run: python -m src.cli refresh-views
+
       - name: Show what each channel is allowed to upload today
         run: python -m src.cli quota-status
 
