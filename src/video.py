@@ -913,6 +913,95 @@ def add_end_card(video_path: Path, run_dir: Path, content_type: str, seconds: fl
     return video_path
 
 
+END_SCREEN_SECONDS = 20.0
+
+
+def add_end_screen(video_path: Path, run_dir: Path, seconds: float = END_SCREEN_SECONDS) -> Path:
+    """Add a 20-second "WATCH NEXT / SUBSCRIBE" outro after a long video (owner's rule, 2026-11-03).
+
+    The last frame, blurred and darkened, with two empty video frames under
+    "WATCH NEXT" and a round "SUBSCRIBE" spot: where YouTube's end-screen
+    elements (two videos, a subscribe button) go in Studio. It is appended
+    after the narration, so it never covers the story's ending; the music
+    added later runs on under it. Re-encoding only the outro and joining
+    with stream copy keeps a 15-minute video from being encoded twice.
+    """
+    import json
+
+    probe = json.loads(subprocess.run(
+        [settings.ffprobe_bin, "-v", "error", "-show_entries",
+         "stream=codec_type,width,height,r_frame_rate,sample_rate,channels,time_base",
+         "-of", "json", str(video_path)],
+        capture_output=True, text=True, check=True,
+    ).stdout).get("streams") or []
+    video = next((s for s in probe if s.get("codec_type") == "video"), None)
+    audio = next((s for s in probe if s.get("codec_type") == "audio"), None)
+    if not video or not audio:
+        raise RuntimeError("the video has no audio or video stream to match")
+    width, height = int(video["width"]), int(video["height"])
+    fps = video.get("r_frame_rate") or str(settings.video_fps)
+    timescale = str(video.get("time_base", "1/15360")).split("/")[-1]
+    channels = int(audio.get("channels") or 2)
+    rate = str(audio.get("sample_rate") or "48000")
+
+    still = run_dir / "end_screen_still.jpg"
+    subprocess.run([ffmpeg_bin(), "-y", "-v", "error", "-sseof", "-0.2", "-i", str(video_path),
+                    "-frames:v", "1", "-update", "1", "-q:v", "2", str(still)], check=True)
+    font = font_path()
+    font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
+    labels = {"watch": "WATCH NEXT", "sub": "SUBSCRIBE"}
+    files = {}
+    for key, text in labels.items():
+        files[key] = run_dir / f"end_screen_{key}.txt"
+        files[key].write_text(text, encoding="utf-8")
+    # Where YouTube puts end-screen videos and the subscribe button, scaled to
+    # this frame: two 16:9 boxes on the left, a circle on the right.
+    s = width / 1920
+    box_w, box_h = int(560 * s), int(315 * s)
+    box_y = int(400 * s)
+    boxes = [(int(140 * s), box_y), (int(140 * s) + box_w + int(60 * s), box_y)]
+    cx, cy, radius = int(1580 * s), int(box_y + box_h / 2), int(150 * s)
+    parts = [
+        f"scale={width}:{height}:force_original_aspect_ratio=increase,crop={width}:{height},"
+        f"boxblur=30:3,eq=brightness=-0.32:saturation=0.7",
+        f"drawtext=textfile='{escape_filter_path(str(files['watch']))}'{font_arg}:fontsize={int(84 * s)}:"
+        f"fontcolor=white:x={boxes[0][0]}:y={box_y - int(150 * s)}:shadowx=3:shadowy=3:shadowcolor=black@0.7",
+        *(f"drawbox=x={x}:y={y}:w={box_w}:h={box_h}:color=black@0.45:t=fill,"
+          f"drawbox=x={x}:y={y}:w={box_w}:h={box_h}:color=white@0.9:t={max(3, int(5 * s))}"
+          for x, y in boxes),
+        # The subscribe spot: a filled red ring (geq keeps it round).
+        # In RGB, so the ring is drawn at full resolution in every channel.
+        "format=rgb24",
+        *(f"geq=r='if({ring}\\,229\\,r(X\\,Y))':g='if({ring}\\,57\\,g(X\\,Y))':b='if({ring}\\,53\\,b(X\\,Y))'"
+          for ring in [f"lt(hypot(X-{cx}\\,Y-{cy})\\,{radius})*gt(hypot(X-{cx}\\,Y-{cy})\\,{radius - int(10 * s)})"]),
+        f"drawtext=textfile='{escape_filter_path(str(files['sub']))}'{font_arg}:fontsize={int(58 * s)}:"
+        f"fontcolor=white:box=1:boxcolor=0xe53935@0.95:boxborderw={int(18 * s)}:"
+        f"x={cx}-text_w/2:y={cy + radius + int(50 * s)}",
+        "fade=t=in:st=0:d=0.6",
+    ]
+    clip = run_dir / "end_screen.mp4"
+    subprocess.run([
+        ffmpeg_bin(), "-y", "-v", "error", "-loop", "1", "-framerate", fps, "-t", f"{seconds:.3f}",
+        "-i", str(still), "-f", "lavfi", "-t", f"{seconds:.3f}",
+        "-i", f"anullsrc=r={rate}:cl={'mono' if channels == 1 else 'stereo'}",
+        "-vf", ",".join(parts) + ",format=yuv420p", "-r", fps,
+        *_video_encode_args(), "-video_track_timescale", timescale,
+        *_audio_encode_args(), "-ar", rate, "-ac", str(channels), "-shortest", str(clip),
+    ], check=True)
+    joined = run_dir / "with_end_screen.mp4"
+    listing = run_dir / "end_screen_concat.txt"
+    listing.write_text(f"file '{video_path.as_posix()}'\nfile '{clip.as_posix()}'\n", encoding="utf-8")
+    subprocess.run([ffmpeg_bin(), "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", str(listing),
+                    "-c", "copy", "-movflags", "+faststart", str(joined)], check=True)
+    before = _audio_duration(video_path)
+    if abs(_audio_duration(joined) - (before + seconds)) > 1.5:
+        joined.unlink(missing_ok=True)
+        raise RuntimeError("the end screen did not join cleanly")
+    joined.replace(video_path)
+    print(f"[video] end screen: {seconds:.0f}s WATCH NEXT / SUBSCRIBE")
+    return video_path
+
+
 def _render_and_join(lesson: Lesson, audio_path: Path, output_path: Path, run_dir: Path, scene_audio_paths: list[Path] | None = None, channel=None, scene_marks: list | None = None, content_type: str = "short", reuse_from: Path | None = None) -> Path:
     """Render the lesson. With `reuse_from` (an earlier run folder), each scene
     takes that run's picture and stock clip instead of making new ones; used

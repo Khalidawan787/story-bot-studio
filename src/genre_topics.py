@@ -224,6 +224,17 @@ HOOK_RULE = (
 )
 
 
+# The owner's story shape for every channel (2026-11-03): a hook, then the
+# question the video answers, then the full details, then the answer.
+STORY_ARC = (
+    "STORY SHAPE, in this order: (1) HOOK: the first scene, as above. (2) QUESTION: the next "
+    "scene asks the one question this video answers (why, how, what really happened). "
+    "(3) DETAILS: the middle scenes tell the whole story step by step with concrete details, "
+    "nothing skipped. (4) ANSWER: the last scenes answer that question clearly, then close. "
+    "Write the WHOLE script: every scene complete, every sentence finished, never a half script."
+)
+
+
 # A Short runs 60 to 85 seconds: 12 scenes of one 12-20 word sentence each
 # (about 190 words). Facebook takes Reels only up to 90 seconds.
 SHORT_SCENES = 12
@@ -336,7 +347,7 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT
         f"Return ONLY JSON: {{\"title\": str, \"intro\": str, \"outro\": str, "
         f"\"scenes\": [{{\"label\": str, \"line\": str, {_speech_field(channel)}\"image_prompt\": str}}]}}.\n"
         f"Use exactly {scenes} scenes. 'line' = one narrated sentence of {SHORT_LINE_WORDS} words "
-        f"(the Short must run 60 to 85 seconds). {HOOK_RULE} "
+        f"(the Short must run 60 to 85 seconds). {HOOK_RULE} {STORY_ARC} "
         f"'label' = a 2-4 word on-screen caption. 'image_prompt' = a visual "
         f"description of that scene (scene only, no art-style words)."
         + script_rules(channel)
@@ -371,17 +382,26 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT
     raw: dict = {}
     clash: str | None = None
     clashes: list[str] = []
-    for _try in range(_FRESH_TRIES):
-        raw = _script_json(prompt + already_exist_note(clashes))
+    problem: str | None = None
+    for _try in range(_FRESH_TRIES + 1):
+        note = (f"\nThe previous draft was rejected because it was not whole ({problem}). "
+                f"Write all {scenes} scenes in full.") if problem else ""
+        raw = _script_json(prompt + already_exist_note(clashes) + note)
         clash = title_clash(channel, str(raw.get("title") or ""), avoid_titles)
-        if not clash:
+        if clash:
+            print(f"[genre_topics] {channel.id}: '{str(raw.get('title'))[:60]}' repeats "
+                  f"'{str(clash)[:60]}'; writing it again")
+            clashes.append(clash)
+            problem = None
+            continue
+        problem = script_problem(raw, scenes, long_form=False)
+        if not problem:
             break
-        print(f"[genre_topics] {channel.id}: '{str(raw.get('title'))[:60]}' repeats "
-              f"'{str(clash)[:60]}'; writing it again")
-        clashes.append(clash)
+        print(f"[genre_topics] {channel.id}: draft not whole ({problem}); writing it again")
     else:
         raise RuntimeError(
-            f"Every draft repeated an existing story (last: '{str(clash)[:60]}'); no script saved"
+            f"No whole, fresh script came back (last: {problem or 'a repeat of ' + str(clash)[:60]}); "
+            "no half video is made"
         )
 
     title = raw.get("title", "Untitled").strip()
@@ -462,156 +482,31 @@ def _looks_like_instruction_title(title: str) -> bool:
     ))
 
 
-def _crime_long_fallback_rows(subject: str) -> list[dict]:
-    """Coherent, visually concrete fallback when every script API is unavailable."""
-    stages = [
-        ("Manor at Dusk", "the isolated Victorian manor at dusk behind iron gates and misty trees"),
-        ("Detective Arrives", "a professional detective arriving at the manor with a case folder under moody evening light"),
-        ("Sealed Study", "a locked antique study with a heavy wooden door, brass keyhole, and police evidence marker"),
-        ("Silent Clock", "an old grandfather clock stopped at a precise time inside a shadowy manor hallway"),
-        ("Dusty Footprints", "fresh shoeprints crossing a dusty wooden floor toward the locked study"),
-        ("Broken Latch", "close view of a damaged window latch examined with gloved hands and a flashlight"),
-        ("Hidden Letter", "an aged handwritten letter discovered inside a secret drawer beside sealed evidence bags"),
-        ("Witness Interview", "a detective calmly interviewing a worried manor employee in a dim sitting room"),
-        ("Timeline Board", "an investigation board with photographs, clock times, thread, and handwritten evidence notes"),
-        ("Missing Key", "an empty velvet key hook inside the manor office photographed as crime evidence"),
-        ("Garden Path", "a narrow moonlit garden path with one set of footprints leading toward a stone greenhouse"),
-        ("Glasshouse Clue", "a detective finding a dropped silver cufflink on the greenhouse floor under a flashlight"),
-        ("Archive Records", "old property records and floor plans spread across a desk under a focused reading lamp"),
-        ("Secret Passage", "a concealed passage behind a manor bookshelf revealed by the original architectural plan"),
-        ("Second Entrance", "a narrow hidden doorway connecting the passage to the supposedly locked study"),
-        ("Evidence Matches", "gloved investigators comparing the cufflink, key, letter, and footprint photographs"),
-        ("Final Interview", "the detective presenting verified evidence to a tense suspect across an interrogation table"),
-        ("Motive Revealed", "the hidden inheritance letter beside a family photograph and official estate documents"),
-        ("Case Reconstructed", "a clear visual reconstruction of the manor route marked on an architectural floor plan"),
-        ("Mystery Resolved", "the detective leaving the quiet manor at sunrise as police secure the final evidence"),
-    ]
-    rows = []
-    for index, (label, visual) in enumerate(stages, start=1):
-        rows.append({
-            "label": label,
-            "line": (
-                f"In {subject}, part {index} follows the investigation through {label.lower()}, "
-                "where a verified detail reshapes the timeline and helps separate physical evidence from rumor."
-            ),
-            "image_prompt": f"True-crime documentary scene showing {visual}, no text, no poster, no politics, no gore",
-        })
-    return rows
+def script_problem(raw: dict, scenes: int, long_form: bool) -> str | None:
+    """Why a draft is not a whole script, or None when it is.
 
-# Room above the per-scene word target for one whole filler sentence (the longest
-# is about 28 words), so a short line can finish its filler instead of losing it.
-_FILLER_SLACK_WORDS = 30
-
-
-def _whole_sentences(text: str, max_words: int) -> str:
-    """Trim `text` to at most `max_words` words, cutting only at a sentence end.
-
-    The first sentence is always kept whole, even when it alone is longer than
-    `max_words`: a long finished sentence sounds fine, a half sentence does not.
-    The result always ends with ., ! or ?.
+    The owner's rule (2026-11-03): an AI script is never half. A draft with
+    missing scenes, a sentence cut off, thin lines or no ending is written again,
+    and if it never comes back whole no video is made. Short drafts used to be
+    padded with stock sentences ("This scene also reinforces the central idea
+    of ...") and the narrator read those out.
     """
-    text = " ".join(str(text or "").split())
-    sentences = re.split(r"(?<=[.!?])\s+", text)
-    kept: list[str] = []
-    used = 0
-    for sentence in sentences:
-        count = len(sentence.split())
-        if kept and used + count > max_words:
-            break
-        kept.append(sentence)
-        used += count
-    result = " ".join(kept).strip()
-    if result and result[-1] not in ".!?":
-        result = result.rstrip(",;:—-") + "."
-    return result
-
-
-def _complete_long_script(raw: dict, channel: Channel, user_prompt: str, scenes: int) -> dict:
-    """Complete short free-provider drafts locally instead of failing a video."""
-    raw = dict(raw or {})
-    rows = [dict(row) for row in raw.get("scenes", []) if str(row.get("line", "")).strip()]
-    if is_urdu(channel) and rows:
-        target = max(16, min(24, int(scenes or 20)))
-        generated_title = str(raw.get("title") or "").strip()
-        title = (_story_subject(user_prompt, channel.genre)
-                 if not generated_title or _looks_like_instruction_title(generated_title) else generated_title)
-        raw["title"] = title
-        raw["scenes"] = rows[:target]
-        return raw
-    target = max(16, min(24, int(scenes or 20)))
-    words_per_scene = (800 + target - 1) // target
-    generated_title = str(raw.get("title") or "").strip()
-    title = _story_subject(user_prompt, channel.genre) if not generated_title or _looks_like_instruction_title(generated_title) else generated_title
-    topic = title
-    crime_fallback = _crime_long_fallback_rows(title) if channel.genre == "crime" else []
-    if not rows and crime_fallback:
-        rows = [dict(row) for row in crime_fallback[:target]]
-    elif not rows:
-        rows = [{
-            "label": "The Beginning",
-            "line": f"Today we explore {topic}, beginning with the most important idea and the setting around it.",
-            "image_prompt": f"A clear visual scene about {topic}",
-        }]
-
-    source = [dict(row) for row in rows]
-    while len(rows) < target:
-        if crime_fallback and len(rows) < len(crime_fallback):
-            rows.append(dict(crime_fallback[len(rows)]))
-            continue
-        base = source[len(rows) % len(source)]
-        number = len(rows) + 1
-        rows.append({
-            "label": f"Part {number}",
-            "line": (
-                f"As {topic} continues, this next moment builds on {base.get('line', '')} "
-                "We look at what changes, why it matters, and how it connects with the main idea before moving forward."
-            ),
-            "image_prompt": base.get("image_prompt") or f"A distinct scene illustrating {topic}, part {number}",
-        })
-    rows = rows[:target]
-    if is_urdu(channel):
-        # The filler below is English; an Urdu video keeps the AI's own lines,
-        # even if that makes it a little shorter.
-        raw["title"] = title
-        raw["scenes"] = rows
-        return raw
-
-    genre_tail = {
-        "kids": "Look closely at the details, think about what they teach us, and notice how this example connects to something we may see in everyday life.",
-        "crime": "This detail matters because it changes how the evidence, timeline, and witness accounts fit together, while reminding us to separate verified facts from assumptions.",
-        "horror": "The atmosphere grows more unsettling as small details gain meaning, adding tension without revealing everything too soon and guiding us toward the next discovery.",
-        "love": "This moment reveals more about the characters, their feelings, and the choices shaping their relationship, giving the story warmth and a natural emotional progression.",
-        "motivation": "The lesson becomes practical when we connect it to one clear action, a realistic challenge, and a small step that can be repeated consistently over time.",
-        "trending": "This part matters because it shows how the situation developed, who it affects, and what still remains unconfirmed, so viewers can follow the story without guesswork.",
-    }.get(channel.genre, "This moment adds useful context, explains why the detail matters, and connects it clearly to the next part of the story.")
-
-    for index, row in enumerate(rows, start=1):
-        line = " ".join(str(row.get("line", "")).split())
-        if len(line.split()) < words_per_scene:
-            line = f"{line} {genre_tail}"
-        if len(line.split()) < words_per_scene:
-            line += f" In part {index}, keep the central subject, {topic}, in mind as the explanation continues step by step."
-        # Cut only between sentences. Cutting at an exact word count used to leave
-        # lines such as "This detail matters because it changes how the." that the
-        # narrator then read out half-finished. The slack leaves room for one whole
-        # filler sentence on a short line.
-        row["line"] = _whole_sentences(line, words_per_scene + _FILLER_SLACK_WORDS)
-        row["label"] = str(row.get("label") or f"Part {index}")
-        row["image_prompt"] = str(row.get("image_prompt") or f"A distinct visual scene about {topic}, part {index}")
-
-    total = sum(len(str(row["line"]).split()) for row in rows)
-    index = 0
-    while total < 720:
-        addition = f" This scene also reinforces the central idea of {topic} with a fresh, easy-to-follow detail for the viewer."
-        rows[index % len(rows)]["line"] += addition
-        total += len(addition.split())
-        index += 1
-
-    raw["title"] = title
-    raw["intro"] = raw.get("intro") or f"Let us begin our complete look at {topic}."
-    raw["outro"] = raw.get("outro") or f"That completes our journey through {topic}."
-    raw["scenes"] = rows
-    return raw
+    rows = [row for row in (raw or {}).get("scenes") or [] if str(row.get("line") or "").strip()]
+    low = scenes - (2 if long_form else 1)
+    if len(rows) < low:
+        return f"only {len(rows)} of {scenes} scenes"
+    min_words = 22 if long_form else 6
+    for number, row in enumerate(rows, start=1):
+        line = " ".join(str(row.get("line")).split())
+        if not re.search(r"[.!?۔][\"'”’)]*$", line):
+            return f"scene {number} stops mid-sentence"
+        if len(line.split()) < min_words:
+            return f"scene {number} has only {len(line.split())} words"
+    if long_form:
+        words = sum(len(str(row.get("line")).split()) for row in rows)
+        if words < int(scenes * 38 * 0.85):
+            return f"{words} words, far short of about {scenes * 38}"
+    return None
 
 
 # A free model asked for 55 scenes in one answer wrote 24 (a 6-minute "15-minute"
@@ -646,14 +541,25 @@ def _long_script_in_parts(prompt: str, scenes: int) -> dict:
                 + ("This is the LAST part: end with the conclusion and the takeaway; 'outro' closes the whole video."
                    if index == parts else "Do not conclude yet.")
             )
-        try:
-            answer = _script_json(part_prompt)
-        except Exception as exc:
-            print(f"[script] part {index}/{parts} failed: {exc}")
-            break
-        rows = [row for row in answer.get("scenes") or [] if str(row.get("line") or "").strip()]
+        rows: list = []
+        answer: dict = {}
+        for attempt in range(3):
+            try:
+                answer = _script_json(part_prompt)
+            except Exception as exc:
+                print(f"[script] part {index}/{parts} try {attempt + 1} failed: {exc}")
+                continue
+            problem = script_problem(answer, size, long_form=True)
+            rows = [row for row in answer.get("scenes") or [] if str(row.get("line") or "").strip()]
+            if not problem:
+                break
+            print(f"[script] part {index}/{parts} try {attempt + 1} not whole ({problem})")
+            part_prompt += f"\nThe previous answer was not whole ({problem}): write all {size} scenes in full."
+            rows = []
         if not rows:
-            break
+            # A story without its middle or its ending is never published.
+            raise RuntimeError(f"Part {index} of {parts} of the script never came back whole; "
+                               "no half video is made")
         if index == 1:
             merged.update({k: answer.get(k) for k in ("title", "intro") if answer.get(k)})
         merged["outro"] = answer.get("outro") or merged.get("outro")
@@ -709,12 +615,12 @@ def _draft_script(channel: Channel, user_prompt: str, scenes: int, long_form: bo
             f"Write a YouTube long-form script targeting about {max(1, round(scenes * 40 / 160))} minutes of narration. "
             f"Use exactly {scenes} scenes. Each scene line must contain 38-43 words "
             f"(about {scenes * 38}-{scenes * 43} narrated words total). Open with a hook: the first sentence is the most gripping moment or question of the story, no scene-setting, "
-            f"keep a clear story or teaching arc, and end with a satisfying takeaway."
+            f"keep a clear story or teaching arc, and end with a satisfying takeaway. {STORY_ARC}"
         )
     else:
         format_instructions = (
             f"Write a short video script. Use exactly {scenes} scenes. "
-            "Each scene line must be one narrated sentence. " + HOOK_RULE
+            "Each scene line must be one narrated sentence. " + HOOK_RULE + " " + STORY_ARC
         )
     prompt = (
         f"You are a scriptwriter for a {channel.genre} YouTube channel. Tone: {tone}.\n"
@@ -732,56 +638,37 @@ def _draft_script(channel: Channel, user_prompt: str, scenes: int, long_form: bo
             '\"line\": str, \"image_prompt\"', '\"line\": str, \"speech\": str, \"image_prompt\"',
         )
     if long_form and scenes > _PART_SCENES:
+        # Raises when a part never comes back whole: no half video.
         raw = _long_script_in_parts(prompt, scenes)
-        # At least two parts' worth, or the single-answer path below tries.
-        # _complete_long_script is skipped: it trims every script to 24 scenes.
-        if len(raw.get("scenes") or []) > _PART_SCENES:
-            if _looks_like_instruction_title(str(raw.get("title") or "")):
-                raw["title"] = _story_subject(user_prompt, channel.genre)
-            return raw
-    raw = None
-    best_candidate = None
-    # Urdu drafts get a second try: the English filler that tops up short
-    # English drafts cannot be used in an Urdu video.
-    for attempt in range(2 if is_urdu(channel) else 1):
-        attempt_prompt = prompt
-        if attempt:
-            attempt_prompt += (
-                "\nIMPORTANT: The previous draft was too short or had the wrong scene count. "
-                f"Return exactly {scenes} scenes and at least 720 narrated words across scene lines."
-            )
-        try:
-            candidate = _script_json(attempt_prompt)
-        except Exception:
-            continue
-        if best_candidate is None or len(candidate.get("scenes", [])) > len(best_candidate.get("scenes", [])):
-            best_candidate = candidate
-        if not long_form:
-            raw = candidate
-            break
-        scene_rows = candidate.get("scenes", [])
-        word_count = sum(len(str(scene.get("line", "")).split()) for scene in scene_rows)
-        # Accept a scene-count range instead of an exact match: the 5-minute
-        # target is really about narrated word count, and Gemini rarely lands
-        # on the exact number. A script with 16-24 solid scenes is fine.
-        scene_min = max(4, scenes - 4)
-        scene_max = scenes + 4
-        if scene_min <= len(scene_rows) <= scene_max and word_count >= 720:
-            raw = candidate
-            break
-    if long_form:
-        draft = raw or best_candidate or {}
-        if not any(str(row.get("line") or "").strip() for row in draft.get("scenes") or []):
-            # No script at all came back. Completing "nothing" used to build a
-            # five-minute video out of one filler sentence repeated twenty
-            # times, titled with the writing instruction itself, and upload it.
-            raise RuntimeError("No script could be written (every script provider failed); no video made.")
-        # Free providers often stop early. Complete the best draft locally so a
-        # valid five-minute job is not discarded only because of word count.
-        raw = _complete_long_script(raw or best_candidate or {}, channel, user_prompt, scenes)
-    if raw is None:
-        # Every provider failed. This used to fail later with "NoneType has no 'get'".
-        raise RuntimeError("No script could be written (every script provider failed); no video made.")
+    else:
+        raw = None
+        problem = "no answer"
+        # Three tries for a whole draft. Short drafts are no longer padded with
+        # stock sentences (the owner's rule): a draft is whole, or no video is made.
+        for attempt in range(3):
+            attempt_prompt = prompt
+            if attempt:
+                attempt_prompt += (
+                    f"\nIMPORTANT: the previous draft was not whole ({problem}). Return exactly "
+                    f"{scenes} scenes, every line complete"
+                    + (f", about {scenes * 40} narrated words in all." if long_form else ".")
+                )
+            try:
+                candidate = _script_json(attempt_prompt)
+            except Exception as exc:
+                problem = f"provider error: {exc}"
+                continue
+            problem = script_problem(candidate, scenes, long_form)
+            if not problem:
+                raw = candidate
+                break
+            print(f"[script] draft {attempt + 1} not whole ({problem}); writing it again")
+        if raw is None:
+            raise RuntimeError(f"The script never came back whole ({problem}); no half video is made.")
+    if long_form and len(raw.get("scenes") or []) > scenes + 4:
+        raw["scenes"] = raw["scenes"][:scenes + 4]
+    if _looks_like_instruction_title(str(raw.get("title") or "")) or not str(raw.get("title") or "").strip():
+        raw["title"] = _story_subject(user_prompt, channel.genre)
     return raw
 
 

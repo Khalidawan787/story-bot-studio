@@ -245,7 +245,60 @@ def build_metadata(lesson: Lesson, channel=None, content_type: str = "short") ->
     from .language import channel_language
 
     metadata["language"] = channel_language(channel) if channel is not None else "en"
+    block = watch_next_block(channel, lesson)
+    if block:
+        # Under the first paragraph, where it shows before "...more" is opened.
+        first, _, rest = str(metadata["description"]).partition("\n\n")
+        metadata["description"] = "\n\n".join(part for part in (first, block, rest) if part)
     return metadata
+
+
+def watch_next_block(channel, lesson: Lesson, count: int = 3) -> str:
+    """'WATCH NEXT' links to this channel's latest public videos (owner's rule, 2026-11-03).
+
+    Only videos already public (published, or past their publishAt) and never
+    this video's own topic, so no link opens a private or scheduled video.
+    Empty when the channel has none yet or the database is not there.
+    """
+    if channel is None:
+        return ""
+    import sqlite3
+    from datetime import datetime, timezone
+
+    from .config import settings
+
+    if not settings.db_path.exists():
+        return ""
+    now = datetime.now(timezone.utc)
+    conn = sqlite3.connect(settings.db_path)
+    try:
+        rows = conn.execute(
+            """SELECT title, video_url, COALESCE(publish_at, upload_date) FROM videos
+               WHERE channel = ? AND COALESCE(account, 'main') = ? AND video_url IS NOT NULL
+                 AND status IN ('uploaded', 'scheduled') AND hidden_at IS NULL AND topic != ?
+               ORDER BY COALESCE(publish_at, upload_date) DESC LIMIT 30""",
+            (channel.id, str(getattr(channel, "account", "main") or "main"), lesson.topic_key),
+        ).fetchall()
+    except sqlite3.Error:
+        return ""
+    finally:
+        conn.close()
+    lines: list[str] = []
+    seen: set[str] = set()
+    for title, url, when in rows:
+        try:
+            moment = datetime.fromisoformat(str(when))
+            moment = moment if moment.tzinfo else moment.replace(tzinfo=timezone.utc)
+        except ValueError:
+            continue
+        name = re.split(r"\s*\|\s*", str(title or ""))[0].strip()
+        if moment > now or not name or name.lower() in seen:
+            continue
+        seen.add(name.lower())
+        lines.append(f"▶ {name}\n{url}")
+        if len(lines) == count:
+            break
+    return "WATCH NEXT\n" + "\n".join(lines) if lines else ""
 
 
 def _build_metadata(lesson: Lesson, channel=None, content_type: str = "short") -> dict[str, object]:

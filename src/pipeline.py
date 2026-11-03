@@ -294,6 +294,14 @@ def run_pipeline(
             video_path = add_presenter(video_path, run_dir, channel, content_type)
         except Exception as exc:
             print(f"[presenter] left out of this video: {exc}")
+    if content_type == "long":
+        # 20 s "WATCH NEXT / SUBSCRIBE" outro after every long video (owner's rule).
+        from .video import add_end_screen
+
+        try:
+            video_path = add_end_screen(video_path, run_dir)
+        except Exception as exc:
+            print(f"[video] end screen left out: {exc}")
     video_path = add_background_music(
         video_path, run_dir, seed_text=lesson.topic_key, channel=channel, lesson=lesson,
     )

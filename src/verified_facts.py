@@ -378,6 +378,11 @@ def _prompt(channel: Channel, article: Article, scenes: int, long_form: bool, fe
     return (
         f"You write true stories for the video channel '{channel.name}'. Tone: {tone}.\n"
         f"{shape}\n"
+        # The owner's story shape (genre_topics.STORY_ARC), with facts only.
+        "STORY SHAPE: the hook first; then one scene asks the question this story answers "
+        "(how did it happen, why does it matter); then the facts in order, nothing skipped; "
+        "the last scenes answer that question with what the SOURCE says. Every scene complete, "
+        "every sentence finished.\n"
         "THE ONE RULE: use ONLY facts written in the SOURCE below. Do not add any name, date, "
         "number, place, event, quote, thought, feeling or outcome that the SOURCE does not state. "
         "Do not invent scenes or dialogue. If the SOURCE does not say it, leave it out.\n"
