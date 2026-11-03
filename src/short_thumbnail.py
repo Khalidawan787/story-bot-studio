@@ -20,7 +20,10 @@ from .models import Lesson
 from .presenter import _escape, _text_width
 
 WIDTH, HEIGHT = 1080, 1920
-MARGIN = 96          # SAFE_MARGIN for the tall card: top badge and last line
+# The channel's Shorts tab shows the card cropped to 2:3: 150 px off the top
+# and the bottom of the 1920. On 3 Nov the CRIME FILES badge and the yellow
+# name were cut there, so everything sits inside that band, 80 px in.
+MARGIN = 150 + 80    # top badge and last line
 TEXT_LIMIT = 900     # widest line, leaving room on both sides
 FONTS = settings.root / "fonts"
 SERIF = FONTS / "DMSerifDisplay-Regular.ttf"
