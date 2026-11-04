@@ -14,8 +14,13 @@
       "image_style": "cute colorful cartoon for kids, bright, friendly",
       "client_secret": "client_secret_kids.json",
       "token": "token.json",
-      "topics_per_day": 2,
-      "slot": 1
+      "topics_per_day": 3,
+      "slot": 1,
+      "long_days": [
+        "Tue",
+        "Thu",
+        "Sat"
+      ]
     },
     {
       "id": "crime",
@@ -31,11 +36,16 @@
       "image_style": "dark cinematic true-crime illustration, moody dramatic lighting, noir, no gore",
       "client_secret": "client_secret_crime.json",
       "token": "token_crime.json",
-      "topics_per_day": 2,
+      "topics_per_day": 3,
       "slot": 4,
       "verified_facts": true,
       "tone": "calm, factual documentary narrator; suspenseful but respectful",
-      "crime_thumbnail": true
+      "crime_thumbnail": true,
+      "long_days": [
+        "Mon",
+        "Wed",
+        "Fri"
+      ]
     },
     {
       "id": "love",
@@ -121,7 +131,7 @@
       "image_style": "Clean, brightly lit, top-down shots of ingredients and finished dishes, with occasional close-ups of techniques.",
       "client_secret": "client_secret.json",
       "token": "token_kitchen_novice.json",
-      "topics_per_day": 1,
+      "topics_per_day": 2,
       "tone": "Friendly and encouraging, breaking down complex cooking steps into simple, actionable advice for absolute beginners.",
       "keywords": [
         "easy recipes for beginners",
@@ -162,7 +172,7 @@
       "image_style": "cinematic, epic, historically accurate, vibrant colors, dramatic lighting, 4K",
       "client_secret": "client_secret_world_valor_chronicles.json",
       "token": "token_world_valor_chronicles.json",
-      "topics_per_day": 1,
+      "topics_per_day": 2,
       "slot": 3,
       "language": "en",
       "tone": "Inspiring and authoritative: the true life stories of heroes, sports legends, cricketers, scientists, great leaders and film and music stars, told with wonder and respect.",
@@ -207,7 +217,7 @@
       "image_style": "Whimsical, soft focus, pastel colors, dreamlike, storybook illustration, digital painting",
       "client_secret": "client_secret_snugglemoon_stories.json",
       "token": "token_snugglemoon_stories.json",
-      "topics_per_day": 1,
+      "topics_per_day": 2,
       "slot": 6,
       "language": "en",
       "tone": "Each script should create a calming, imaginative, and comforting atmosphere, perfect for winding down and drifting off to sleep.",

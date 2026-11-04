@@ -21,10 +21,10 @@ from .db import release_publish_slot, reserve_publish_slot
 RELEASE_TZ = ZoneInfo("America/New_York")
 RELEASE_TIMES = {
     #                  Shorts              long
-    "kids":            (("08:00", "16:00"), ("12:00",)),
+    "kids":            (("08:00", "16:00", "19:30"), ("12:00",)),
     # Two long times: the long videos ran a week behind (the 7 stuck ones of
     # 23-29 Oct took the later days), so two a day until the line catches up.
-    "crime":           (("13:00", "21:00"), ("19:00", "22:30")),
+    "crime":           (("13:00", "17:00", "21:00"), ("19:00", "22:30")),
     "trending":        (("07:00", "17:00"), ("12:00",)),
     "heroic history":  (("11:00", "18:00"), ("14:00",)),
     "bedtime stories": (("18:30", "20:30"), ("19:00",)),

@@ -16,8 +16,8 @@ on:
   workflow_dispatch:
     inputs:
       shorts_per_channel:
-        description: "Shorts per channel (0 = skip shorts)"
-        default: "2"
+        description: "Shorts per channel (blank = each channel's own number, 0 = skip shorts)"
+        default: ""
       long_videos:
         description: "Also make one ~5-minute video per channel"
         type: boolean
@@ -45,7 +45,8 @@ env:
   # comparing null with '0' in an `if:` turned into 0 != 0 and silently
   # skipped the Shorts on every scheduled run. Resolve the defaults once here
   # and compare strings.
-  SHORTS_PER_CHANNEL: ${{ github.event.inputs.shorts_per_channel || '2' }}
+  # Blank: each channel's own topics_per_day (crime and kids make 3).
+  SHORTS_PER_CHANNEL: ${{ github.event.inputs.shorts_per_channel || '' }}
   LONG_VIDEOS: ${{ github.event.inputs.long_videos || 'true' }}
   UPLOAD: ${{ github.event.inputs.upload || 'true' }}
   SLOT: ${{ github.event.inputs.slot || 'auto' }}
