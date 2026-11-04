@@ -383,6 +383,7 @@ def run_pipeline(
                 from .pending_uploads import (
                     _UPLOAD_GATE, daily_upload_cap_reached, upload_limit_for_channel, find_uploaded_duplicate,
                     disable_thumbnail_upload, thumbnail_permission_denied, thumbnail_upload_allowed,
+                    thumbnail_wait_reason,
                 )
 
                 with _UPLOAD_GATE:
@@ -395,6 +396,11 @@ def run_pipeline(
                             f"Duplicate upload blocked ({duplicate[2]}); "
                             f"existing video #{duplicate[0]}: {duplicate[1]}"
                         )
+                    elif thumbnail_wait_reason(channel_id):
+                        # Uploaded later, when a thumbnail can be set with it.
+                        status = "daily_upload_pending"
+                        error = ("Waiting so the video never goes public without its thumbnail: "
+                                 + thumbnail_wait_reason(channel_id))
                     elif daily_upload_cap_reached(channel_id, account_id):
                         # This channel already used its own daily budget. The
                         # video waits as pending and the worker uploads it as

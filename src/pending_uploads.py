@@ -117,6 +117,36 @@ def _thumbnail_rate_limited_today(row: sqlite3.Row) -> bool:
         return False
 
 
+def thumbnail_wait_reason(channel_id: str) -> str:
+    """Why a new video of this channel must not be uploaded yet, or "".
+
+    The owner's rule (2026-11-04): no video goes public without its thumbnail.
+    A thumbnail fails after the upload has already happened, so the safe moment
+    to wait is before it: while YouTube's thumbnail limit is hit (a 429 in the
+    last 24 hours) or the channel may not set thumbnails, its new videos wait
+    as pending and go up once a thumbnail can be set. Works with every login.
+    """
+    if not thumbnail_upload_allowed(channel_id):
+        return "custom thumbnails are not allowed on this channel yet (youtube.com/verify)"
+    if not settings.db_path.exists():
+        return ""
+    since = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    conn = sqlite3.connect(settings.db_path)
+    try:
+        row = conn.execute(
+            """SELECT 1 FROM videos WHERE channel = ? AND COALESCE(upload_date, '') >= ?
+                 AND (lower(COALESCE(error, '')) LIKE '%too many thumbnails%'
+                      OR lower(COALESCE(error, '')) LIKE '%uploadratelimitexceeded%')
+                 AND status = 'thumbnail_pending' LIMIT 1""",
+            (channel_id, since),
+        ).fetchone()
+    except sqlite3.Error:
+        row = None
+    finally:
+        conn.close()
+    return "YouTube's thumbnail limit was hit in the last 24 hours" if row else ""
+
+
 def _quota_day_start() -> datetime:
     """Start of the current YouTube quota day (midnight Pacific)."""
     return youtube_quota_day_start()
@@ -566,6 +596,9 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
         # is spent, so it never exhausts YouTube's daily quota. The video stays
         # pending and uploads automatically after the quota resets.
         with _UPLOAD_GATE:
+            waiting = thumbnail_wait_reason(channel.id)
+            if waiting:
+                return f"{video_id}: waits so it never goes public without a thumbnail: {waiting}"
             if not bypass_safety_cap and daily_upload_cap_reached(channel.id, channel.account):
                 return (f"{video_id}: {channel.name} app upload cap reached "
                         f"({upload_limit_for_channel(channel.id, channel.account)}/day "
