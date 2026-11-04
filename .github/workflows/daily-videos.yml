@@ -148,6 +148,13 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: python -m src.cli retry-uploads --limit 20
 
+      # A few older videos a day get the current thumbnail style, only after
+      # today's own thumbnails are set (src/thumbnail_backfill.py).
+      - name: New thumbnails on older videos
+        if: always()
+        continue-on-error: true
+        run: python -m src.cli thumbnail-backfill
+
       - name: Report
         if: always()
         run: python -m src.cli quota-status

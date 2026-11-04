@@ -75,6 +75,7 @@ def main() -> None:
     acc.add_argument("--client-secret", default="",
                      help="Own client_secret file for a separate upload quota (optional)")
 
+    sub.add_parser("thumbnail-backfill", help="Put the current thumbnail style on a few older videos a day.")
     retry = sub.add_parser("retry-uploads", help="Upload rendered/failed videos when internet is back.")
     retry.add_argument("--limit", default="20", help="Maximum pending videos to retry.")
 
@@ -347,6 +348,10 @@ def main() -> None:
         for message in retry_pending_uploads(limit=max(1, int(args.limit))):
             print(message)
         return
+    elif args.command == "thumbnail-backfill":
+        from .thumbnail_backfill import run as backfill_thumbnails
+        for message in backfill_thumbnails():
+            print(message)
     elif args.command == "refresh-views":
         from .view_stats import refresh_views, top_videos
         for message in refresh_views(args.channel):
