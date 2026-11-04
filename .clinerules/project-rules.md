@@ -55,6 +55,8 @@ This file and `.clinerules/project-rules.md` hold the same text. When you change
 - Facebook posting runs from GitHub only (the `facebook-video-post` and `facebook-picture-post` workflows).
 
 ## Channel: Crime Files (`crime`), YouTube "Crime Chronicles"
+- **What works** (real views up to 2026-11-04): Shorts about famous American outlaws and gangsters with a known face do best (Butch Cassidy 648, Belle Starr 622, Frank Lucas 452, Billy the Kid 269). Heists do about 80 and frauds 20-50. So the subject list and `verified_facts._SUGGEST_BRIEF` favour Wild West outlaws, Prohibition gangsters, bank robbers, con men and drug kingpins. Titles put the name first with a short epithet ("Belle Starr, Outlaw Queen"). Long videos average about 1 view.
+- Long videos had two release times (19:00 and 22:30 ET) so the week-long backlog from the 23-29 Oct stuck videos could catch up.
 - Thumbnail (`src/crime_thumbnail.py`, `"crime_thumbnail": true`): the case's own free Wikipedia photo on the left, fading into a dark red backdrop; a "CRIME CHRONICLES" mark in red corner brackets top left; a slanted red "CRIME FILES" badge top right; the headline in white Anton capitals with the person's name (or the last words) in black on a tilted yellow stripe (the owner's design, 2026-11-02). Never a stranger's photo, and never the old layout (the owner's decision): without the subject's own photo or art, one of the no-people crime backdrops in `data/thumbnail_backdrops/crime/` is used.
 
 ## Channel: Daily Motivation (`motivation`), YouTube "Risevion"

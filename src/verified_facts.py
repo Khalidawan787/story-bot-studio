@@ -230,9 +230,13 @@ def _listed_subjects(channel: Channel | None = None) -> list[str]:
 # each must still be a Wikipedia article, and the script comes from that article.
 _SUGGEST_BRIEF = {
     "crime": (
-        "Name 15 real, famous, well-documented criminal cases or criminals from history whose "
-        "story fits a true-crime video channel: heists, robberies, frauds and swindles, outlaws, "
-        "prison escapes, notable investigations. Only subjects with their own English Wikipedia "
+        # Crime Chronicles' views, 4 Nov 2026: famous American outlaws and
+        # gangsters with a known face (Butch Cassidy 648, Belle Starr 622, Frank
+        # Lucas 452, Billy the Kid 269) beat heists (about 80) and frauds (20-50).
+        "Name 15 real, famous, well-documented criminals from history whose story fits a "
+        "true-crime video channel, MOST of them famous American outlaws of the Wild West, "
+        "Prohibition-era gangsters, bank robbers, con men and drug kingpins that people know by "
+        "name and face; a few famous heists or escapes. Only subjects with their own English Wikipedia "
         "article, settled long ago (before 2015). No cases whose victims were children, no "
         "serial or mass killings, nobody who was never charged, no living politicians."
     ),
@@ -389,7 +393,11 @@ def _prompt(channel: Channel, article: Article, scenes: int, long_form: bool, fe
         "- Write every number as digits exactly as in the SOURCE (1957, 20,000).\n"
         "- Say the subject's full name (the person, or the case) in the first or second scene.\n"
         "- 'title' must contain that name and no claim that is not in the SOURCE.\n"
-        "- No graphic violence or gore; describe crimes plainly, as a documentary would.\n"
+        + ("- 'title' style for this channel: the name first, then a short epithet the SOURCE "
+           "supports, at most 6 words, e.g. 'Belle Starr, Outlaw Queen', 'Butch Cassidy: The Wild "
+           "West Icon'. No 'The Life and Death of', no 'The True Story of'.\n"
+           if str(channel.genre).lower() == "crime" else "")
+        + "- No graphic violence or gore; describe crimes plainly, as a documentary would.\n"
         "- 'label' = a 2-4 word caption without numbers.\n"
         "- 'image_prompt' = a plain real-world scene that fits the line (a place, an object, people "
         "at work). Never the person's face, never text. No art-style words.\n"
