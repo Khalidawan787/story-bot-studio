@@ -20,6 +20,12 @@ SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/youtube.readonly",  # read the connected channel's name to verify it
 ]
+# Asked for at a NEW login only: changing a video's status (holding it private
+# until its thumbnail is set, set_release) needs the full YouTube scope. An
+# existing login keeps the scopes it was granted, so nothing breaks; a channel
+# gets the new right when it is reconnected on the dashboard.
+MANAGE_SCOPE = "https://www.googleapis.com/auth/youtube"
+LOGIN_SCOPES = [*SCOPES, MANAGE_SCOPE]
 
 
 # YouTube refuses a description over 5000 bytes or with < or > in it
@@ -42,6 +48,10 @@ def youtube_description(text: str) -> str:
     return trimmed.encode("utf-8")[:_DESCRIPTION_BYTES].decode("utf-8", "ignore")
 
 
+class HoldNotAllowed(RuntimeError):
+    """The login cannot change a video's status (no full YouTube scope)."""
+
+
 class ThumbnailUploadError(RuntimeError):
     def __init__(self, video_url: str, message: str) -> None:
         super().__init__(message)
@@ -53,7 +63,9 @@ def _credentials(client_secret_file: Path | None = None, token_file: Path | None
     token_file = token_file or settings.youtube_token_file
     creds = None
     if token_file.exists():
-        creds = Credentials.from_authorized_user_file(str(token_file), SCOPES)
+        # The scopes the login was granted (from the token file), so a token
+        # made before LOGIN_SCOPES grew still refreshes.
+        creds = Credentials.from_authorized_user_file(str(token_file))
     if creds and creds.expired and creds.refresh_token:
         creds.refresh(Request())
     if not creds or not creds.valid:
@@ -68,7 +80,7 @@ def _credentials(client_secret_file: Path | None = None, token_file: Path | None
                 "cannot open a browser. Connect the channel on your PC first, "
                 "then re-run scripts/setup_github_actions.py."
             )
-        flow = InstalledAppFlow.from_client_secrets_file(str(client_secret_file), SCOPES)
+        flow = InstalledAppFlow.from_client_secrets_file(str(client_secret_file), LOGIN_SCOPES)
         creds = flow.run_local_server(port=0)
         token_file.write_text(creds.to_json(), encoding="utf-8")
     return creds
@@ -179,12 +191,46 @@ def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, obj
     video_id = response["id"]
     video_url = f"https://www.youtube.com/watch?v={video_id}"
 
+    # The owner's rule (2026-11-04): no video goes public without its
+    # thumbnail. If it cannot be set now, the video is held private with no
+    # publish time, and pending_uploads releases it once the thumbnail is on.
+    reason = ""
     if upload_thumbnail:
         try:
             set_thumbnail(video_id, thumbnail_path, client_secret_file=client_secret_file, token_file=token_file)
         except Exception as exc:
-            raise ThumbnailUploadError(video_url, str(exc)) from exc
+            reason = str(exc)
+    else:
+        reason = "custom thumbnails are not allowed on this channel yet (verify it at youtube.com/verify)"
+    if reason:
+        try:
+            set_release(video_id, None, made_for_kids, client_secret_file=client_secret_file,
+                        token_file=token_file)
+            reason += " | video held private until its thumbnail is set"
+        except Exception as hold_exc:
+            reason += f" | could not hold the video private: {hold_exc}"
+        raise ThumbnailUploadError(video_url, reason)
     return video_url
+
+
+def set_release(video_id: str, publish_at: datetime | None, made_for_kids: bool,
+                client_secret_file=None, token_file=None) -> None:
+    """Hold a video private (publish_at None) or schedule it to go public at publish_at."""
+    manage = {MANAGE_SCOPE, "https://www.googleapis.com/auth/youtube.force-ssl"}
+    if not set(_credentials(client_secret_file, token_file).scopes or ()) & manage:
+        # The playlist login (playlists.py) has the full scope where it exists.
+        token = Path(token_file or settings.youtube_token_file)
+        extra = token.with_name(f"{token.stem}_playlist{token.suffix}")
+        if extra.is_file() and set(_credentials(client_secret_file, extra).scopes or ()) & manage:
+            token_file = extra
+        else:
+            raise HoldNotAllowed("this channel's login may not change a video's status; reconnect "
+                                 "it on the dashboard (Reconnect) and press Send to GitHub")
+    status: dict[str, object] = {"privacyStatus": "private", "selfDeclaredMadeForKids": bool(made_for_kids)}
+    if publish_at is not None:
+        status["publishAt"] = publish_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    youtube = _youtube(client_secret_file, token_file)
+    youtube.videos().update(part="status", body={"id": video_id, "status": status}).execute()
 
 
 def connect_and_verify(client_secret_file, token_file) -> str:

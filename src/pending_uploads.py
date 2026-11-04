@@ -478,12 +478,11 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
                 f"YouTube channel, then run: authorize --channel {channel.id}")
 
     if row["video_url"] and thumbnail_permission_denied(row["error"]):
+        # Kept private until the channel may set thumbnails (owner's rule:
+        # never public without one); "Thumbnails Are Verified" re-enables it.
         disable_thumbnail_upload(channel.id)
-        if row["publish_at"]:
-            mark_scheduled(video_id, row["video_url"], row["publish_at"])
-        else:
-            mark_uploaded(video_id, row["video_url"])
-        return f"{video_id}: custom thumbnail skipped; video is already on YouTube"
+        if not thumbnail_upload_allowed(channel.id):
+            return f"{video_id}: held private; this channel may not set thumbnails yet (youtube.com/verify)"
     backoff = active_upload_backoff(channel.id)
     if backoff:
         reason, retry_after = backoff
@@ -518,8 +517,40 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
             set_thumbnail(youtube_id, thumbnail_path,
                           client_secret_file=channel.client_secret_path,
                           token_file=channel.token_path)
-            mark_uploaded(video_id, row["video_url"])
-            return f"{video_id}: thumbnail fixed, uploaded status restored"
+            # The thumbnail is on: release the held video. Its booked time if
+            # still ahead, else the channel's next free release time.
+            from .youtube_upload import set_release
+
+            when = None
+            if row["publish_at"]:
+                booked = datetime.fromisoformat(str(row["publish_at"]))
+                booked = booked if booked.tzinfo else booked.replace(tzinfo=timezone.utc)
+                if booked > datetime.now(timezone.utc) + timedelta(minutes=15):
+                    when = booked
+            if when is None:
+                cancel_publish_at(reservation_key)
+                when = next_publish_at(channel.id, reservation_key=reservation_key,
+                                       content_type=row["content_type"] or "short")
+            from .youtube_upload import HoldNotAllowed
+
+            try:
+                if when is None:
+                    # No scheduling: public now.
+                    youtube_upload_public(youtube_id, channel)
+                    mark_uploaded(video_id, row["video_url"])
+                    return f"{video_id}: thumbnail set; video made public"
+                set_release(youtube_id, when, channel.made_for_kids,
+                            client_secret_file=channel.client_secret_path, token_file=channel.token_path)
+            except HoldNotAllowed:
+                # The video was never held (old login), so it keeps the time it
+                # was uploaded with. Never fall through to a fresh upload.
+                if row["publish_at"]:
+                    mark_scheduled(video_id, row["video_url"], str(row["publish_at"]))
+                else:
+                    mark_uploaded(video_id, row["video_url"])
+                return f"{video_id}: thumbnail set (the video kept its own release time)"
+            mark_scheduled(video_id, row["video_url"], when.isoformat())
+            return f"{video_id}: thumbnail set; goes public at {when.isoformat()}"
 
         if not video_path.exists():
             raise FileNotFoundError(f"Video missing: {video_path}")
@@ -584,6 +615,15 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
         else:
             mark_upload_failed(video_id, str(exc))
         return f"{video_id}: failed {exc}"
+
+
+def youtube_upload_public(youtube_id: str, channel) -> None:
+    from .youtube_upload import _youtube
+
+    _youtube(channel.client_secret_path, channel.token_path).videos().update(
+        part="status", body={"id": youtube_id, "status": {
+            "privacyStatus": "public", "selfDeclaredMadeForKids": bool(channel.made_for_kids)}},
+    ).execute()
 
 
 def retry_pending_uploads(

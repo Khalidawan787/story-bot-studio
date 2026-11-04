@@ -418,12 +418,12 @@ def run_pipeline(
             except ThumbnailUploadError as exc:
                 video_url = exc.video_url
                 error = str(exc)
+                # Held private until the thumbnail is set (youtube_upload), so a
+                # video never goes public without it (owner's rule, 2026-11-04).
+                status = "thumbnail_pending"
                 if thumbnail_permission_denied(error):
                     disable_thumbnail_upload(channel_id)
-                    status = "scheduled" if publish_at else "uploaded"
-                    error = "Video uploaded; custom thumbnail skipped because this channel does not have thumbnail permission."
                 else:
-                    status = "thumbnail_pending"
                     apply_upload_error_backoff(channel_id, error)
             except Exception as exc:
                 from .schedule import cancel_publish_at
