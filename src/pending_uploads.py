@@ -606,6 +606,21 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
                     thumbnail_path = ensure_ready(thumbnail_path)
                 except ThumbnailNotReady as exc:
                     return f"{video_id}: waits, thumbnail not ready: {exc}"
+            from .pipeline import style_matched, style_problem
+
+            if style_problem(thumbnail_path, channel):
+                # Draw it again (new pictures) before giving up for this run.
+                from .thumbnails import create_thumbnail
+
+                lesson = load_lesson_for(channel, row["topic"])
+                kind = row["content_type"] or "short"
+                thumbnail_path = Path(style_matched(
+                    thumbnail_path,
+                    lambda name: create_thumbnail(lesson, None, thumbnail_path.parent / name, channel, kind),
+                    thumbnail_path.parent, channel))
+                waiting = style_problem(thumbnail_path, channel)
+                if waiting:
+                    return f"{video_id}: waits, {waiting}"
             if not bypass_safety_cap and daily_upload_cap_reached(channel.id, channel.account):
                 return (f"{video_id}: {channel.name} app upload cap reached "
                         f"({upload_limit_for_channel(channel.id, channel.account)}/day "

@@ -180,11 +180,35 @@ def style_matched(thumbnail_path, redraw, run_dir: Path, channel, tries: int = 2
                 if best["ok"]:
                     break
         print(f"[style] {channel.id}: score {best['score']} against {best['examples']} example(s)")
-        save_check(best_path, best)
-        return best_path
+        # The winner is always thumbnail.jpg: GitHub keeps only that name for a
+        # later retry (github_artifacts.KEPT_FILES).
+        final = run_dir / "thumbnail.jpg"
+        if best_path.resolve() != final.resolve():
+            final.write_bytes(best_path.read_bytes())
+        save_check(final, best)
+        return final
     except Exception as exc:
         print(f"[style] check skipped ({exc})")
         return thumbnail_path
+
+
+def style_problem(thumbnail_path, channel) -> str:
+    """Why this thumbnail is not approved against the channel's examples, or ""."""
+    if channel is None:
+        return ""
+    try:
+        from .style_match import compare, load_check, required
+
+        if not required():
+            return ""
+        result = load_check(thumbnail_path) or compare(thumbnail_path, channel.id)
+    except Exception as exc:
+        print(f"[style] check skipped ({exc})")
+        return ""
+    if result is None or result["ok"]:
+        return ""  # no examples for this channel, or it matches them
+    return (f"thumbnail does not look like the channel's examples yet (style {result['score']}: "
+            + "; ".join(result["issues"]) + ")")
 
 
 def _real_subject_thumbnail(lesson, channel, run_dir: Path, content_type: str) -> Path | None:
@@ -387,6 +411,11 @@ def run_pipeline(
     if not thumbnail_problem:
         thumbnail_path = style_matched(thumbnail_path, lambda name: create_thumbnail(
             lesson, thumbnail_source, run_dir / name, channel, content_type), run_dir, channel)
+        # Approved only when it looks like the channel's examples (owner's rule):
+        # otherwise the video waits and the retry queue draws it again.
+        thumbnail_problem = style_problem(thumbnail_path, channel)
+        if thumbnail_problem:
+            print(f"[style] the video waits: {thumbnail_problem}")
     metadata = build_metadata(lesson, channel, content_type=content_type)
     _append_image_credits(metadata, run_dir)
     if channel is not None:

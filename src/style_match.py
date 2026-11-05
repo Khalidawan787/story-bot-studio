@@ -24,6 +24,14 @@ from pathlib import Path
 PASS = 50
 
 
+def required() -> bool:
+    """REQUIRE_STYLE_MATCH (default true): a video whose thumbnail does not look
+    like the channel's examples waits instead of uploading (owner's rule, 2026-11-05)."""
+    import os
+
+    return os.getenv("REQUIRE_STYLE_MATCH", "true").strip().lower() not in {"0", "false", "no", "off"}
+
+
 def _load(path: Path):
     import cv2
     import numpy as np
