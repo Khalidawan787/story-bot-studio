@@ -41,6 +41,16 @@ def _check_auth(gh: str) -> None:
         raise SystemExit("Not signed in to GitHub. Run:  gh auth login")
 
 
+def origin_repo() -> str:
+    """'owner/name' of this folder's origin remote."""
+    remote = subprocess.run(["git", "remote", "get-url", "origin"], cwd=ROOT,
+                            capture_output=True, text=True).stdout.strip()
+    match = re.search(r"github\.com[:/]([^/]+/[^/]+?)(?:\.git)?$", remote)
+    if not match:
+        raise SystemExit(f"The origin remote is not a GitHub repository: {remote or '(none)'}")
+    return match.group(1)
+
+
 def owner_env(gh: str) -> dict[str, str]:
     """Environment that makes gh act as the repository's owner.
 
@@ -76,7 +86,9 @@ def main() -> None:
     blob = ci_secrets.pack()
     print(f"\nUploading {len(blob) // 1024} KB to the repository secret {SECRET_NAME} ...")
     result = subprocess.run(
-        [gh, "secret", "set", SECRET_NAME],
+        # The repository named explicitly: with a second git remote in the
+        # folder, gh refused to guess ("multiple remotes detected").
+        [gh, "secret", "set", SECRET_NAME, "-R", origin_repo()],
         input=blob, text=True, cwd=ROOT, capture_output=True, env=owner_env(gh),
     )
     if result.returncode != 0:
