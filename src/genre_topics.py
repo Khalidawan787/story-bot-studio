@@ -379,16 +379,45 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT
             f"Write ONE fresh {channel.genre} short video script about an original, "
             f"click-worthy topic. Do NOT reuse any of these titles: {avoid}.\n" + schema
         )
+    # A competitor's topic that is working right now (competitors.py): the
+    # subject only; the script, title and pictures stay our own.
+    inspiration = None
+    if not channel.builtin:
+        from . import competitors
+
+        try:
+            inspiration = competitors.next_idea(channel, "short")
+        except Exception as exc:
+            print(f"[competitors] {channel.id}: no idea ({exc})")
+        if inspiration:
+            prompt += competitors.inspiration_brief(inspiration)
+            print(f"[competitors] {channel.id}: subject from '{inspiration['title'][:60]}' "
+                  f"({inspiration['ratio']:.1f}x)")
     raw: dict = {}
     clash: str | None = None
     clashes: list[str] = []
     insights = _insights_note(channel)
     problem: str | None = None
+    own_title_note = ""
     for _try in range(_FRESH_TRIES + 1):
         note = (f"\nThe previous draft was rejected because it was not whole ({problem}). "
                 f"Write all {scenes} scenes in full.") if problem else ""
-        raw = _script_json(prompt + insights + already_exist_note(clashes) + note)
+        raw = _script_json(prompt + insights + already_exist_note(clashes) + own_title_note + note)
         clash = title_clash(channel, str(raw.get("title") or ""), avoid_titles)
+        if not clash and inspiration:
+            from .competitors import too_similar
+
+            if too_similar(str(raw.get("title") or ""), inspiration["title"]):
+                # Their title, reworded: same subject, but a title in our own words.
+                print(f"[competitors] {channel.id}: '{str(raw.get('title'))[:60]}' is too close to "
+                      f"the other channel's title; writing it again")
+                own_title_note = (
+                    f"\nIMPORTANT: your last title \"{str(raw.get('title'))[:80]}\" was too close to the "
+                    "other channel's title. Keep the subject, but write a completely different title "
+                    "in your own words."
+                )
+                problem = None
+                continue
         if clash:
             print(f"[genre_topics] {channel.id}: '{str(raw.get('title'))[:60]}' repeats "
                   f"'{str(clash)[:60]}'; writing it again")
@@ -407,6 +436,10 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT
 
     title = raw.get("title", "Untitled").strip()
     key = _slug(title)
+    if inspiration:
+        from .competitors import mark_written
+
+        mark_written(channel.id, inspiration["video_id"], title)
     lesson_scenes = []
     for i, sc in enumerate(raw.get("scenes", []), start=1):
         lesson_scenes.append({
@@ -605,9 +638,22 @@ def generate_from_prompt(
     raw: dict = {}
     clash: str | None = None
     clashes: list[str] = []
+    # A brief from competitors.inspiration_brief names the other channel's title;
+    # ours must not repeat it.
+    theirs = re.search(r'has a video titled "(.+?)" that is getting', user_prompt)
     for _try in range(_FRESH_TRIES):
         raw = _draft_script(channel, user_prompt, scenes, long_form, clashes)
         clash = title_clash(channel, str(raw.get("title") or ""))
+        if not clash and theirs:
+            from .competitors import too_similar
+
+            if too_similar(str(raw.get("title") or ""), theirs.group(1)):
+                print(f"[competitors] {channel.id}: '{str(raw.get('title'))[:60]}' is too close to "
+                      "the other channel's title; writing it again")
+                user_prompt += ("\nIMPORTANT: your last title was too close to the other channel's title. "
+                                "Keep the subject, but write a completely different title in your own words.")
+                clash = "competitor title"
+                continue
         if not clash:
             break
         print(f"[genre_topics] {channel.id}: '{str(raw.get('title'))[:60]}' repeats "

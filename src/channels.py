@@ -83,6 +83,10 @@ class Channel:
     # the daily run's default (~5 minutes).
     long_days: tuple = ()
     long_scenes: int = 0
+    # Competitor YouTube channels (URLs or @handles). Their best-performing
+    # recent topics become this channel's next video ideas, written as our
+    # own original videos (competitors.py).
+    competitors: tuple = ()
 
     @property
     def client_secret_path(self) -> Path:

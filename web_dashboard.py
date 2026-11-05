@@ -324,7 +324,7 @@ def home():
     return render_template_string(
         PAGE, channels=channels, ch=ch,
         thumb_checks=thumb_checks, thumb_required=thumbnail_required(),
-        timelines=timelines,
+        timelines=timelines, thumb_audit=_thumb_audit_summary(ch.id), comp=_competitor_view(ch.id),
         topics=[(k, v.get("title", k)) for k, v in topics.items()],
         videos=vids, jobs=JOBS, assets=assets, storage=storage_info(),
         connected=ch.token_path.exists(), upload_pause=active_upload_backoff(ch.id),
@@ -661,6 +661,103 @@ def upload_one_route():
     start_job(f"[{ch.id}] Upload video #{vid}", job)
     flash("Retrying the YouTube thumbnail...", "ok")
     return redirect(url_for("home", channel=ch.id))
+
+
+def _thumb_audit_summary(channel_id: str) -> dict:
+    try:
+        from src.thumbnail_audit import summary
+
+        return summary(channel_id)
+    except Exception:
+        return {"counts": {}, "last": None, "problems": []}
+
+
+def _competitor_view(channel_id: str) -> dict:
+    try:
+        from src.competitors import overview
+
+        return overview(channel_id)
+    except Exception:
+        return {"channels": [], "videos": []}
+
+
+@app.post("/competitors/save")
+def competitors_save_route():
+    """Save this channel's competitor list, then read them once."""
+    ch = current_channel()
+    from src import competitors
+
+    urls = [line for line in request.form.get("urls", "").replace(",", "\n").splitlines() if line.strip()]
+    saved = competitors.set_competitors(ch.id, urls)
+
+    def job():
+        from src.channels import get_channel
+
+        return "\n".join(competitors.refresh(get_channel(ch.id), force=True)) or "No competitors saved"
+
+    if saved:
+        start_job(f"[{ch.id}] Read competitor channels", job)
+    flash(f"Saved {len(saved)} competitor channel(s). Reading their recent videos now (see Jobs). "
+          "Press Send to GitHub so the daily run follows them too.", "ok")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/competitors/refresh")
+def competitors_refresh_route():
+    ch = current_channel()
+
+    def job():
+        from src import competitors
+        from src.channels import get_channel
+
+        return "\n".join(competitors.refresh(get_channel(ch.id), force=True)) or "No competitors saved"
+
+    start_job(f"[{ch.id}] Read competitor channels", job)
+    flash("Reading the competitor channels' recent videos (see Jobs).", "ok")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/audit-thumbnails")
+def audit_thumbnails_route():
+    """Look at this channel's last week of videos on YouTube; set any missing thumbnail."""
+    ch = current_channel()
+
+    def job():
+        from src.thumbnail_audit import audit
+
+        return "\n".join(audit(days=7, fix=True, channel_id=ch.id)) or "Nothing to check"
+
+    start_job(f"[{ch.id}] Check thumbnails on YouTube", job)
+    flash("Checking every video of the last 7 days on YouTube; any missing thumbnail is set. See Jobs.", "ok")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/remake-thumbnail")
+def remake_thumbnail_route():
+    """Build a new thumbnail for one video, check it, and finish a held upload."""
+    ch = current_channel()
+    vid = int(request.form.get("id"))
+
+    def job():
+        from src.pending_uploads import _row_by_id, remake_thumbnail_file
+        from src.thumbnail_check import check_thumbnail
+
+        row = _row_by_id(vid)
+        if row is None:
+            raise RuntimeError(f"Video #{vid} not found")
+        path = remake_thumbnail_file(row)
+        result = check_thumbnail(path)
+        if not result.ok:
+            raise RuntimeError(f"New thumbnail still fails the check: {result.summary}")
+        note = f"Thumbnail remade and verified ({result.summary})"
+        if row["video_url"]:
+            # Already on YouTube: put the new picture on it (and release it if it was held private).
+            note += "; " + upload_one(vid, bypass_safety_cap=True)
+        return note
+
+    start_job(f"[{ch.id}] Remake thumbnail #{vid}", job)
+    flash("Making a new thumbnail and checking it. The result shows in Jobs.", "ok")
+    return redirect(url_for("home", channel=ch.id, type=request.form.get("type", "all")))
 
 
 @app.post("/fix-thumbnails")
@@ -1776,6 +1873,36 @@ PAGE = r"""
   .st{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px}
   .st.uploaded{background:#123122;color:var(--ok)}.st.rendered{background:#2a2f4d;color:#b9c1e6}
   .st.scheduled,.st.facebook_only{background:#1a2b4d;color:#8fb4ff}
+  .comp-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+  .comp-ta{width:100%;background:#12162a;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:10px;font:inherit;resize:vertical}
+  .comp-chans{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px;padding:12px 0 6px}
+  .comp-chan{position:relative;display:flex;align-items:center;gap:10px;min-width:0;padding:10px 30px 10px 10px;border-radius:14px;border:1px solid var(--line);background:var(--panel2);color:var(--text);cursor:pointer;text-align:left;font:inherit;transition:border-color .15s,transform .15s}
+  .comp-chan:hover{border-color:#3e4775;transform:translateY(-1px)}
+  .comp-chan.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;background:#252d4d}
+  .comp-chan.bad{border-color:#6b2a30}
+  .comp-av{width:42px;height:42px;border-radius:50%;object-fit:cover;flex:none;display:grid;place-items:center;background:#2a3152;font-weight:700;color:#fff}
+  .comp-av.all{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+  .comp-meta{display:flex;flex-direction:column;min-width:0}.comp-meta b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .comp-meta small{font-size:11.5px;color:var(--muted)}
+  .comp-open{position:absolute;top:6px;right:9px;font-size:13px;color:var(--muted)}.comp-open:hover{color:var(--accent)}
+  i.x{font-style:normal;font-weight:700;color:var(--warn)}i.x.hot{color:var(--ok)}
+  .comp-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
+  .seg{display:inline-flex;background:#141830;border:1px solid var(--line);border-radius:10px;padding:3px}
+  .seg button{background:none;border:0;color:var(--muted);font:inherit;font-size:12.5px;padding:5px 11px;border-radius:7px;cursor:pointer}
+  .seg button.active{background:var(--panel2);color:var(--text);box-shadow:0 0 0 1px var(--line) inset}
+  .comp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+  .comp-vid{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel2);display:flex;flex-direction:column}
+  .comp-thumb{position:relative;display:block;aspect-ratio:16/9;background:#11152a}
+  .comp-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .x-badge{position:absolute;top:7px;left:7px;font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:99px;background:rgba(0,0,0,.72);backdrop-filter:blur(4px)}
+  .x-badge.hot{color:#4dffa8}.x-badge.warm{color:#ffd56b}.x-badge.cold{color:#b9bfd8}
+  .kind-badge{position:absolute;bottom:7px;right:7px;font-size:10.5px;font-weight:800;letter-spacing:.5px;padding:2px 7px;border-radius:5px;background:#ff3d57;color:#fff}
+  .comp-body{padding:9px 11px 11px;display:grid;gap:5px}
+  .comp-title{color:var(--text);font-weight:600;font-size:13.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .comp-title:hover{color:var(--accent)}
+  .comp-by{display:flex;align-items:center;gap:6px;font-size:12px;color:#c7cff0}.comp-by img{width:18px;height:18px;border-radius:50%}
+  .ours{font-size:12px;padding:5px 8px;border-radius:8px;background:#151a32;color:var(--muted)}
+  .ours.made{background:#123326;color:#7ee2a8}.ours.making{background:#33290f;color:var(--warn)}.ours.next{background:#1b2347;color:#a9bbff}
   .ptimes{display:grid;gap:6px;margin:8px 0}.pt{border:1px solid var(--line);border-radius:9px;padding:7px 9px}
   .pt-name{font-weight:600;font-size:13px;margin-bottom:3px}.pt-ic{display:inline-block;width:18px;opacity:.8}
   .pt-step{font-size:12px;color:var(--muted,#9aa3b8);display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
@@ -1947,6 +2074,110 @@ PAGE = r"""
       <span class="chip">{{'ON' if thumb_required else 'OFF'}}</span>
     </div>
   </div>
+
+  <div class="card comp" style="margin-bottom:18px">
+    <div class="comp-head">
+      <div><strong>Competitors</strong>
+        <div class="hint">Their topics that are working right now become our next videos, written as our own: own script, pictures, thumbnail and a clearly different title. Nothing of theirs is copied.</div></div>
+      <div class="row" style="gap:8px">
+        {% if ch.competitors %}<form method="post" action="/competitors/refresh"><input type="hidden" name="channel" value="{{ch.id}}"><button class="ghost sm" type="submit">↻ Read them now</button></form>{% endif %}
+        <button class="ghost sm" type="button" onclick="document.getElementById('comp-edit').toggleAttribute('open')">✎ Edit list</button>
+      </div>
+    </div>
+
+    <details id="comp-edit" {{'' if ch.competitors else 'open'}}>
+      <summary class="hint" style="cursor:pointer;margin-top:8px">Competitor channels ({{ (ch.competitors or [])|length }})</summary>
+      <form method="post" action="/competitors/save" style="margin-top:8px">
+        <input type="hidden" name="channel" value="{{ch.id}}">
+        <textarea name="urls" rows="4" class="comp-ta" placeholder="One per line: https://www.youtube.com/@channelname  or  @channelname">{{ (ch.competitors or [])|join('\n') }}</textarea>
+        <button class="green sm" type="submit" style="margin-top:8px">Save competitors</button>
+      </form>
+    </details>
+
+    {% if comp.channels %}
+    <div class="comp-chans">
+      <button type="button" class="comp-chan active" data-comp-tab="all">
+        <span class="comp-av all">★</span>
+        <span class="comp-meta"><b>All channels</b><small>{{comp.videos|length}} top videos</small></span>
+      </button>
+      {% for c in comp.channels %}
+      <button type="button" class="comp-chan{{' bad' if c.error else ''}}" data-comp-tab="{{c.competitor_id or c.url}}" title="{{c.error or c.name}}">
+        {% if c.avatar %}<img class="comp-av" src="{{c.avatar}}" alt="" loading="lazy" referrerpolicy="no-referrer">{% else %}<span class="comp-av">{{ (c.name or c.url)[:1]|upper }}</span>{% endif %}
+        <span class="comp-meta"><b>{{c.name or c.url}}</b>
+          {% if c.error %}<small style="color:var(--err)">could not read</small>
+          {% else %}<small>{{c.subs_text}} subscribers</small><small>{{c.n}} videos in 30 days{% if c.best %} · best <i class="x {{'hot' if c.best >= 2 else ''}}">{{'%.1f'|format(c.best)}}×</i>{% endif %}</small>{% endif %}
+        </span>
+        {% if not c.error %}<a class="comp-open" href="{{c.link}}" target="_blank" title="Open on YouTube" onclick="event.stopPropagation()">↗</a>{% endif %}
+      </button>
+      {% endfor %}
+    </div>
+
+    <div class="comp-bar">
+      <div class="seg" role="tablist">
+        <button type="button" class="active" data-comp-kind="all">All</button>
+        <button type="button" data-comp-kind="short">Shorts</button>
+        <button type="button" data-comp-kind="long">Long</button>
+      </div>
+      <div class="seg">
+        <button type="button" class="active" data-comp-state="all">Every video</button>
+        <button type="button" data-comp-state="next">Next in line</button>
+        <button type="button" data-comp-state="made">Ours made</button>
+      </div>
+      <span class="hint">Read {{ comp.channels[0].fetched_at|localdt if comp.channels[0].fetched_at else '—' }}</span>
+    </div>
+
+    <div class="comp-grid">
+      {% for v in comp.videos %}
+      <div class="comp-vid" data-comp="{{v.competitor_id}}" data-kind="{{'short' if v.short else 'long'}}" data-state="{{v.state}}">
+        <a class="comp-thumb" href="https://www.youtube.com/watch?v={{v.video_id}}" target="_blank">
+          <img src="{{v.thumb}}" alt="" loading="lazy" referrerpolicy="no-referrer">
+          <span class="x-badge {{'hot' if v.ratio >= 2 else ('warm' if v.ratio >= 1 else 'cold')}}">{{'%.1f'|format(v.ratio)}}× usual</span>
+          {% if v.short %}<span class="kind-badge">SHORT</span>{% endif %}
+        </a>
+        <div class="comp-body">
+          <a class="comp-title" href="https://www.youtube.com/watch?v={{v.video_id}}" target="_blank">{{v.title}}</a>
+          <div class="comp-by">{% if v.avatar %}<img src="{{v.avatar}}" alt="" referrerpolicy="no-referrer">{% endif %}{{v.competitor_name}}</div>
+          <div class="hint">{{v.views_text}} views · {{v.age}}</div>
+          <div class="ours {{v.state}}">
+            {% if v.state == 'made' %}✓ Ours: {{v.our_title}}
+            {% elif v.state == 'making' %}⏳ Our video on this is being made
+            {% elif v.state == 'next' %}➜ Next in line for our video
+            {% else %}— Below their usual, skipped{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      <div class="comp-empty hint" style="display:none">No videos match this filter.</div>
+    </div>
+    {% elif ch.competitors %}
+    <div class="hint" style="margin-top:10px">Not read yet. Press <b>Read them now</b>.</div>
+    {% endif %}
+  </div>
+  <script>
+  (function () {
+    var root = document.querySelector('.card.comp'); if (!root) return;
+    var f = {comp: 'all', kind: 'all', state: 'all'};
+    function apply() {
+      var shown = 0;
+      root.querySelectorAll('.comp-vid').forEach(function (el) {
+        var ok = (f.comp === 'all' || el.dataset.comp === f.comp) &&
+                 (f.kind === 'all' || el.dataset.kind === f.kind) &&
+                 (f.state === 'all' || el.dataset.state === f.state || (f.state === 'next' && el.dataset.state === 'making'));
+        el.style.display = ok ? '' : 'none'; if (ok) shown++;
+      });
+      var empty = root.querySelector('.comp-empty'); if (empty) empty.style.display = shown ? 'none' : '';
+    }
+    function bind(attr, key) {
+      root.querySelectorAll('[' + attr + ']').forEach(function (b) {
+        b.addEventListener('click', function () {
+          root.querySelectorAll('[' + attr + ']').forEach(function (x) { x.classList.remove('active'); });
+          b.classList.add('active'); f[key] = b.getAttribute(attr); apply();
+        });
+      });
+    }
+    bind('data-comp-tab', 'comp'); bind('data-comp-kind', 'kind'); bind('data-comp-state', 'state');
+  })();
+  </script>
 
   {% if upload_pause %}
   <div class="flash error"><strong>YouTube uploads are temporarily paused.</strong> Video creation still continues and finished videos appear below; YouTube upload/retry will wait until <strong>{{upload_pause[1]|localdt}}</strong>. Reason: {{upload_pause[0]}}</div>

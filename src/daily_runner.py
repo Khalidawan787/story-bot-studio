@@ -574,6 +574,21 @@ def _automatic_long_idea(channel: Channel) -> str:
         # A news channel stays on the news. Falling back to an old script here
         # made a "world news" video out of a story about cats in boxes.
         raise NoFreshTopic("no fresh world trend today; skipped instead of making an off-topic video")
+    # A subject a competitor is doing well with right now (competitors.py),
+    # made as our own original documentary.
+    from . import competitors
+
+    try:
+        inspiration = competitors.next_idea(channel, "long")
+    except Exception as exc:
+        print(f"[competitors] {channel.id}: no idea ({exc})")
+        inspiration = None
+    if inspiration:
+        competitors.mark_written(channel.id, inspiration["video_id"], "(long video, title set by the writer)")
+        print(f"[competitors] {channel.id}: long video subject from '{inspiration['title'][:60]}' "
+              f"({inspiration['ratio']:.1f}x)")
+        return (f"Create a complete, original {channel.genre} documentary for {today_label}."
+                + competitors.inspiration_brief(inspiration))
     seeds = _pick_long_seeds(channel, 1)
     if not seeds:
         # A channel made from a topic starts with a handful of planned ideas:
