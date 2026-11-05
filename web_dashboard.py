@@ -687,7 +687,10 @@ def _brand_kit(ch) -> dict:
         from src import brand
 
         def files(paths):
-            return [{"path": str(p), "name": p.stem, "file": p.name, "mtime": int(p.stat().st_mtime)} for p in paths]
+            from src.style_match import load_check
+
+            return [{"path": str(p), "name": p.stem, "file": p.name, "mtime": int(p.stat().st_mtime),
+                     "check": load_check(p)} for p in paths]
 
         return {"style": brand.current_style(ch), "styles": brand.STYLE_FLAGS, "guide": brand.style_text(ch.id),
                 "examples": files(brand.examples(ch.id)), "samples": files(brand.samples(ch.id))}
@@ -1971,6 +1974,7 @@ PAGE = r"""
   .bk-img span{position:absolute;left:0;right:0;bottom:0;font-size:11px;padding:3px 7px;background:rgba(0,0,0,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bk-img form{position:absolute;top:4px;right:4px}.bk-img form button{width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff;cursor:pointer}
   .bk-pick{cursor:pointer}
+  .bk-score{position:absolute;top:6px;left:6px;font-size:11px;padding:2px 7px;border-radius:99px;background:#1f8a4c;color:#fff}.bk-score.bad{background:#a8322d}
   .comp-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
   .comp-ta{width:100%;background:#12162a;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:10px;font:inherit;resize:vertical}
   .comp-chans{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px;padding:12px 0 6px}
@@ -2173,9 +2177,11 @@ PAGE = r"""
           <div class="bk-label" style="margin:0">Bot's latest samples</div>
           <form method="post" action="/brand/samples"><input type="hidden" name="channel" value="{{ch.id}}"><button class="ghost sm" type="submit">Make new samples</button></form>
         </div>
+        <div class="hint" style="margin-bottom:6px">Each new thumbnail is compared with your examples (colours, layout, brightness, headline); one that looks too different is drawn again with a new picture.</div>
         <div class="bk-gallery">
-          {% for s in kit.samples %}<a href="/media?path={{s.path|urlencode}}" target="_blank" class="bk-img"><img src="/media?path={{s.path|urlencode}}&v={{s.mtime}}" alt=""><span>{{'Short 9:16' if s.name=='short' else 'Long 16:9'}}</span></a>{% else %}<div class="hint">No sample yet: press "Make new samples".</div>{% endfor %}
+          {% for s in kit.samples %}<a href="/media?path={{s.path|urlencode}}" target="_blank" class="bk-img"><img src="/media?path={{s.path|urlencode}}&v={{s.mtime}}" alt="">{% if s.check %}<b class="bk-score {{'ok' if s.check.ok else 'bad'}}" title="{{ s.check.issues|join('; ') if s.check.issues else 'Looks like your examples' }}">Style {{s.check.score}}</b>{% endif %}<span>{{'Short 9:16' if s.name=='short' else 'Long 16:9'}}</span></a>{% else %}<div class="hint">No sample yet: press "Make new samples".</div>{% endfor %}
         </div>
+        {% for s in kit.samples %}{% if s.check and s.check.issues %}<div class="hint" style="margin-top:4px">{{'Short' if s.name=='short' else 'Long'}}: {{s.check.issues|join('; ')}}</div>{% endif %}{% endfor %}
       </div>
       <div class="bk-col">
         <div class="bk-col-head">

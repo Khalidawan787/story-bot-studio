@@ -142,8 +142,16 @@ def make_samples(channel) -> list[str]:
         work.mkdir(exist_ok=True)
         made = (_real_subject_thumbnail(lesson, channel, work, kind)
                 or create_thumbnail(lesson, None, work / "thumbnail.jpg", channel, kind))
+        from .pipeline import style_matched
+        from .style_match import save_check
+
+        made = style_matched(made, lambda name: create_thumbnail(lesson, None, work / name, channel, kind),
+                             work, channel)
         target = folder / f"{kind}.jpg"
         target.write_bytes(Path(made).read_bytes())
+        from .style_match import compare
+
+        save_check(target, compare(target, channel.id))
         notes.append(f"{kind}: {lesson.title[:60]} -> {check_thumbnail(target).summary}")
         import shutil
 

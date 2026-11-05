@@ -143,6 +143,50 @@ def _needs_interactive_rewrite(lesson: Lesson, channel) -> bool:
     return not words or max(words) <= 8
 
 
+def style_matched(thumbnail_path, redraw, run_dir: Path, channel, tries: int = 2):
+    """Compare the card with the channel's own examples; redraw it with a new picture if it is off.
+
+    The best of up to three draws is kept and its check is saved beside it
+    (style_match.py). A card built on the subject's own photo is only checked:
+    the photo cannot be swapped for another.
+    """
+    if channel is None:
+        return thumbnail_path
+    try:
+        from .style_match import compare, save_check
+        from .thumbnail_check import check_thumbnail
+
+        best_path, best = Path(thumbnail_path), compare(thumbnail_path, channel.id)
+        if best is None:
+            return thumbnail_path
+        if not best["ok"] and not (run_dir / "article_photo.jpg").exists():
+            for number in range(1, tries + 1):
+                print(f"[style] score {best['score']} ({'; '.join(best['issues'])}); drawing it again")
+                # A new picture each time: the stock search would return the same
+                # photo, so the redraws use generated art (random seed).
+                from .config import settings as _settings
+
+                provider = _settings.thumbnail_provider
+                object.__setattr__(_settings, "thumbnail_provider", ("cloudflare", "pollinations")[(number - 1) % 2])
+                try:
+                    alt = Path(redraw(f"thumbnail_style{number}.jpg"))
+                finally:
+                    object.__setattr__(_settings, "thumbnail_provider", provider)
+                if not check_thumbnail(alt).ok:
+                    continue
+                result = compare(alt, channel.id)
+                if result and result["score"] > best["score"]:
+                    best_path, best = alt, result
+                if best["ok"]:
+                    break
+        print(f"[style] {channel.id}: score {best['score']} against {best['examples']} example(s)")
+        save_check(best_path, best)
+        return best_path
+    except Exception as exc:
+        print(f"[style] check skipped ({exc})")
+        return thumbnail_path
+
+
 def _real_subject_thumbnail(lesson, channel, run_dir: Path, content_type: str) -> Path | None:
     """The thumbnail of a true story about a real person: that person's own photo.
 
@@ -340,6 +384,9 @@ def run_pipeline(
         except ThumbnailNotReady as exc:
             thumbnail_problem = str(exc)
             print(f"[thumbnail] not ready, the video waits: {exc}")
+    if not thumbnail_problem:
+        thumbnail_path = style_matched(thumbnail_path, lambda name: create_thumbnail(
+            lesson, thumbnail_source, run_dir / name, channel, content_type), run_dir, channel)
     metadata = build_metadata(lesson, channel, content_type=content_type)
     _append_image_credits(metadata, run_dir)
     if channel is not None:
