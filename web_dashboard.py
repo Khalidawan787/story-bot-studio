@@ -322,7 +322,7 @@ def home():
     from src.platform_times import platform_timeline
     timelines = {v['id']: platform_timeline(v, _socials.get(v['id'], {}), _social_cfg, _pause) for v in vids}
     return render_template_string(
-        PAGE, channels=channels, ch=ch,
+        PAGE, channels=channels, ch=ch, idents=_channel_idents(channels),
         thumb_checks=thumb_checks, thumb_required=thumbnail_required(),
         timelines=timelines, thumb_audit=_thumb_audit_summary(ch.id), comp=_competitor_view(ch.id),
         topics=[(k, v.get("title", k)) for k, v in topics.items()],
@@ -679,6 +679,16 @@ def _competitor_view(channel_id: str) -> dict:
         return overview(channel_id)
     except Exception:
         return {"channels": [], "videos": []}
+
+
+def _channel_idents(channels) -> dict:
+    """Each channel's YouTube picture and numbers for the tabs (channel_identity, cached 12 h)."""
+    try:
+        from src.channel_identity import identities
+
+        return identities(channels)
+    except Exception:
+        return {}
 
 
 @app.post("/competitors/save")
@@ -1918,6 +1928,11 @@ PAGE = r"""
   .hint{font-size:12px;color:var(--muted);margin-top:8px}
   .bar{height:8px;background:#12162a;border-radius:999px;overflow:hidden;margin:8px 0}
   .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--ok))}
+  .chtab{display:inline-flex;align-items:center;gap:8px;padding-left:6px}
+  .chtab img,.chtab-dot{width:26px;height:26px;border-radius:50%;object-fit:cover;display:inline-grid;place-items:center;background:#2a3152;color:#fff;font-size:12px}
+  .chtab small{font-size:11px;opacity:.85;font-weight:650;padding:1px 7px;border-radius:99px;background:rgba(0,0,0,.25)}
+  .ch-av{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.15)}
+  .ch-stats{font-size:13px;color:var(--muted,#9aa3b8)}.ch-stats b{color:var(--text)}
   .channel-banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;padding:14px 16px;
     border:1px solid #40538d;border-radius:14px;background:linear-gradient(135deg,#1a2342,#20294a)}
   .channel-banner .name{font-size:18px;font-weight:750}.channel-banner .only{margin-left:auto;color:#a9f0cd;
@@ -1984,7 +1999,7 @@ PAGE = r"""
 <div class="wrap">
 
   <div class="tabs">
-    {% for c in channels %}<a class="tab {{'active' if c.id==ch.id else ''}}" href="/?channel={{c.id}}">{{c.name}}</a>{% endfor %}
+    {% for c in channels %}{% set idt = idents.get(c.id, {}) %}<a class="tab chtab {{'active' if c.id==ch.id else ''}}" href="/?channel={{c.id}}">{% if idt.avatar %}<img src="{{idt.avatar}}" alt="" referrerpolicy="no-referrer">{% else %}<span class="chtab-dot">{{c.name[:1]}}</span>{% endif %}{{c.name}}{% if idt.subs_text %}<small>{{idt.subs_text}}</small>{% endif %}</a>{% endfor %}
     <a class="tab" href="/channel-new" style="border-style:dashed">➕ New channel</a>
   </div>
 
@@ -1992,8 +2007,12 @@ PAGE = r"""
     {% for cat,msg in msgs %}<div class="flash {{cat}}">{{msg}}</div>{% endfor %}
   {% endwith %}
 
-  <div class="channel-banner">
-    <span class="muted">Active channel</span><span class="name">{{ch.name}}</span>
+  {% set me = idents.get(ch.id, {}) %}
+  <div class="channel-banner"{% if me.banner %} style="background-image:linear-gradient(90deg,rgba(14,17,32,.92),rgba(14,17,32,.72)),url('{{me.banner}}=w1600');background-size:cover;background-position:center"{% endif %}>
+    {% if me.avatar %}<img class="ch-av" src="{{me.avatar}}" alt="" referrerpolicy="no-referrer">{% endif %}
+    <span class="muted">Active channel</span><span class="name">{{me.title or ch.name}}</span>
+    {% if me.handle %}<a href="https://www.youtube.com/{{me.handle}}" target="_blank">{{me.handle}} ↗</a>{% endif %}
+    {% if me.subs_text %}<span class="ch-stats"><b>{{me.subs_text}}</b> subscribers · <b>{{me.videos_text}}</b> videos · <b>{{me.views_text}}</b> views</span>{% endif %}
     <span class="chip">{{ch.genre}}</span><span class="chip">{{'made-for-kids' if ch.made_for_kids else 'general'}}</span>
     <span class="chip">{{ch.privacy}}</span><span class="only">All buttons: {{ch.name}} only</span>
   </div>

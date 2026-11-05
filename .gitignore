@@ -83,3 +83,5 @@ data/dashboard_automation.txt
 
 # Owner music for the videos (src/music_moods.py: data/music/<channel id>/)
 !data/music/**/*.mp3
+# Channel pictures and numbers read from YouTube (channel_identity.py)
+data/youtube_identity/
