@@ -50,19 +50,32 @@ def _extract_json(text: str):
 
 
 def _gemini(prompt: str, model: str | None = None) -> dict:
-    key = settings.gemini_api_key
-    if not key:
+    """Gemini with the first key; when its daily quota is full (429), the second key."""
+    keys = [key for key in (settings.gemini_api_key, settings.gemini_api_key_2) if key]
+    if not keys:
         raise RuntimeError("GEMINI_API_KEY not set in .env")
+    for index, key in enumerate(keys):
+        try:
+            # The second key is a new account: it gets its own, newer model.
+            return _gemini_with_key(prompt, model if index == 0 else settings.gemini_model_2, key)
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and index + 1 < len(keys):
+                print("[gemini] first key's quota is full; using the second key")
+                continue
+            raise
+    raise RuntimeError("Gemini failed")
+
+
+def _gemini_with_key(prompt: str, model: str | None, key: str) -> dict:
     model = model or settings.gemini_model
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{model}:generateContent?key={key}"
-    )
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     body = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"responseMimeType": "application/json", "temperature": 1.0},
     }).encode("utf-8")
-    req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+    # The key in a header works for both key formats (AIza... and the newer AQ....).
+    req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json",
+                                                          "x-goog-api-key": key})
     for attempt in range(4):
         try:
             with urllib.request.urlopen(req, timeout=90) as resp:
