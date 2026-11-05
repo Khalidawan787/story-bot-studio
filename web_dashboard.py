@@ -1999,7 +1999,16 @@ PAGE = r"""
   .bk-pick{cursor:pointer}
   .bk-logo{display:inline-block;background:#0b0d14;border:1px solid var(--line);border-radius:10px;padding:10px}.bk-logo img{max-height:90px;display:block}
   .bk-colour{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:13px}.bk-sw{width:26px;height:20px;border-radius:5px;border:1px solid rgba(255,255,255,.18)}
-  .ch-swatches{display:flex;gap:5px;margin-left:auto}.ch-swatches span{width:20px;height:20px;border-radius:5px;border:1px solid rgba(255,255,255,.2)}
+  .ch-swatches{display:flex;gap:6px}.ch-swatches span{width:22px;height:22px;border-radius:5px;border:1px solid rgba(255,255,255,.25)}
+  .channel-banner{min-height:118px;gap:18px!important;padding:18px 22px!important;flex-wrap:nowrap!important}
+  .channel-banner .ch-av{width:78px;height:78px;border:3px solid rgba(255,255,255,.22);box-shadow:0 0 0 3px rgba(0,0,0,.35);flex:none}
+  .ch-av-letter{display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;background:#2b3354;border-radius:50%}
+  .ch-info{display:flex;flex-direction:column;gap:4px;min-width:0}.ch-kicker{font-size:12px}
+  .ch-title{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.ch-title .name{font-size:22px!important;font-weight:800}
+  .ch-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+  .ch-side{margin-left:auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}
+  .ch-side .only{margin-left:0!important;white-space:nowrap}
+  @media(max-width:900px){.channel-banner{flex-wrap:wrap!important}.ch-side{margin-left:0;justify-content:flex-start}}
   .bk-score{position:absolute;top:6px;left:6px;font-size:11px;padding:2px 7px;border-radius:99px;background:#1f8a4c;color:#fff}.bk-score.bad{background:#a8322d}
   .comp-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
   .comp-ta{width:100%;background:#12162a;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:10px;font:inherit;resize:vertical}
@@ -2126,16 +2135,19 @@ PAGE = r"""
   {% endwith %}
 
   {% set me = idents.get(ch.id, {}) %}
-  <div class="channel-banner"{% if me.banner %} style="background-image:linear-gradient(90deg,rgba(14,17,32,.92),rgba(14,17,32,.72)),url('{{me.banner}}=w1600');background-size:cover;background-position:center"{% endif %}>
-    {% if me.avatar %}<img class="ch-av" src="{{me.avatar}}" alt="" referrerpolicy="no-referrer">{% endif %}
-    <span class="muted">Active channel</span><span class="name">{{me.title or ch.name}}</span>
-    {% if me.handle %}<a href="https://www.youtube.com/{{me.handle}}" target="_blank">{{me.handle}} ↗</a>{% endif %}
-    {% if me.subs_text %}<span class="ch-stats"><b>{{me.subs_text}}</b> subscribers · <b>{{me.videos_text}}</b> videos · <b>{{me.views_text}}</b> views</span>{% endif %}
-    <span class="chip">{{ch.genre}}</span><span class="chip">{{'made-for-kids' if ch.made_for_kids else 'general'}}</span>
-    <span class="chip">{{ch.privacy}}</span>
-    {% if kit is defined and kit %}<span class="chip">&#127912; {{kit.styles.get(kit.style, 'Standard')}}</span>
-    {% if kit.colours %}<span class="ch-swatches">{% for c in kit.colours[:8] %}<span style="background:{{c.hex}}" title="{{c.hex}} {{c.name}}"></span>{% endfor %}</span>{% endif %}{% endif %}
-    <span class="only">All buttons: {{ch.name}} only</span>
+  <div class="channel-banner"{% if me.banner %} style="background-image:linear-gradient(90deg,rgba(14,17,32,.95) 0%,rgba(14,17,32,.80) 45%,rgba(14,17,32,.35) 100%),url('{{me.banner}}=w1600');background-size:cover;background-position:center"{% endif %}>
+    {% if me.avatar %}<img class="ch-av" src="{{me.avatar}}" alt="" referrerpolicy="no-referrer">{% else %}<span class="ch-av ch-av-letter">{{ch.name[:1]}}</span>{% endif %}
+    <div class="ch-info">
+      <div class="muted ch-kicker">Active channel</div>
+      <div class="ch-title"><span class="name">{{me.title or ch.name}}</span>{% if me.handle %}<a href="https://www.youtube.com/{{me.handle}}" target="_blank">{{me.handle}} &#8599;</a>{% endif %}</div>
+      {% if me.subs_text %}<div class="ch-stats"><b>{{me.subs_text}}</b> subscribers &nbsp; <b>{{me.videos_text}}</b> videos &nbsp; <b>{{me.views_text}}</b> views</div>{% endif %}
+      <div class="ch-chips"><span class="chip">{{ch.genre}}</span><span class="chip">{{'made-for-kids' if ch.made_for_kids else 'general'}}</span><span class="chip">{{ch.privacy}}</span>
+        {% if kit is defined and kit %}<span class="chip">&#127912; {{kit.styles.get(kit.style, 'Standard')}}</span>{% endif %}</div>
+    </div>
+    <div class="ch-side">
+      {% if kit is defined and kit and kit.colours %}<span class="ch-swatches">{% for c in kit.colours[:8] %}<span style="background:{{c.hex}}" title="{{c.hex}} {{c.name}}"></span>{% endfor %}</span>{% endif %}
+      <span class="only">All buttons: {{ch.name}} only</span>
+    </div>
   </div>
 
   <div class="hint" style="margin:-8px 0 16px">Uploaded/scheduled videos automatically disappear from this dashboard after 7 days. Your YouTube videos are not deleted.</div>
