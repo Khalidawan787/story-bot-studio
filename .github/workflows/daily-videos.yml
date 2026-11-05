@@ -222,8 +222,24 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      url: ${{ steps.deploy.outputs.page_url || steps.deploy_retry.outputs.page_url }}
     steps:
+      # On 2026-11-05 Pages sat in "updating_pages" for 10 minutes on GitHub's
+      # side and the whole run showed as failed although every video was made.
+      # So: a shorter wait, one retry, and a stuck status page never fails the run.
       - name: Publish to GitHub Pages
         id: deploy
+        continue-on-error: true
         uses: actions/deploy-pages@v4
+        with:
+          timeout: 300000
+      - name: Publish to GitHub Pages (retry)
+        id: deploy_retry
+        if: steps.deploy.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+        with:
+          timeout: 300000
+      - name: Note when the status page did not update
+        if: steps.deploy.outcome == 'failure' && steps.deploy_retry.outcome == 'failure'
+        run: echo "::warning::GitHub Pages did not finish (GitHub side); the videos are not affected. The next run updates the status page."
