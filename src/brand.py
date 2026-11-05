@@ -195,3 +195,85 @@ def palette(channel_id: str, defaults: dict | None = None) -> dict:
                 taken.add(role)
                 break
     return found
+
+
+def colour_list(channel_id: str) -> list[dict]:
+    """Every colour in the style notes, in order: [{"hex": "#0B1729", "name": "Navy"}]."""
+    seen, out = set(), []
+    for hex_code, name in re.findall(r"#([0-9A-Fa-f]{6})\s*[-:]?\s*([A-Za-z][A-Za-z ]{0,30})?",
+                                     style_text(channel_id)):
+        key = hex_code.upper()
+        if key not in seen:
+            seen.add(key)
+            out.append({"hex": f"#{key}", "name": (name or "").strip()})
+    return out[:16]
+
+
+def logo_path(channel_id: str) -> Path | None:
+    path = brand_dir(channel_id) / "logo.png"
+    return path if path.is_file() else None
+
+
+def save_logo(channel_id: str, storage) -> Path:
+    """The owner's logo, made small (120 px high, 64 colours) so Send to GitHub can carry it."""
+    import subprocess
+    import tempfile
+
+    suffix = Path(str(storage.filename or "")).suffix.lower()
+    if suffix not in IMAGE_TYPES:
+        raise ValueError("Upload a PNG (or JPG/WEBP) logo.")
+    target = brand_dir(channel_id) / "logo.png"
+    with tempfile.TemporaryDirectory() as tmp:
+        raw = Path(tmp) / f"logo{suffix}"
+        storage.save(str(raw))
+        subprocess.run(
+            [settings.ffmpeg_bin, "-y", "-i", str(raw), "-filter_complex",
+             "scale='min(360,iw*120/ih)':'min(120,ih*360/iw)':flags=lanczos,split[a][b];"
+             "[a]palettegen=max_colors=64:reserve_transparent=1[p];[b][p]paletteuse",
+             "-frames:v", "1", "-update", "1", str(target)],
+            check=True, capture_output=True, text=True,
+        )
+    return target
+
+
+def delete_logo(channel_id: str) -> None:
+    path = brand_dir(channel_id) / "logo.png"
+    if path.is_file():
+        path.unlink()
+
+
+def stamp_logo(image_path, channel) -> None:
+    """Draw the channel's logo on a finished thumbnail (when it has one): top left,
+    or on a Short centred under its badge.
+
+    The same empty space as the layouts keep at the top (thumbnails.SAFE_MARGIN;
+    a Short's card inside its 2:3 shelf crop). Never fails the thumbnail.
+    """
+    if channel is None:
+        return
+    logo = logo_path(channel.id)
+    if logo is None:
+        return
+    import subprocess
+
+    image_path = Path(image_path)
+    try:
+        from .short_thumbnail import MARGIN
+        from .thumbnails import SAFE_MARGIN
+
+        probe = subprocess.run(
+            [settings.ffmpeg_bin, "-i", str(image_path)], capture_output=True, text=True).stderr
+        size = re.search(r"(\d{3,5})x(\d{3,5})", probe)
+        tall = bool(size) and int(size.group(2)) > int(size.group(1))
+        # A Short: centred under the badge row (the badge sits centred on top).
+        height, x, y = (100, "(W-w)/2", MARGIN + 125) if tall else (84, 30, SAFE_MARGIN)
+        out = image_path.with_name(image_path.stem + ".logo" + image_path.suffix)
+        subprocess.run(
+            [settings.ffmpeg_bin, "-y", "-i", str(image_path), "-i", str(logo), "-filter_complex",
+             f"[1]scale=-1:{height}[l];[0][l]overlay={x}:{y}",
+             "-frames:v", "1", "-update", "1", "-q:v", "2", str(out)],
+            check=True, capture_output=True, text=True,
+        )
+        out.replace(image_path)
+    except Exception as exc:
+        print(f"[thumbnail] logo skipped ({exc})")

@@ -692,8 +692,11 @@ def _brand_kit(ch) -> dict:
             return [{"path": str(p), "name": p.stem, "file": p.name, "mtime": int(p.stat().st_mtime),
                      "check": load_check(p)} for p in paths]
 
+        logo = brand.logo_path(ch.id)
         return {"style": brand.current_style(ch), "styles": brand.STYLE_FLAGS, "guide": brand.style_text(ch.id),
-                "examples": files(brand.examples(ch.id)), "samples": files(brand.samples(ch.id))}
+                "examples": files(brand.examples(ch.id)), "samples": files(brand.samples(ch.id)),
+                "colours": brand.colour_list(ch.id),
+                "logo": {"path": str(logo), "mtime": int(logo.stat().st_mtime)} if logo else None}
     except Exception:
         return {"style": "", "styles": {}, "guide": "", "examples": [], "samples": []}
 
@@ -735,6 +738,26 @@ def brand_upload_route():
         flash(f"Saved {saved} example(s) for {ch.name}." if saved else "Choose a file first.", "ok" if saved else "error")
     except ValueError as exc:
         flash(str(exc), "error")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/brand/logo")
+def brand_logo_route():
+    ch = current_channel()
+    from src import brand
+
+    storage = request.files.get("logo")
+    if request.form.get("remove"):
+        brand.delete_logo(ch.id)
+        flash("Logo removed. Press Send to GitHub so the daily run stops drawing it.", "ok")
+    elif storage and storage.filename:
+        try:
+            brand.save_logo(ch.id, storage)
+            flash(f"Logo saved for {ch.name}: it is drawn on every new thumbnail. Press Send to GitHub.", "ok")
+        except Exception as exc:
+            flash(f"Logo not saved: {exc}", "error")
+    else:
+        flash("Choose a logo file first.", "error")
     return redirect(url_for("home", channel=ch.id))
 
 
@@ -1974,6 +1997,9 @@ PAGE = r"""
   .bk-img span{position:absolute;left:0;right:0;bottom:0;font-size:11px;padding:3px 7px;background:rgba(0,0,0,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bk-img form{position:absolute;top:4px;right:4px}.bk-img form button{width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff;cursor:pointer}
   .bk-pick{cursor:pointer}
+  .bk-logo{display:inline-block;background:#0b0d14;border:1px solid var(--line);border-radius:10px;padding:10px}.bk-logo img{max-height:90px;display:block}
+  .bk-colour{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:13px}.bk-sw{width:26px;height:20px;border-radius:5px;border:1px solid rgba(255,255,255,.18)}
+  .ch-swatches{display:flex;gap:5px;margin-left:auto}.ch-swatches span{width:20px;height:20px;border-radius:5px;border:1px solid rgba(255,255,255,.2)}
   .bk-score{position:absolute;top:6px;left:6px;font-size:11px;padding:2px 7px;border-radius:99px;background:#1f8a4c;color:#fff}.bk-score.bad{background:#a8322d}
   .comp-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
   .comp-ta{width:100%;background:#12162a;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:10px;font:inherit;resize:vertical}
@@ -2106,7 +2132,10 @@ PAGE = r"""
     {% if me.handle %}<a href="https://www.youtube.com/{{me.handle}}" target="_blank">{{me.handle}} ↗</a>{% endif %}
     {% if me.subs_text %}<span class="ch-stats"><b>{{me.subs_text}}</b> subscribers · <b>{{me.videos_text}}</b> videos · <b>{{me.views_text}}</b> views</span>{% endif %}
     <span class="chip">{{ch.genre}}</span><span class="chip">{{'made-for-kids' if ch.made_for_kids else 'general'}}</span>
-    <span class="chip">{{ch.privacy}}</span><span class="only">All buttons: {{ch.name}} only</span>
+    <span class="chip">{{ch.privacy}}</span>
+    {% if kit is defined and kit %}<span class="chip">&#127912; {{kit.styles.get(kit.style, 'Standard')}}</span>
+    {% if kit.colours %}<span class="ch-swatches">{% for c in kit.colours[:8] %}<span style="background:{{c.hex}}" title="{{c.hex}} {{c.name}}"></span>{% endfor %}</span>{% endif %}{% endif %}
+    <span class="only">All buttons: {{ch.name}} only</span>
   </div>
 
   <div class="hint" style="margin:-8px 0 16px">Uploaded/scheduled videos automatically disappear from this dashboard after 7 days. Your YouTube videos are not deleted.</div>
@@ -2170,6 +2199,24 @@ PAGE = r"""
         <input type="hidden" name="channel" value="{{ch.id}}">
         <select name="style" onchange="this.form.submit()">{% for key, label in kit.styles.items() %}<option value="{{key}}" {{'selected' if key==kit.style else ''}}>{{label}}</option>{% endfor %}</select>
       </form>
+    </div>
+    <div class="bk-compare">
+      <div class="bk-col">
+        <div class="bk-label">Logo</div>
+        {% if kit.logo %}<div class="bk-logo"><img src="/media?path={{kit.logo.path|urlencode}}&v={{kit.logo.mtime}}" alt=""></div>
+        <div class="hint" style="color:#a9f0cd">&#10003; Drawn on every new thumbnail (top left)</div>{% else %}<div class="hint">No logo yet. Upload a PNG (transparent works best): it is drawn top left on every new thumbnail.</div>{% endif %}
+        <form method="post" action="/brand/logo" enctype="multipart/form-data" class="row" style="gap:8px;margin-top:10px;flex-wrap:wrap">
+          <input type="hidden" name="channel" value="{{ch.id}}">
+          <input type="file" name="logo" accept="image/png,image/jpeg,image/webp">
+          <button class="ghost sm" type="submit">Upload PNG logo</button>
+          {% if kit.logo %}<button class="ghost sm" type="submit" name="remove" value="1" onclick="return confirm('Remove the logo?')">Remove</button>{% endif %}
+        </form>
+      </div>
+      <div class="bk-col">
+        <div class="bk-label">Colours</div>
+        {% for c in kit.colours %}<div class="bk-colour"><span class="bk-sw" style="background:{{c.hex}}"></span><b>{{c.hex}}</b><span class="muted">{{c.name}}</span></div>
+        {% else %}<div class="hint">No colours yet. Write them in the Style notes below, one per line, like <code>#0B1729 Navy</code>; the layout uses navy/midnight (background), gold (title), crimson/red (ribbon) and ivory/cream (lettering).</div>{% endfor %}
+      </div>
     </div>
     <div class="bk-compare">
       <div class="bk-col">

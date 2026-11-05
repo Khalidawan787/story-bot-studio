@@ -874,6 +874,19 @@ def _title_layers(lines: list[str], font_size: int, style: dict, font_arg: str,
 
 def compose_thumbnail(lesson: Lesson, art_path: Path | None, output_path: Path,
                       channel=None, content_type: str = "short") -> Path:
+    """The channel's layout, then its logo (dashboard: Brand > Logo) top left."""
+    made = _compose_layout(lesson, art_path, output_path, channel, content_type)
+    try:
+        from .brand import stamp_logo
+
+        stamp_logo(made, channel)
+    except Exception as exc:
+        print(f"[thumbnail] logo skipped ({exc})")
+    return made
+
+
+def _compose_layout(lesson: Lesson, art_path: Path | None, output_path: Path,
+                    channel=None, content_type: str = "short") -> Path:
     """Burn the headline + channel badge onto the artwork at 1280x720."""
     if content_type == "short":
         # Shorts show an upright card: a 16:9 one lost its sides (short_thumbnail.py).

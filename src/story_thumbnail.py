@@ -263,6 +263,13 @@ def compose_story_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
     ]
     # Top left: the channel's mark on a dark plate, with a gold rule.
     mark = str(getattr(channel, "name", "") or "").upper()[:28]
+    try:
+        from .brand import logo_path
+
+        if channel is not None and logo_path(channel.id):
+            mark = ""  # the uploaded logo is drawn there instead
+    except Exception:
+        pass
     if mark:
         mark_file = tmp("mark", mark)
         mark_w = _text_width(mark_file, str(LABEL), 20)

@@ -39,7 +39,10 @@ SECRET_FILES = [
     "data/cloudflare_api_token.txt",
     "data/display_timezone.txt",
 ]
-SECRET_GLOBS = ["client_secret_*.json", "token*.json"]
+SECRET_GLOBS = ["client_secret_*.json", "token*.json",
+                # Brand kit saved on the dashboard: style notes (colours) and the
+                # logo drawn on every thumbnail (kept small by brand.save_logo).
+                "data/brand/*/style.md", "data/brand/*/logo.png"]
 
 
 def _collect() -> list[Path]:
