@@ -421,8 +421,33 @@ def fetch_world_trends(limit: int = 25, channel: Channel | None = None) -> list[
     if failures:
         print(f"[trending] {len(failures)} source(s) unavailable: {failures[0]}")
 
+    _boost_competitor_stories(channel, merged.values())
     ranked = sorted(merged.values(), key=lambda t: (-rank_value(t), t.title))
     return ranked[:limit]
+
+
+def _boost_competitor_stories(channel: Channel | None, trends) -> None:
+    """A real news story that the channel's competitors are doing well with ranks higher.
+
+    Only today's actual news is ranked; a competitor video never becomes a
+    topic by itself (competitors.hot_titles).
+    """
+    if channel is None or not getattr(channel, "competitors", ()):
+        return
+    try:
+        from .competitors import hot_titles
+
+        hot = hot_titles(channel)
+    except Exception as exc:
+        print(f"[trending] competitor ranking skipped ({exc})")
+        return
+    for trend in trends:
+        best = max((ratio for title, ratio in hot if _same_story(trend.title, title)
+                    or any(_same_story(line, title) for line in trend.headlines[:5])), default=0.0)
+        if best:
+            trend.peak += min(8.0, 3.0 + best)
+            trend.sources.add("competitors")
+            print(f"[trending] '{trend.title[:60]}' is doing {best:.1f}x on a competitor channel; ranked higher")
 
 
 # ------------------------------------------------------------------ history

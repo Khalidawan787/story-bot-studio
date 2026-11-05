@@ -2065,7 +2065,7 @@ PAGE = r"""
   <div class="card" style="margin-bottom:18px">
     <div class="row" style="justify-content:space-between;align-items:flex-start">
       <div><strong>Thumbnail check</strong>
-        <div class="hint">{% if thumb_required %}ON: no Short or long video uploads without a verified thumbnail (1280×720, 16:9, under 2 MB, not blank). Each video goes up private, gets its thumbnail, then goes public.{% else %}OFF: set REQUIRE_THUMBNAIL=true in .env to turn it on.{% endif %}</div>
+        <div class="hint">{% if thumb_required %}ON: no Short or long video uploads without a verified thumbnail (1280×720, 16:9, under 2 MB, not blank). A video whose thumbnail is not ready waits; while YouTube's thumbnail limit is hit, the channel's new videos wait too.{% else %}OFF: set REQUIRE_THUMBNAIL=true in .env to turn it on.{% endif %}</div>
         <div class="hint" style="margin-top:6px">
           {% set held = namespace(n=0, ok=0) %}{% for v in videos %}{% set tc=thumb_checks.get(v['id']) %}{% if tc and tc.ok %}{% set held.ok = held.ok + 1 %}{% elif not v['video_url'] %}{% set held.n = held.n + 1 %}{% endif %}{% endfor %}
           {% if videos %}<b>{{held.ok}}</b> verified · <b style="color:{{'var(--err)' if held.n else 'inherit'}}">{{held.n}}</b> on hold for a thumbnail. See each video's thumbnail in <a href="#" onclick="document.querySelector('[data-section=library]').click();return false">Video Library</a>.{% else %}No videos yet. Each new video will show its thumbnail, its check result and a "Remake thumbnail" button in the <b>Video Library</b> tab.{% endif %}

@@ -240,6 +240,31 @@ def _our_titles(channel) -> list[str]:
     return titles
 
 
+def hot_titles(channel, days: int = 3) -> list[tuple[str, float]]:
+    """(title, x usual) of competitor videos from the last `days` doing better than usual.
+
+    For a news channel these only rank today's real news (trending.py): a story
+    the competitors' audience is watching right now moves up. They never become
+    a topic of their own, since news must be what happened today.
+    """
+    if not getattr(channel, "competitors", ()):
+        return []
+    try:
+        refresh(channel)
+    except Exception as exc:
+        print(f"[competitors] {channel.id}: refresh failed ({exc}); using what was read before")
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    conn = _conn()
+    try:
+        rows = conn.execute(
+            "SELECT title, ratio FROM competitor_videos WHERE channel = ? AND published_at >= ? "
+            "AND ratio >= ? ORDER BY ratio DESC LIMIT 60", (channel.id, since, MIN_RATIO),
+        ).fetchall()
+    finally:
+        conn.close()
+    return [(str(row["title"]), float(row["ratio"])) for row in rows]
+
+
 def next_idea(channel, kind: str = "short") -> dict | None:
     """The best unused competitor topic for our next video, reserved for it; None if there is none."""
     if not getattr(channel, "competitors", ()):
