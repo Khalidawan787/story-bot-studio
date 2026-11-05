@@ -329,6 +329,17 @@ def run_pipeline(
     thumbnail_path = _real_subject_thumbnail(lesson, channel, run_dir, content_type) or create_thumbnail(
         lesson, thumbnail_source, run_dir / "thumbnail.jpg", channel, content_type,
     )
+    # Size, the 2 MB limit, not blank or black (thumbnail_check.py); remade once.
+    from .thumbnail_check import ThumbnailNotReady, ensure_ready, thumbnail_required
+
+    thumbnail_problem = ""
+    if thumbnail_required():
+        try:
+            thumbnail_path = ensure_ready(thumbnail_path, regenerate=lambda: create_thumbnail(
+                lesson, thumbnail_source, run_dir / "thumbnail_remade.jpg", channel, content_type))
+        except ThumbnailNotReady as exc:
+            thumbnail_problem = str(exc)
+            print(f"[thumbnail] not ready, the video waits: {exc}")
     metadata = build_metadata(lesson, channel, content_type=content_type)
     _append_image_credits(metadata, run_dir)
     if channel is not None:
@@ -396,6 +407,11 @@ def run_pipeline(
                             f"Duplicate upload blocked ({duplicate[2]}); "
                             f"existing video #{duplicate[0]}: {duplicate[1]}"
                         )
+                    elif thumbnail_problem:
+                        # Never uploaded without a good thumbnail; the retry
+                        # queue checks it again.
+                        status = "daily_upload_pending"
+                        error = f"Thumbnail not ready: {thumbnail_problem}"
                     elif thumbnail_wait_reason(channel_id):
                         # Uploaded later, when a thumbnail can be set with it.
                         status = "daily_upload_pending"

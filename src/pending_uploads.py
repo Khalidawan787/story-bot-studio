@@ -599,6 +599,13 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
             waiting = thumbnail_wait_reason(channel.id)
             if waiting:
                 return f"{video_id}: waits so it never goes public without a thumbnail: {waiting}"
+            from .thumbnail_check import ThumbnailNotReady, ensure_ready, thumbnail_required
+
+            if thumbnail_required():
+                try:
+                    thumbnail_path = ensure_ready(thumbnail_path)
+                except ThumbnailNotReady as exc:
+                    return f"{video_id}: waits, thumbnail not ready: {exc}"
             if not bypass_safety_cap and daily_upload_cap_reached(channel.id, channel.account):
                 return (f"{video_id}: {channel.name} app upload cap reached "
                         f"({upload_limit_for_channel(channel.id, channel.account)}/day "

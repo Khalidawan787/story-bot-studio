@@ -149,6 +149,15 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: python -m src.cli retry-uploads --limit 20
 
+      # Every connected channel's videos of the last week, as YouTube shows them:
+      # one still without a custom thumbnail gets one now (src/thumbnail_audit.py).
+      - name: Check every new video has its thumbnail
+        if: ${{ always() && env.UPLOAD != 'false' }}
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -m src.cli audit-thumbnails --days 7
+
       # A few older videos a day get the current thumbnail style, only after
       # today's own thumbnails are set (src/thumbnail_backfill.py).
       - name: New thumbnails on older videos

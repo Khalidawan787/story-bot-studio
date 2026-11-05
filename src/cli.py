@@ -75,6 +75,11 @@ def main() -> None:
     acc.add_argument("--client-secret", default="",
                      help="Own client_secret file for a separate upload quota (optional)")
 
+    audit = sub.add_parser("audit-thumbnails",
+                           help="Check every connected channel's recent videos on YouTube; set a thumbnail where one is missing.")
+    audit.add_argument("--days", default="7", help="How many days of uploads to check.")
+    audit.add_argument("--fix", default="true", help="false = only report, change nothing.")
+    audit.add_argument("--channel", default="", help="Only this channel id (blank = all).")
     sub.add_parser("thumbnail-backfill", help="Put the current thumbnail style on a few older videos a day.")
     retry = sub.add_parser("retry-uploads", help="Upload rendered/failed videos when internet is back.")
     retry.add_argument("--limit", default="20", help="Maximum pending videos to retry.")
@@ -348,6 +353,11 @@ def main() -> None:
         for message in retry_pending_uploads(limit=max(1, int(args.limit))):
             print(message)
         return
+    elif args.command == "audit-thumbnails":
+        from .thumbnail_audit import audit
+        for message in audit(days=int(args.days), fix=str(args.fix).lower() != "false",
+                             channel_id=args.channel or None):
+            print(message)
     elif args.command == "thumbnail-backfill":
         from .thumbnail_backfill import run as backfill_thumbnails
         for message in backfill_thumbnails():
