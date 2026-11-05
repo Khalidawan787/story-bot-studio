@@ -203,7 +203,7 @@ def compose_story_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
     y_ribbon = y_big + int(big_size * 1.02) + 22
     y_pill = (y_ribbon + ribbon_h if fact else y_big + int(big_size * 1.02)) + 26
 
-    def text(file: Path, font: Path, size: int, y: int, colour: str, extra: str = "") -> str:
+    def text(file: Path, font: Path, size: int, y, colour: str, extra: str = "") -> str:
         return (f"drawtext=fontfile='{_escape(font)}':textfile='{_escape(file)}':fontsize={size}:"
                 f"x={_CX}-text_w/2:y={y}:fontcolor={colour}{extra}")
 
@@ -244,7 +244,8 @@ def compose_story_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
         draw += [
             f"drawbox=x={_CX - ribbon_w // 2 + 5}:y={y_ribbon + 5}:w={ribbon_w}:h={ribbon_h}:color=black@0.45:t=fill",
             f"drawbox=x={_CX - ribbon_w // 2}:y={y_ribbon}:w={ribbon_w}:h={ribbon_h}:color={c['accent']}:t=fill",
-            text(fact_file, LABEL, fact_size, y_ribbon + (ribbon_h - fact_size) // 2 - 2, "white"),
+            # Centred on the letters' own height: the same space above and below.
+            text(fact_file, LABEL, fact_size, f"{y_ribbon}+({ribbon_h}-text_h)/2", "white"),
         ]
     if theme_text:
         pill_w = _text_width(theme_file, str(HEADING), theme_size) + 64
@@ -252,7 +253,7 @@ def compose_story_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
         draw += [
             f"drawbox=x={x0}:y={y_pill}:w={pill_w}:h={pill_h}:color={c['bg']}@0.85:t=fill",
             f"drawbox=x={x0}:y={y_pill}:w={pill_w}:h={pill_h}:color={c['title']}:t=3",
-            text(theme_file, HEADING, theme_size, y_pill + (pill_h - theme_size) // 2 - 1, c["title"]),
+            text(theme_file, HEADING, theme_size, f"{y_pill}+({pill_h}-text_h)/2", c["title"]),
         ]
     draw += [
         text(lead_file, HEADING, lead_size, y_lead, c["text"],

@@ -59,7 +59,8 @@ def _wrap(text: str, font: Path, size: int, limit: int) -> list[str]:
 
 
 def _row(text: str, font: Path, size: int, colour: str, *, bar: str = "", ink: str = "",
-         max_lines: int = 3, edge: str = "", gap: int = 18) -> dict:
+         max_lines: int = 3, edge: str = "", gap: int = 18, outline: str = "",
+         centred: bool = False) -> dict:
     """One headline part: wrapped and shrunk until it fits in `max_lines`."""
     text = " ".join(str(text or "").split())
     while True:
@@ -68,7 +69,7 @@ def _row(text: str, font: Path, size: int, colour: str, *, bar: str = "", ink: s
             break
         size -= 6
     return {"lines": lines, "font": font, "size": size, "colour": ink or colour, "bar": bar,
-            "edge": edge, "gap": gap}
+            "edge": edge, "gap": gap, "outline": outline, "centred": centred}
 
 
 def _rows_for(style: str, lesson: Lesson, run_dir: Path, channel=None) -> tuple[list[dict], dict]:
@@ -82,9 +83,15 @@ def _rows_for(style: str, lesson: Lesson, run_dir: Path, channel=None) -> tuple[
         rows = [_row(lead, HEADING, 76, c["text"], gap=6),
                 _row(big, TITLE, 170, c["title"], max_lines=1, edge="0x1a0f05", gap=26)]
         if fact:
-            rows.append(_row(fact, LABEL, 50, "", bar=c["accent"], ink="white", max_lines=2, gap=26))
+            rows.append(_row(fact, LABEL, 50, "", bar=c["accent"], ink="white", max_lines=2, gap=26,
+                             centred=True))
+        # The themes on one line (never a theme cut in two), in the wide card's
+        # gold-edged navy box.
+        while len(theme_list) > 1 and len(_wrap("  \u2022  ".join(theme_list), HEADING, 40, TEXT_LIMIT - 60)) > 1:
+            theme_list = theme_list[:-1]
         if theme_list:
-            rows.append(_row("  \u2022  ".join(theme_list), HEADING, 40, c["title"], max_lines=2))
+            rows.append(_row("  \u2022  ".join(theme_list), HEADING, 40, "", bar=c["bg"], ink=c["title"],
+                             max_lines=1, outline=c["title"], centred=True))
         return rows, {"badge": ("TRUE STORY", c["accent"], "white", LABEL), "shade": c["bg"]}
     if style == "crime":
         from .crime_thumbnail import _subject, split_headline
@@ -176,15 +183,20 @@ def compose_short_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
                          for i, line in enumerate(row["lines"]))
             bar_w = widest + 60
             draw.append(f"drawbox=x={(WIDTH - bar_w) // 2}:y={y}:w={bar_w}:h={height}:color={row['bar']}:t=fill")
+            if row.get("outline"):
+                draw.append(f"drawbox=x={(WIDTH - bar_w) // 2}:y={y}:w={bar_w}:h={height}:color={row['outline']}:t=5")
         for i, line in enumerate(row["lines"]):
             file = _write(output_path, f"r{index}_{i}", line)
             files.append(file)
             edge = f":borderw=6:bordercolor={row['edge']}" if row["edge"] else ""
             shadow = "" if row["bar"] else ":shadowx=3:shadowy=4:shadowcolor=black@0.8"
+            # Centred on the letters' own height: the same space above and below.
+            top_y = (f"{y + pad + i * line_h}+({line_h}-text_h)/2" if row.get("centred")
+                     else y + pad + i * line_h + int(row['size'] * 0.06))
             draw.append(
                 f"drawtext=fontfile='{_escape(row['font'])}':textfile='{_escape(file)}':"
                 f"fontsize={row['size']}:fontcolor={row['colour']}{edge}{shadow}:"
-                f"x=(w-text_w)/2:y={y + pad + i * line_h + int(row['size'] * 0.06)}"
+                f"x=(w-text_w)/2:y={top_y}"
             )
         if look.get("rule") and index == 0:
             draw.append(f"drawbox=x={(WIDTH - 140) // 2}:y={y + height + 2}:w=140:h=7:color={look['rule']}:t=fill")
