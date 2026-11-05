@@ -85,3 +85,5 @@ data/dashboard_automation.txt
 !data/music/**/*.mp3
 # Channel pictures and numbers read from YouTube (channel_identity.py)
 data/youtube_identity/
+# The bot's sample thumbnails (brand.make_samples), remade on each PC
+data/brand/*/samples/

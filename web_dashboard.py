@@ -322,7 +322,7 @@ def home():
     from src.platform_times import platform_timeline
     timelines = {v['id']: platform_timeline(v, _socials.get(v['id'], {}), _social_cfg, _pause) for v in vids}
     return render_template_string(
-        PAGE, channels=channels, ch=ch, idents=_channel_idents(channels),
+        PAGE, channels=channels, ch=ch, idents=_channel_idents(channels), kit=_brand_kit(ch),
         thumb_checks=thumb_checks, thumb_required=thumbnail_required(),
         timelines=timelines, thumb_audit=_thumb_audit_summary(ch.id), comp=_competitor_view(ch.id),
         topics=[(k, v.get("title", k)) for k, v in topics.items()],
@@ -679,6 +679,84 @@ def _competitor_view(channel_id: str) -> dict:
         return overview(channel_id)
     except Exception:
         return {"channels": [], "videos": []}
+
+
+def _brand_kit(ch) -> dict:
+    """The channel's style, notes, examples and the bot's latest samples (brand.py)."""
+    try:
+        from src import brand
+
+        def files(paths):
+            return [{"path": str(p), "name": p.stem, "file": p.name, "mtime": int(p.stat().st_mtime)} for p in paths]
+
+        return {"style": brand.current_style(ch), "styles": brand.STYLE_FLAGS, "guide": brand.style_text(ch.id),
+                "examples": files(brand.examples(ch.id)), "samples": files(brand.samples(ch.id))}
+    except Exception:
+        return {"style": "", "styles": {}, "guide": "", "examples": [], "samples": []}
+
+
+@app.post("/brand/style-select")
+def brand_style_select_route():
+    ch = current_channel()
+    from src import brand
+
+    style = request.form.get("style", "")
+    if style not in brand.STYLE_FLAGS:
+        abort(400)
+    brand.set_style(ch.id, style)
+    flash(f"Thumbnail style for {ch.name}: {brand.STYLE_FLAGS[style]}. Press Send to GitHub so the daily run uses it.", "ok")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/brand/guide")
+def brand_guide_route():
+    ch = current_channel()
+    from src import brand
+
+    brand.save_style(ch.id, request.form.get("guide", ""))
+    flash("Style notes saved.", "ok")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/brand/upload")
+def brand_upload_route():
+    ch = current_channel()
+    from src import brand
+
+    saved = 0
+    try:
+        for storage in request.files.getlist("files"):
+            if storage and storage.filename:
+                brand.save_example(ch.id, storage)
+                saved += 1
+        flash(f"Saved {saved} example(s) for {ch.name}." if saved else "Choose a file first.", "ok" if saved else "error")
+    except ValueError as exc:
+        flash(str(exc), "error")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/brand/example-delete")
+def brand_example_delete_route():
+    ch = current_channel()
+    from src import brand
+
+    brand.delete_example(ch.id, request.form.get("name", ""))
+    flash("Example removed.", "ok")
+    return redirect(url_for("home", channel=ch.id))
+
+
+@app.post("/brand/samples")
+def brand_samples_route():
+    ch = current_channel()
+
+    def job():
+        from src import brand
+
+        return "\n".join(brand.make_samples(ch))
+
+    start_job(f"[{ch.id}] Make sample thumbnails", job)
+    flash("Drawing a long and a Short sample in the current style (about a minute). See Jobs, then refresh.", "ok")
+    return redirect(url_for("home", channel=ch.id))
 
 
 def _channel_idents(channels) -> dict:
@@ -1883,6 +1961,16 @@ PAGE = r"""
   .st{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px}
   .st.uploaded{background:#123122;color:var(--ok)}.st.rendered{background:#2a2f4d;color:#b9c1e6}
   .st.scheduled,.st.facebook_only{background:#1a2b4d;color:#8fb4ff}
+  .bk-label{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted,#9aa3b8);margin-bottom:6px}
+  .bk-compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:12px}
+  .bk-col{border:1px solid var(--line);border-radius:12px;padding:12px}
+  .bk-col-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+  .bk-gallery{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .bk-img{position:relative;display:block;height:150px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#0b0d14}
+  .bk-img img{height:150px;width:auto;display:block}
+  .bk-img span{position:absolute;left:0;right:0;bottom:0;font-size:11px;padding:3px 7px;background:rgba(0,0,0,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bk-img form{position:absolute;top:4px;right:4px}.bk-img form button{width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff;cursor:pointer}
+  .bk-pick{cursor:pointer}
   .comp-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
   .comp-ta{width:100%;background:#12162a;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:10px;font:inherit;resize:vertical}
   .comp-chans{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px;padding:12px 0 6px}
@@ -2070,6 +2158,49 @@ PAGE = r"""
 
   <section class="dash-section active" id="section-overview">
   <div class="section-head"><h2>{{ch.name}} Overview</h2><div class="muted">Connection, automation mode and today&rsquo;s progress</div></div>
+  <div class="card" style="margin-bottom:18px">
+    <div class="comp-head">
+      <div><strong>Brand &amp; thumbnail style</strong>
+        <div class="hint">{{ch.name}}'s thumbnail layout; every new Short and long video gets it. Your examples and notes are kept in <code>data/brand/{{ch.id}}/</code>.</div></div>
+      <form method="post" action="/brand/style-select" class="row" style="gap:8px">
+        <input type="hidden" name="channel" value="{{ch.id}}">
+        <select name="style" onchange="this.form.submit()">{% for key, label in kit.styles.items() %}<option value="{{key}}" {{'selected' if key==kit.style else ''}}>{{label}}</option>{% endfor %}</select>
+      </form>
+    </div>
+    <div class="bk-compare">
+      <div class="bk-col">
+        <div class="bk-col-head">
+          <div class="bk-label" style="margin:0">Bot's latest samples</div>
+          <form method="post" action="/brand/samples"><input type="hidden" name="channel" value="{{ch.id}}"><button class="ghost sm" type="submit">Make new samples</button></form>
+        </div>
+        <div class="bk-gallery">
+          {% for s in kit.samples %}<a href="/media?path={{s.path|urlencode}}" target="_blank" class="bk-img"><img src="/media?path={{s.path|urlencode}}&v={{s.mtime}}" alt=""><span>{{'Short 9:16' if s.name=='short' else 'Long 16:9'}}</span></a>{% else %}<div class="hint">No sample yet: press "Make new samples".</div>{% endfor %}
+        </div>
+      </div>
+      <div class="bk-col">
+        <div class="bk-col-head">
+          <div class="bk-label" style="margin:0">Your examples ({{kit.examples|length}})</div>
+          <form method="post" action="/brand/upload" enctype="multipart/form-data" class="row" style="gap:6px">
+            <input type="hidden" name="channel" value="{{ch.id}}">
+            <label class="ghost sm bk-pick">+ Add examples<input type="file" name="files" accept="image/*" multiple hidden onchange="this.form.submit()"></label>
+          </form>
+        </div>
+        <div class="bk-gallery">
+          {% for e in kit.examples %}<div class="bk-img"><a href="/media?path={{e.path|urlencode}}" target="_blank"><img src="/media?path={{e.path|urlencode}}" alt=""></a>
+            <form method="post" action="/brand/example-delete" onsubmit="return confirm('Remove this example?')"><input type="hidden" name="channel" value="{{ch.id}}"><input type="hidden" name="name" value="{{e.file}}"><button type="submit" title="Remove">x</button></form>
+            <span>{{e.name}}</span></div>{% else %}<div class="hint">Add the reference thumbnails you liked for this channel.</div>{% endfor %}
+        </div>
+      </div>
+    </div>
+    <details style="margin-top:14px">
+      <summary class="bk-label" style="cursor:pointer">Style notes</summary>
+      <form method="post" action="/brand/guide" style="margin-top:8px">
+        <input type="hidden" name="channel" value="{{ch.id}}">
+        <textarea name="guide" rows="8" class="comp-ta">{{kit.guide}}</textarea>
+        <button class="green sm" type="submit" style="margin-top:8px">Save notes</button>
+      </form>
+    </details>
+  </div>
   <h3 style="margin:0 0 8px">Kahan kahan post hota hai</h3>
   {{ connection_cards() }}
 

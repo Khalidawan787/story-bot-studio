@@ -52,7 +52,10 @@ def _subject(run_dir: Path) -> str:
 def split_headline(lesson: Lesson, subject: str) -> tuple[list[str], str]:
     """(white lines, yellow part): "THE PONZI SCHEME OF" + "BERNIE MADOFF"."""
     title = re.split(r"\s*\|\s*", str(lesson.title or ""))[0].strip().upper()
-    title = re.sub(r"\s+", " ", title)[:60]
+    title = re.sub(r"\s+", " ", title)
+    if len(title) > 60:
+        # Cut at a word, never inside one ("A CENTENNIAL MYSTER").
+        title = title[:61].rsplit(" ", 1)[0].rstrip(" :,-")
     name = re.sub(r"\(.*?\)", "", subject).strip().upper()
     words = title.split()
     highlight = ""
