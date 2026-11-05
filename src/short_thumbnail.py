@@ -71,17 +71,21 @@ def _row(text: str, font: Path, size: int, colour: str, *, bar: str = "", ink: s
             "edge": edge, "gap": gap}
 
 
-def _rows_for(style: str, lesson: Lesson, run_dir: Path) -> tuple[list[dict], dict]:
+def _rows_for(style: str, lesson: Lesson, run_dir: Path, channel=None) -> tuple[list[dict], dict]:
     """The headline rows and the card's look (badge, frame, where the text sits)."""
     if style == "story":
-        from .story_thumbnail import name_and_fact
+        # The poster of the wide card, upright: same words, fonts and colours.
+        from .story_thumbnail import HEADING, LABEL, TITLE, colours, poster_words
 
-        name, fact = name_and_fact(lesson, run_dir)
-        rows = [_row("The story of", SERIF, 64, "0xf3ead2", gap=4),
-                _row(name.upper(), SERIF, 128, "0xf3ead2", max_lines=2, gap=10)]
+        c = colours(channel)
+        lead, big, fact, theme_list = poster_words(lesson, run_dir)
+        rows = [_row(lead, HEADING, 76, c["text"], gap=6),
+                _row(big, TITLE, 170, c["title"], max_lines=1, edge="0x1a0f05", gap=26)]
         if fact:
-            rows.append(_row(fact, SERIF, 64, "0xd4ad55", max_lines=2))
-        return rows, {"rule": "0xd4ad55", "shade": "0x0d0e12"}
+            rows.append(_row(fact, LABEL, 50, "", bar=c["accent"], ink="white", max_lines=2, gap=26))
+        if theme_list:
+            rows.append(_row("  \u2022  ".join(theme_list), HEADING, 40, c["title"], max_lines=2))
+        return rows, {"badge": ("TRUE STORY", c["accent"], "white", LABEL), "shade": c["bg"]}
     if style == "crime":
         from .crime_thumbnail import _subject, split_headline
 
@@ -128,7 +132,7 @@ def compose_short_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
         raise RuntimeError("this channel has no thumbnail style")
     run_dir = output_path.parent
     run_dir.mkdir(parents=True, exist_ok=True)
-    rows, look = _rows_for(style, lesson, run_dir)
+    rows, look = _rows_for(style, lesson, run_dir, channel)
     rows = [row for row in rows if row["lines"]]
 
     # Heights, then the block sits on the bottom margin (or under the top one).

@@ -22,7 +22,7 @@ IMAGE_TYPES = {".jpg", ".jpeg", ".png", ".webp"}
 STYLE_FLAGS = {
     "": "Standard (picture + title bar)",
     "crime_thumbnail": "Crime case file (photo, yellow name)",
-    "story_thumbnail": "The story of (hero photo, name, fact)",
+    "story_thumbnail": "History poster (hero photo, gold name, red ribbon)",
     "trend_thumbnail": "World Trending news frame",
     "news_thumbnail": "Ain The Explainer (anchor + 3 bars)",
     "motivation_thumbnail": "Daily Motivation gold glow",
@@ -99,20 +99,26 @@ def delete_example(channel_id: str, name: str) -> None:
         path.unlink()
 
 
-def _latest_topic(channel_id: str, kind: str) -> str | None:
+def _latest_topic(channel_id: str, kind: str) -> tuple[str, str] | None:
+    """(topic, title) of the channel's latest uploaded video of this kind, else of any kind."""
     import sqlite3
 
     if not settings.db_path.exists():
         return None
     conn = sqlite3.connect(settings.db_path)
     try:
-        row = conn.execute(
-            "SELECT topic FROM videos WHERE channel = ? AND COALESCE(content_type, 'short') = ? "
-            "AND video_url IS NOT NULL ORDER BY id DESC LIMIT 1", (channel_id, kind),
-        ).fetchone()
+        row = None
+        for wanted in (kind, None):
+            row = conn.execute(
+                "SELECT topic, title FROM videos WHERE channel = ? AND video_url IS NOT NULL "
+                + ("AND COALESCE(content_type, 'short') = ? " if wanted else "")
+                + "ORDER BY id DESC LIMIT 1", (channel_id, wanted) if wanted else (channel_id,),
+            ).fetchone()
+            if row:
+                break
     finally:
         conn.close()
-    return row[0] if row else None
+    return (row[0], row[1] or row[0]) if row else None
 
 
 def make_samples(channel) -> list[str]:
@@ -128,15 +134,17 @@ def make_samples(channel) -> list[str]:
     notes = []
     for kind in ("long", "short"):
         lesson = None
-        topic = _latest_topic(channel.id, kind)
-        if topic:
+        latest = _latest_topic(channel.id, kind)
+        if latest:
             try:
-                lesson = load_lesson_for(channel, topic)
+                lesson = load_lesson_for(channel, latest[0])
             except Exception:
                 lesson = None
         if lesson is None:
-            title = f"A New {str(channel.genre).title()} Story"
-            lesson = Lesson(topic_key=f"sample_{kind}", title=title, category=str(channel.genre).title(),
+            # The script lives on GitHub only: the real title is enough for a card
+            # (and, on a true-story channel, finds the person's own photo).
+            topic, title = latest or (f"sample_{kind}", f"A New {str(channel.genre).title()} Story")
+            lesson = Lesson(topic_key=topic, title=title, category=str(channel.genre).title(),
                             intro="", outro="", scenes=[Scene(label=title, line=title, image="")])
         work = folder / f"_{kind}"
         work.mkdir(exist_ok=True)
@@ -157,3 +165,33 @@ def make_samples(channel) -> list[str]:
 
         shutil.rmtree(work, ignore_errors=True)
     return notes
+
+
+# Words in the style notes -> the part of the card that colour paints.
+_ROLES = (
+    ("bg", ("navy", "midnight")),
+    ("bg2", ("steel", "teal", "slate blue")),
+    ("title", ("gold",)),
+    ("accent", ("crimson", "red")),
+    ("text", ("ivory", "cream")),
+)
+
+
+def palette(channel_id: str, defaults: dict | None = None) -> dict:
+    """The colours named in the channel's style notes, e.g. '#0B1729 Navy' -> bg.
+
+    The first colour whose name has a role word wins (navy/midnight = background,
+    steel/teal = second background, gold = title, crimson/red = ribbon,
+    ivory/cream = lettering). Missing roles keep the defaults. Values are
+    ffmpeg colours ("0x0b1729").
+    """
+    found = dict(defaults or {})
+    taken = set()
+    for hex_code, name in re.findall(r"#([0-9A-Fa-f]{6})\s*[-:]?\s*([A-Za-z][A-Za-z ]{1,30})", style_text(channel_id)):
+        name = name.strip().lower()
+        for role, words in _ROLES:
+            if role not in taken and any(word in name for word in words):
+                found[role] = "0x" + hex_code.lower()
+                taken.add(role)
+                break
+    return found
