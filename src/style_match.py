@@ -25,11 +25,12 @@ PASS = 50
 
 
 def required() -> bool:
-    """REQUIRE_STYLE_MATCH (default true): a video whose thumbnail does not look
-    like the channel's examples waits instead of uploading (owner's rule, 2026-11-05)."""
+    """REQUIRE_STYLE_MATCH=true makes a video whose thumbnail does not look like
+    the channel's examples wait. Off by default (the owner's decision,
+    2026-11-05): a video never waits; it goes up with the closest of the draws."""
     import os
 
-    return os.getenv("REQUIRE_STYLE_MATCH", "true").strip().lower() not in {"0", "false", "no", "off"}
+    return os.getenv("REQUIRE_STYLE_MATCH", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _load(path: Path):
