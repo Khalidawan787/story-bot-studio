@@ -16,6 +16,7 @@ Reads the same bot.sqlite3 the bot uses, so the page can never disagree with it.
 from __future__ import annotations
 
 import html
+import os
 import re
 import shutil
 import sqlite3
@@ -200,7 +201,8 @@ def collect() -> dict:
         window = now - timedelta(hours=24)
         latest_rows = _rows(
             conn,
-            """SELECT title, channel, status, video_url, publish_at, created_at,
+            """SELECT id, title, channel, status, video_url, publish_at, created_at, upload_date,
+                      thumbnail_path, COALESCE(upload_progress, 0) AS upload_progress,
                       COALESCE(content_type,'short') AS content_type,
                       substr(COALESCE(error,''),1,300) AS error
                FROM videos WHERE hidden_at IS NULL ORDER BY id DESC LIMIT 80""",
@@ -213,7 +215,8 @@ def collect() -> dict:
                 # Newest rows, then filtered and sorted here: hundreds of old
                 # scheduled rows already in the past would otherwise fill any
                 # "earliest first" limit and leave the list empty.
-                """SELECT title, channel, video_url, publish_at,
+                """SELECT id, title, channel, video_url, publish_at, upload_date, status, thumbnail_path,
+                          COALESCE(upload_progress, 0) AS upload_progress,
                           COALESCE(content_type,'short') AS content_type
                    FROM videos WHERE status = 'scheduled' AND publish_at IS NOT NULL
                      AND hidden_at IS NULL ORDER BY id DESC LIMIT 200""",
@@ -221,6 +224,8 @@ def collect() -> dict:
             if (_parse(r["publish_at"]) or now) > now
         ]
         upcoming = sorted(upcoming, key=lambda r: _parse(r["publish_at"]))[:10]
+        last_day = [_with_times(conn, r) for r in last_day]
+        upcoming = [_with_times(conn, r) for r in upcoming]
 
         # What went to the Facebook Pages: videos (Reels and Page videos) and
         # the daily picture posts, newest first, each with its link.
@@ -290,6 +295,93 @@ _WAITING_REASONS = [
     (("not connected", "not authorized"), ("Built · YouTube not connected", "warn")),
     (("missing:",), ("Not uploaded · video file is gone", "bad")),
 ]
+
+
+_CHANNEL_CFG: dict = {}
+SITE_DIR: Path | None = None  # set by main(); thumbnails are copied under it
+THUMB_W, THUMB_H = 320, 180
+
+
+def _with_times(conn: sqlite3.Connection, row: sqlite3.Row) -> dict:
+    """The row plus its per-platform timeline (src/platform_times.py) and thumbnail."""
+    from src.db import active_upload_backoff
+    from src.platform_times import platform_timeline
+    from src.social_accounts import public_status
+
+    item = dict(row)
+    channel = item["channel"]
+    if channel not in _CHANNEL_CFG:
+        _CHANNEL_CFG[channel] = (public_status(channel), active_upload_backoff(channel))
+    cfg, pause = _CHANNEL_CFG[channel]
+    socials = {
+        r["platform"]: dict(r) for r in _rows(
+            conn, "SELECT * FROM social_uploads WHERE video_id = ?", (item["id"],))
+    }
+    item["timeline"] = platform_timeline(item, socials, cfg, pause)
+    item["thumb"] = _thumb(item)
+    return item
+
+
+def _thumb(item: dict) -> str:
+    """A small copy of the video's thumbnail for the page, or "" when there is none.
+
+    Every run publishes the page fresh, so a thumbnail made in an earlier run
+    (whose files are gone) is fetched back from the live page; a video already
+    public falls back to YouTube's own copy.
+    """
+    if SITE_DIR is None:
+        return ""
+    name = f"thumbs/{int(item['id'])}.jpg"
+    target = SITE_DIR / name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    source = Path(str(item.get("thumbnail_path") or ""))
+    try:
+        if source.is_file():
+            import cv2
+            import numpy as np
+
+            image = cv2.imdecode(np.fromfile(str(source), dtype=np.uint8), cv2.IMREAD_COLOR)
+            if image is not None:
+                small = cv2.resize(image, (THUMB_W, THUMB_H), interpolation=cv2.INTER_AREA)
+                ok, data = cv2.imencode(".jpg", small, [cv2.IMWRITE_JPEG_QUALITY, 82])
+                if ok:
+                    target.write_bytes(data.tobytes())
+                    return name
+        site = os.getenv("STATUS_PAGE_URL", "").rstrip("/")
+        if site:
+            import urllib.request
+
+            with urllib.request.urlopen(f"{site}/{name}", timeout=15) as response:
+                target.write_bytes(response.read())
+            return name
+    except Exception:
+        pass
+    vid = _video_id(item.get("video_url"))
+    now = datetime.now(timezone.utc)
+    public = vid and (not item.get("publish_at") or (_parse(item["publish_at"]) or now) <= now)
+    return f"https://i.ytimg.com/vi/{vid}/mqdefault.jpg" if public else ""
+
+
+def _timeline(item: dict) -> str:
+    rows = []
+    for platform in item.get("timeline") or []:
+        steps = "".join(
+            f"<div class='tl-step {s['state']}'><i></i>{html.escape(s['text'])}"
+            + (f" <b>{_local(s['when'])} PKT</b>" if s.get("when") else "") + "</div>"
+            for s in platform["steps"]
+        )
+        name = html.escape(platform["name"])
+        if platform.get("link"):
+            name = (f"<a href='{html.escape(platform['link'])}' target='_blank' rel='noopener'>"
+                    f"{name} &#8599;</a>")
+        rows.append(f"<div class='tl'><div class='tl-name'>{name}</div>{steps}</div>")
+    return f"<div class='tls'>{''.join(rows)}</div>" if rows else ""
+
+
+def _thumb_img(item: dict) -> str:
+    src = item.get("thumb")
+    return (f"<img class='rthumb' loading='lazy' src='{html.escape(src)}' alt=''>" if src
+            else "<div class='rthumb none'>no thumbnail</div>")
 
 
 def _status(status: str, error: str | None = None) -> str:
@@ -463,9 +555,10 @@ def _last_day(rows: list) -> str:
         error = (f"<div class='reason'>{html.escape(_clean(r['error']))}</div>"
                  if r["error"] and STATUS_WORDS.get(r["status"], ("", "bad"))[1] in {"bad", "warn"} else "")
         items.append(
-            f"<li class='row'><div class='row-main'><div class='row-title'>{title}</div>"
-            f"<div class='meta'>{_chips(r['channel'], r['content_type'])}</div>{error}</div>"
-            f"<div class='row-side'>{_status(r['status'], r['error'])}<span class='muted'>{when}</span></div></li>"
+            f"<li class='row with-thumb'>{_thumb_img(r)}<div class='row-main'><div class='row-title'>{title}</div>"
+            f"<div class='meta'>{_chips(r['channel'], r['content_type'])}</div>{error}"
+            f"<div class='row-side'>{_status(r['status'], r['error'])}<span class='muted'>{when}</span></div>"
+            f"{_timeline(r)}</div></li>"
         )
     return f"<ul class='rows'>{''.join(items)}</ul>"
 
@@ -474,11 +567,11 @@ def _upcoming(rows: list) -> str:
     if not rows:
         return "<div class='empty'>Nothing scheduled.</div>"
     return "<ul class='rows'>" + "".join(
-        f"<li class='row'><div class='row-main'><div class='row-title'>"
+        f"<li class='row with-thumb'>{_thumb_img(r)}<div class='row-main'><div class='row-title'>"
         f"<a href='{html.escape(r['video_url'] or '#')}' target='_blank' rel='noopener'>"
         f"{html.escape(str(r['title'] or 'Untitled'))}</a></div>"
-        f"<div class='meta'>{_chips(r['channel'], r['content_type'])}</div></div>"
-        f"<div class='row-side'><span class='when'>{_local(r['publish_at'])}</span></div></li>"
+        f"<div class='meta'>{_chips(r['channel'], r['content_type'])}</div>"
+        f"{_timeline(r)}</div></li>"
         for r in rows
     ) + "</ul>"
 
@@ -643,6 +736,18 @@ _CSS = """
   .when { color:var(--muted); font-size:13px; white-space:nowrap }
   .url { display:block; margin-top:6px; font-size:12px; overflow-wrap:anywhere }
   .alert { border-left:4px solid var(--bad); margin-top:14px }
+  .row.with-thumb { flex-direction:row; align-items:flex-start; gap:12px }
+  .rthumb { width:128px; aspect-ratio:16/9; object-fit:cover; border-radius:8px; flex:none; background:var(--line) }
+  .rthumb.none { display:grid; place-items:center; font-size:11px; color:var(--muted) }
+  .with-thumb .row-main { flex:1 } .with-thumb .row-side { margin-top:6px }
+  .tls { display:grid; gap:6px; margin-top:8px }
+  .tl { font-size:12px } .tl-name { font-weight:700; margin-bottom:2px }
+  .tl-step { color:var(--muted); display:flex; gap:6px; align-items:baseline; flex-wrap:wrap }
+  .tl-step b { color:var(--text, inherit) }
+  .tl-step i { width:7px; height:7px; border-radius:50%; flex:none; display:inline-block }
+  .tl-step.done i { background:var(--ok) } .tl-step.wait i { background:var(--warn) }
+  .tl-step.fail i { background:var(--bad) }
+  @media (max-width:520px) { .rthumb { width:96px } }
 
   .tbl { overflow-x:auto; margin:0 -16px; padding:0 16px }
   table { width:100%; border-collapse:collapse; font-size:14px }
@@ -805,6 +910,8 @@ def main() -> None:
         return
     out_dir = Path(sys.argv[1] if len(sys.argv) > 1 else "site")
     out_dir.mkdir(parents=True, exist_ok=True)
+    global SITE_DIR
+    SITE_DIR = out_dir
     page = render(collect())
     (out_dir / "index.html").write_text(page, encoding="utf-8")
     # Home, privacy and terms links for the Google sign-in screen.

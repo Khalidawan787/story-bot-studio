@@ -750,6 +750,7 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
             raise RuntimeError(facebook_elsewhere_reason())
     publish_at = _shared_publish_time(row, video_id)
     set_social_upload(video_id, platform, "uploading")
+    goes_live: str | None = None  # when the post becomes public, if it is scheduled
     try:
         if platform == "facebook":
             # Title, the story in full (a second-language copy writes it to
@@ -772,12 +773,15 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
             remote_id, post_url = upload_facebook(
                 row["channel"], path, row["title"], row["content_type"], description, scheduled,
             )
+            if scheduled:
+                goes_live = datetime.fromtimestamp(scheduled, timezone.utc).isoformat()
             message = (f"Facebook scheduled for the YouTube time: {post_url}" if scheduled
                        else f"Facebook upload complete: {post_url}")
         elif platform == "tiktok" and (force_tiktok_mode or account(row["channel"], "tiktok").get("mode")) == "zernio":
             remote_id, post_url, slot = upload_tiktok_zernio(
                 row["channel"], path, tiktok_caption(row), publish_at,
             )
+            goes_live = slot.astimezone(timezone.utc).isoformat()
             pkt = slot.astimezone(timezone(timedelta(hours=5))).strftime("%d %b %I:%M %p PKT")
             message = f"TikTok public post via Zernio, goes live {pkt}"
         elif platform == "tiktok":
@@ -799,7 +803,7 @@ def publish_video(video_id: int, platform: str, channel_id: str | None = None,
             }.get(mode, "Sent to TikTok drafts")
         else:
             raise RuntimeError("Unsupported social platform.")
-        set_social_upload(video_id, platform, "submitted", remote_id, post_url)
+        set_social_upload(video_id, platform, "submitted", remote_id, post_url, scheduled_for=goes_live)
         return message
     except Exception as exc:
         set_social_upload(video_id, platform, "failed", error=str(exc))

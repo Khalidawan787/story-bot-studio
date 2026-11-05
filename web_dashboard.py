@@ -15,7 +15,7 @@ import os
 import re
 import sqlite3
 import threading
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -86,7 +86,7 @@ def channel_rows(channel_id: str, content_type: str | None = None, view: str = "
         return conn.execute(
             f"""
             SELECT id, job_id, topic, title, video_path, thumbnail_path,
-                   video_url, status, error, created_at, drive_url, publish_at,
+                   video_url, status, error, created_at, drive_url, publish_at, upload_date,
                    COALESCE(content_type, 'short') AS content_type, quality_report,
                    COALESCE(upload_progress, 0) AS upload_progress,
                    COALESCE(account, 'main') AS account
@@ -314,8 +314,17 @@ def home():
         except Exception:
             assets = None
 
+    from src.thumbnail_check import check_thumbnail, thumbnail_required
+    thumb_checks = {v['id']: check_thumbnail(v['thumbnail_path']) for v in vids}
+    _socials = social_uploads_for_channel(ch.id)
+    _social_cfg = social_accounts.public_status(ch.id)
+    _pause = active_upload_backoff(ch.id)
+    from src.platform_times import platform_timeline
+    timelines = {v['id']: platform_timeline(v, _socials.get(v['id'], {}), _social_cfg, _pause) for v in vids}
     return render_template_string(
         PAGE, channels=channels, ch=ch,
+        thumb_checks=thumb_checks, thumb_required=thumbnail_required(),
+        timelines=timelines,
         topics=[(k, v.get("title", k)) for k, v in topics.items()],
         videos=vids, jobs=JOBS, assets=assets, storage=storage_info(),
         connected=ch.token_path.exists(), upload_pause=active_upload_backoff(ch.id),
@@ -1767,6 +1776,15 @@ PAGE = r"""
   .st{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px}
   .st.uploaded{background:#123122;color:var(--ok)}.st.rendered{background:#2a2f4d;color:#b9c1e6}
   .st.scheduled,.st.facebook_only{background:#1a2b4d;color:#8fb4ff}
+  .ptimes{display:grid;gap:6px;margin:8px 0}.pt{border:1px solid var(--line);border-radius:9px;padding:7px 9px}
+  .pt-name{font-weight:600;font-size:13px;margin-bottom:3px}.pt-ic{display:inline-block;width:18px;opacity:.8}
+  .pt-step{font-size:12px;color:var(--muted,#9aa3b8);display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+  .pt-step b{color:var(--text)}.pt-step .dot{width:7px;height:7px;border-radius:50%;flex:none;transform:translateY(-1px)}
+  .pt-step.done .dot{background:#3ecf7a}.pt-step.wait .dot{background:#e8b339}.pt-step.fail .dot{background:var(--err)}
+  .thumb-check{border:1px solid var(--line);border-radius:10px;padding:8px;margin:8px 0;display:grid;gap:6px}
+  .thumb-check img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:7px;display:block}
+  .thumb-check.ok .thumb-verdict{color:#7ee2a8;font-size:12px}.thumb-check.bad{border-color:#7a2a2c}
+  .thumb-check.bad .thumb-verdict{color:var(--err);font-size:12px}
   .st.thumbnail_pending{background:#3a2f12;color:var(--warn)}.st.upload_failed,.st.quality_failed,.st.duplicate_blocked{background:#331617;color:var(--err)}
   .st.daily_upload_pending{background:#2d2754;color:#c9b7ff}.st.awaiting_approval{background:#3a2f12;color:var(--warn)}
   .muted{color:var(--muted);font-size:13px}.err{color:var(--err);font-size:11px;margin-top:6px;max-height:48px;overflow:auto}
@@ -1915,6 +1933,19 @@ PAGE = r"""
       <div><strong>Preview &amp; Approval Mode</strong><div class="hint">When ON, requested uploads wait for your approval after the quality check.</div></div>
       <label class="chk"><input type="checkbox" name="enabled" {{'checked' if approval_mode else ''}} onchange="this.form.submit()"> {{'ON: review before upload' if approval_mode else 'OFF: automatic upload'}}</label>
     </form>
+  </div>
+
+  <div class="card" style="margin-bottom:18px">
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div><strong>Thumbnail check</strong>
+        <div class="hint">{% if thumb_required %}ON: no Short or long video uploads without a verified thumbnail (1280×720, 16:9, under 2 MB, not blank). Each video goes up private, gets its thumbnail, then goes public.{% else %}OFF: set REQUIRE_THUMBNAIL=true in .env to turn it on.{% endif %}</div>
+        <div class="hint" style="margin-top:6px">
+          {% set held = namespace(n=0, ok=0) %}{% for v in videos %}{% set tc=thumb_checks.get(v['id']) %}{% if tc and tc.ok %}{% set held.ok = held.ok + 1 %}{% elif not v['video_url'] %}{% set held.n = held.n + 1 %}{% endif %}{% endfor %}
+          {% if videos %}<b>{{held.ok}}</b> verified · <b style="color:{{'var(--err)' if held.n else 'inherit'}}">{{held.n}}</b> on hold for a thumbnail. See each video's thumbnail in <a href="#" onclick="document.querySelector('[data-section=library]').click();return false">Video Library</a>.{% else %}No videos yet. Each new video will show its thumbnail, its check result and a "Remake thumbnail" button in the <b>Video Library</b> tab.{% endif %}
+        </div>
+      </div>
+      <span class="chip">{{'ON' if thumb_required else 'OFF'}}</span>
+    </div>
   </div>
 
   {% if upload_pause %}
@@ -2649,7 +2680,19 @@ Content Posting API (video.upload): the tool sends my finished videos to my TikT
     <div class="card vid" data-video-card="{{v['id']}}">
       {% if v['drive_url'] %}
         <div class="card" style="text-align:center;padding:28px"><a href="{{v['drive_url']}}" target="_blank">☁ On Google Drive ↗</a></div>
-      {% elif v['video_path'] %}<video controls preload="metadata" src="/media?path={{v['video_path']|urlencode}}"></video>{% endif %}
+      {% elif v['video_path'] %}<video controls preload="none"{% if thumb_checks.get(v['id']) and thumb_checks.get(v['id']).kb %} poster="/media?path={{v['thumbnail_path']|urlencode}}"{% endif %} src="/media?path={{v['video_path']|urlencode}}"></video>{% endif %}
+      <div class="ptimes">
+        {% for p in timelines.get(v['id'], []) %}
+        <div class="pt"><div class="pt-name"><span class="pt-ic">{{p.icon}}</span>{% if p.link %}<a href="{{p.link}}" target="_blank">{{p.name}} ↗</a>{% else %}{{p.name}}{% endif %}</div>
+          {% for s in p.steps %}<div class="pt-step {{s.state}}"><span class="dot"></span>{{s.text}}{% if s.when %} <b>{{s.when|localdt}}</b>{% endif %}</div>{% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+      {% set tc=thumb_checks.get(v['id']) %}
+      <div class="thumb-check {{'ok' if tc and tc.ok else 'bad'}}">
+        {% if v['thumbnail_path'] and tc and tc.kb %}<a href="/media?path={{v['thumbnail_path']|urlencode}}" target="_blank"><img src="/media?path={{v['thumbnail_path']|urlencode}}" alt="Thumbnail" loading="lazy"></a>{% endif %}
+        <div class="thumb-verdict">{% if tc and tc.ok %}✓ Thumbnail verified · {{tc.width}}×{{tc.height}} · {{tc.kb}} KB{% else %}✗ Thumbnail not ready: {{tc.summary if tc else 'no thumbnail'}}{% if thumb_required and not v['video_url'] %} · upload is on hold{% endif %}{% endif %}</div>
+      </div>
       <div class="t">{{v['title']}} <span class="chip">{{v['content_type']}}</span>{% if accounts|length > 1 %} <span class="chip">{{v['account']}}</span>{% endif %}</div>
       <div class="hint">Created: {{v['created_at']|localdt}}</div>
       <div class="row" style="justify-content:space-between;margin:2px 0 8px">

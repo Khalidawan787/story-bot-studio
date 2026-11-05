@@ -142,6 +142,10 @@ def connect() -> sqlite3.Connection:
         )
         """
     )
+    # When a submitted post goes live (Facebook / TikTok scheduled to the YouTube time).
+    social_cols = [row[1] for row in conn.execute("PRAGMA table_info(social_uploads)").fetchall()]
+    if "scheduled_for" not in social_cols:
+        conn.execute("ALTER TABLE social_uploads ADD COLUMN scheduled_for TEXT")
     conn.commit()
     return conn
 
@@ -706,7 +710,7 @@ def mark_thumbnail_pending(video_id: int, video_url: str, error: str) -> None:
 def set_social_upload(
     video_id: int, platform: str, status: str,
     remote_id: str | None = None, post_url: str | None = None,
-    error: str | None = None,
+    error: str | None = None, scheduled_for: str | None = None,
 ) -> None:
     now = datetime.now(timezone.utc).isoformat()
     conn = connect()
@@ -714,14 +718,14 @@ def set_social_upload(
         conn.execute(
             """
             INSERT INTO social_uploads
-                (video_id, platform, status, remote_id, post_url, error, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                (video_id, platform, status, remote_id, post_url, error, created_at, updated_at, scheduled_for)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(video_id, platform) DO UPDATE SET
                 status=excluded.status, remote_id=excluded.remote_id,
                 post_url=excluded.post_url, error=excluded.error,
-                updated_at=excluded.updated_at
+                updated_at=excluded.updated_at, scheduled_for=excluded.scheduled_for
             """,
-            (video_id, platform, status, remote_id, post_url, error, now, now),
+            (video_id, platform, status, remote_id, post_url, error, now, now, scheduled_for),
         )
         conn.commit()
     finally:
