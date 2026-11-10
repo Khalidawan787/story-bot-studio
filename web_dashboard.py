@@ -323,6 +323,7 @@ def home():
     timelines = {v['id']: platform_timeline(v, _socials.get(v['id'], {}), _social_cfg, _pause) for v in vids}
     return render_template_string(
         PAGE, channels=channels, ch=ch, idents=_channel_idents(channels), kit=_brand_kit(ch),
+        acct=_account_overview(),
         thumb_checks=thumb_checks, thumb_required=thumbnail_required(),
         timelines=timelines, thumb_audit=_thumb_audit_summary(ch.id), comp=_competitor_view(ch.id),
         topics=[(k, v.get("title", k)) for k, v in topics.items()],
@@ -679,6 +680,29 @@ def _competitor_view(channel_id: str) -> dict:
         return overview(channel_id)
     except Exception:
         return {"channels": [], "videos": []}
+
+
+def _account_overview() -> dict:
+    """GitHub, Facebook apps, Google Cloud projects and TikTok names (src/account_info.py)."""
+    try:
+        from src import account_info
+
+        return account_info.overview()
+    except Exception as exc:
+        return {"error": str(exc)}
+
+
+@app.post("/accounts-info/refresh")
+def accounts_info_refresh_route():
+    ch = current_channel()
+    try:
+        from src import account_info
+
+        pages = account_info.refresh_facebook()["pages"]
+        flash(f"Checked {len(pages)} Facebook Page(s) with Facebook.", "ok")
+    except Exception as exc:
+        flash(f"Facebook check failed: {exc}", "error")
+    return redirect(url_for("home", channel=ch.id) + "#connections")
 
 
 def _brand_kit(ch) -> dict:
@@ -1997,6 +2021,12 @@ PAGE = r"""
   .bk-img span{position:absolute;left:0;right:0;bottom:0;font-size:11px;padding:3px 7px;background:rgba(0,0,0,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bk-img form{position:absolute;top:4px;right:4px}.bk-img form button{width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff;cursor:pointer}
   .bk-pick{cursor:pointer}
+  .acct-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:14px;margin-top:12px}
+  .acct-box{border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+  .acct-row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.07);font-size:13px}
+  .acct-row span{color:var(--muted,#9aa3b8)}.acct-row a,.acct-row b{text-align:right;word-break:break-all}
+  .acct-item{padding:7px 8px;border-radius:8px;margin:3px 0;font-size:13px}.acct-item .hint{word-break:break-word}
+  .acct-me{background:rgba(120,140,255,.10);outline:1px solid rgba(120,140,255,.35)}
   .bk-logo{display:inline-block;background:#0b0d14;border:1px solid var(--line);border-radius:10px;padding:10px}.bk-logo img{max-height:90px;display:block}
   .bk-colour{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:13px}.bk-sw{width:26px;height:20px;border-radius:5px;border:1px solid rgba(255,255,255,.18)}
   .ch-swatches{display:flex;gap:6px}.ch-swatches span{width:22px;height:22px;border-radius:5px;border:1px solid rgba(255,255,255,.25)}
@@ -2576,6 +2606,53 @@ PAGE = r"""
   <div class="section-head"><h2>Connections</h2><div class="muted">{{ch.name}}: kaun sa account juda hai aur kya khud post hota hai</div></div>
   {{ connection_cards() }}
   <div class="hint" style="margin:-6px 0 14px">Koi setting ya login badla? Overview &rarr; Setup mein <b>Send to GitHub</b> dabayein, warna roz ka GitHub run purani settings se chalega.</div>
+  {% if acct and not acct.error %}{% set gh = acct.github %}
+  <div class="card" style="margin-bottom:18px">
+    <div class="comp-head">
+      <div><strong>Accounts &amp; apps</strong><div class="hint">Bot kis GitHub account, kis Facebook app, kis Google Cloud project aur kis TikTok se chalta hai (sab channels). Koi token yahan nahi dikhaya jaata.</div></div>
+      <form method="post" action="/accounts-info/refresh"><input type="hidden" name="channel" value="{{ch.id}}"><button class="ghost sm" type="submit">Refresh Facebook</button></form>
+    </div>
+    <div class="acct-grid">
+      <div class="acct-box">
+        <div class="bk-label">GitHub</div>
+        <div class="acct-row"><span>Repository</span><a href="{{gh.repo_url}}" target="_blank">{{gh.repo}} &#8599;</a></div>
+        <div class="acct-row"><span>Account (owner)</span><a href="{{gh.owner_url}}" target="_blank">{{gh.owner}} &#8599;</a></div>
+        <div class="acct-row"><span>Push from this PC</span><b>{{gh.push_account}}</b></div>
+        <div class="acct-row"><span>Send to GitHub (secrets)</span><a href="{{gh.secrets_url}}" target="_blank">{{gh.secrets_account}} &#8599;</a></div>
+        <div class="acct-row"><span>Daily runs</span><a href="{{gh.actions_url}}" target="_blank">Actions &#8599;</a></div>
+        <div class="acct-row"><span>Status page</span><a href="{{gh.pages_url}}" target="_blank">{{gh.pages_url}}</a></div>
+        <div class="acct-row"><span>Code zip</span><a href="{{gh.zip_url}}" target="_blank">main.zip &#8599;</a></div>
+      </div>
+      <div class="acct-box">
+        <div class="bk-label">Facebook Pages &amp; apps {% if acct.facebook.checked_at %}<span class="muted" style="text-transform:none;letter-spacing:0">&middot; checked {{acct.facebook.checked_at}}</span>{% endif %}</div>
+        {% for cid, p in acct.facebook.pages.items() %}
+        <div class="acct-item {{'acct-me' if cid==ch.id else ''}}">
+          <div><a href="{{p.page_url}}" target="_blank"><b>{{p.page_name or p.page_id}}</b> &#8599;</a> <span class="muted">({{cid}})</span></div>
+          {% if p.error %}<div class="hint" style="color:var(--err)">{{p.error}}</div>{% else %}
+          <div class="hint">App: {% if p.app_url %}<a href="{{p.app_url}}" target="_blank">{{p.app_name}} &middot; {{p.app_id}} &#8599;</a>{% endif %}
+            &nbsp;|&nbsp; Connected by: <b>{{p.connected_by or '?'}}</b>
+            &nbsp;|&nbsp; Token: {{'valid' if p.valid else 'NOT valid'}}, expires {{p.expires}}</div>{% endif %}
+        </div>
+        {% else %}<div class="hint">Press <b>Refresh Facebook</b> to ask Facebook which app and account each Page uses.</div>{% endfor %}
+      </div>
+      <div class="acct-box">
+        <div class="bk-label">YouTube: Google Cloud projects</div>
+        {% for cid, y in acct.youtube.items() %}
+        <div class="acct-item {{'acct-me' if cid==ch.id else ''}}">
+          <div><b>{{cid if cid != '_shared' else 'shared (client_secret.json)'}}</b></div>
+          <div class="hint">Project: <a href="{{y.url}}" target="_blank">{{y.project}} &#8599;</a>{% if y.project_email %} &nbsp;|&nbsp; made with <b>{{y.project_email}}</b>{% endif %}{% if y.login_email %} &nbsp;|&nbsp; channel login <b>{{y.login_email}}</b>{% endif %}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% if acct.tiktok %}<div class="acct-box">
+        <div class="bk-label">TikTok</div>
+        {% for cid, t in acct.tiktok.items() %}
+        <div class="acct-item {{'acct-me' if cid==ch.id else ''}}"><b>{{cid}}</b>: {% if t.url %}<a href="{{t.url}}" target="_blank">@{{t.name}} &#8599;</a>{% else %}{{t.name}}{% endif %} <span class="muted">via {{t.via}}</span></div>
+        {% endfor %}
+      </div>{% endif %}
+    </div>
+  </div>
+  {% endif %}
   <div class="card">
     <div class="row" style="justify-content:space-between"><div><strong>Platform settings</strong><div class="hint">Upar platform chunein. Yeh settings sirf {{ch.name}} ki hain. Keys/tokens isi PC par rehte hain aur dobara nazar nahi aate.</div></div><span class="scope">{{ch.name}} only</span></div>
     <div class="platform-tabs">

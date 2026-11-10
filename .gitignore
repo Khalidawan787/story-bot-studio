@@ -51,6 +51,7 @@ data/youtube_accounts.json
 data/account_emails.json
 # Which Gmail owns each Google Cloud project (its upload quota)
 data/project_emails.json
+data/account_info.json
 # Hand-made thumbnails you drop in (large, machine-specific)
 data/thumbnails/
 # Downloaded on first use (170 MB cut-out model for the layered animation)

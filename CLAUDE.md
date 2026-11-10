@@ -59,6 +59,7 @@ This file and `.clinerules/project-rules.md` hold the same text. When you change
 ## GitHub account
 - This bot always uses the GitHub account **Khalidawan787**. gh on this PC is also signed in to another bot's account, so `scripts/setup_github_actions.py` sends secrets as the repo owner, and git push in this folder uses Khalidawan787 (local `credential.helper`).
 - Facebook posting runs from GitHub only (the `facebook-video-post` and `facebook-picture-post` workflows).
+- **Accounts & apps card** (Connections tab, `src/account_info.py`, 2026-11-10): the GitHub repo and accounts (owner, push, secrets), each Facebook Page's Meta app (name, ID, developers link) and who connected it (Graph `debug_token`, on "Refresh Facebook", cached in `data/account_info.json`, not committed), each channel's Google Cloud project with its Gmail and the channel login Gmail, and the TikTok names. Never a token.
 
 ## Channel: Crime Files (`crime`), YouTube "Crime Chronicles"
 - **What works** (real views up to 2026-11-04): Shorts about famous American outlaws and gangsters with a known face do best (Butch Cassidy 648, Belle Starr 622, Frank Lucas 452, Billy the Kid 269). Heists do about 80 and frauds 20-50. So the subject list and `verified_facts._SUGGEST_BRIEF` favour Wild West outlaws, Prohibition gangsters, bank robbers, con men and drug kingpins. Titles put the name first with a short epithet ("Belle Starr, Outlaw Queen"). Long videos average about 1 view.
