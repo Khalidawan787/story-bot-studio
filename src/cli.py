@@ -355,6 +355,7 @@ def main() -> None:
     elif args.command == "retry-uploads":
         for message in retry_pending_uploads(limit=max(1, int(args.limit))):
             print(message)
+        return
     elif args.command == "competitors":
         from . import competitors
         from .channels import get_channel
@@ -373,10 +374,12 @@ def main() -> None:
         for message in audit(days=int(args.days), fix=str(args.fix).lower() != "false",
                              channel_id=args.channel or None):
             print(message)
+        return
     elif args.command == "thumbnail-backfill":
         from .thumbnail_backfill import run as backfill_thumbnails
         for message in backfill_thumbnails():
             print(message)
+        return
     elif args.command == "refresh-views":
         from .view_stats import refresh_views, top_videos
         for message in refresh_views(args.channel):
