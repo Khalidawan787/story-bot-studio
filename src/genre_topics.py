@@ -558,7 +558,9 @@ def script_problem(raw: dict, scenes: int, long_form: bool) -> str | None:
     low = scenes - (2 if long_form else 1)
     if len(rows) < low:
         return f"only {len(rows)} of {scenes} scenes"
-    min_words = 22 if long_form else 6
+    # 16 words is still a full narrated sentence; on 8-10 Nov drafts were thrown
+    # away for one 17-21 word scene. Length overall is checked just below.
+    min_words = 16 if long_form else 6
     for number, row in enumerate(rows, start=1):
         line = " ".join(str(row.get("line")).split())
         if not re.search(r"[.!?۔][\"'”’)]*$", line):
@@ -570,6 +572,64 @@ def script_problem(raw: dict, scenes: int, long_form: bool) -> str | None:
         if words < int(scenes * 38 * 0.85):
             return f"{words} words, far short of about {scenes * 38}"
     return None
+
+
+def _is_length_problem(problem: str | None) -> bool:
+    return bool(problem) and ("words" in problem) and "scenes" not in problem.split("(")[0]
+
+
+def lengthen_script(draft: dict, scenes: int, long_form: bool) -> dict | None:
+    """The same script with its thin lines written out in full, or None.
+
+    A draft whose only fault is length (a scene of 17-21 words, or 70-80% of the
+    words wanted) used to be thrown away, and after three tries no video was
+    made (8-10 Nov: kids, Ain, SnuggleMoon, motivation, trending). The model now
+    rewrites those lines itself, keeping every scene, its order and its facts,
+    with no new names, numbers or quotes. Never stock filler (the owner's rule).
+    The result must pass script_problem, or None is returned.
+    """
+    rows = [row for row in (draft or {}).get("scenes") or [] if str(row.get("line") or "").strip()]
+    if not rows or any(row.get("speech") for row in rows):
+        # Urdu scripts carry a separate spoken copy that a rewrite would not match.
+        return None
+    target = "35-45" if long_form else "18-26"
+    numbered = "\n".join(f"{i}. {' '.join(str(r.get('line')).split())}" for i, r in enumerate(rows, start=1))
+    try:
+        answer = _script_json(
+            "Below are the narrated lines of a video script, numbered. Rewrite them so that EVERY line "
+            f"is {target} words: two or three full spoken sentences. Keep each line's meaning, its "
+            "place in the story and every fact; add depth by explaining, describing and connecting "
+            "what is already there. Do NOT add any new names, numbers, dates, places, quotes or claims, "
+            "do not greet or repeat earlier lines, and never use filler like 'this scene shows'. "
+            f"Return exactly {len(rows)} lines in the same order.\n{numbered}\n"
+            'Return ONLY JSON: {"lines": [str]}'
+        )
+    except Exception as exc:
+        print(f"[script] lengthening failed ({exc})")
+        return None
+    lines = [" ".join(str(x).split()) for x in answer.get("lines") or []]
+    if len(lines) != len(rows):
+        print(f"[script] lengthening returned {len(lines)} of {len(rows)} lines")
+        return None
+    def numbers(text: str) -> set:
+        return set(re.findall(r"\d[\d,.]*", text))
+
+    fixed = dict(draft)
+    fixed["scenes"] = []
+    for row, line in zip(rows, lines):
+        old = str(row.get("line"))
+        # A rewrite that brings in a number the line did not have is not trusted.
+        if numbers(line) - numbers(old) or len(line.split()) < len(old.split()):
+            line = old
+        new_row = dict(row)
+        new_row["line"] = line
+        fixed["scenes"].append(new_row)
+    problem = script_problem(fixed, scenes, long_form)
+    if problem:
+        print(f"[script] still not whole after lengthening ({problem})")
+        return None
+    print("[script] thin lines written out in full; script is whole")
+    return fixed
 
 
 # A free model asked for 55 scenes in one answer wrote 24 (a 6-minute "15-minute"
@@ -613,6 +673,10 @@ def _long_script_in_parts(prompt: str, scenes: int) -> dict:
                 print(f"[script] part {index}/{parts} try {attempt + 1} failed: {exc}")
                 continue
             problem = script_problem(answer, size, long_form=True)
+            if _is_length_problem(problem):
+                longer = lengthen_script(answer, size, long_form=True)
+                if longer is not None:
+                    answer, problem = longer, None
             rows = [row for row in answer.get("scenes") or [] if str(row.get("line") or "").strip()]
             if not problem:
                 break
@@ -736,6 +800,10 @@ def _draft_script(channel: Channel, user_prompt: str, scenes: int, long_form: bo
                 problem = f"provider error: {exc}"
                 continue
             problem = script_problem(candidate, scenes, long_form)
+            if _is_length_problem(problem):
+                longer = lengthen_script(candidate, scenes, long_form)
+                if longer is not None:
+                    candidate, problem = longer, None
             if not problem:
                 raw = candidate
                 break
