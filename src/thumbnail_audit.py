@@ -51,6 +51,28 @@ def _picture(video_id: str, name: str):
     return None if image is None else cv2.resize(image, (48, 36), interpolation=cv2.INTER_AREA).astype(float)
 
 
+def _exists(video_id: str, name: str) -> bool:
+    request = urllib.request.Request(f"https://i.ytimg.com/vi/{video_id}/{name}.jpg", method="HEAD",
+                                     headers={"User-Agent": "Mozilla/5.0 story-bot-studio"})
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            return response.status == 200
+    except Exception:
+        return False
+
+
+def shorts_tab_state(video_id: str) -> str:
+    """For a public Short: 'custom' when the Shorts tab shows our card ("sardefault"),
+    'frame' when it shows a frame YouTube picked ("oar2" only), else 'unknown'.
+
+    On 9-10 Nov new Shorts had their card as the video thumbnail, yet the Shorts
+    tab showed a frame: the thumbnail was set before YouTube finished processing.
+    """
+    if _exists(video_id, "sardefault"):
+        return "custom"
+    return "frame" if _exists(video_id, "oar2") else "unknown"
+
+
 def thumbnail_state(video_id: str) -> str:
     """'custom', 'missing' (YouTube shows one of its own frames) or 'unknown' (not public yet)."""
     shown = _picture(video_id, "hqdefault")
@@ -289,6 +311,10 @@ def audit(days: int = 7, fix: bool = True, channel_id: str | None = None) -> lis
             fixes, counts = 0, {"custom": 0, "missing": 0, "unknown": 0, "fixed": 0}
             for video in videos:
                 state = thumbnail_state(video["id"])
+                if state == "custom" and video["short"] and shorts_tab_state(video["id"]) == "frame":
+                    # The card is the video's thumbnail but the Shorts tab shows a
+                    # frame: setting it again after processing fixes the tab.
+                    state = "missing"
                 kind = "Short" if video["short"] else "long"
                 label = f"{tag} {video['id']} ({kind}) '{video['title'][:50]}'"
                 if state != "missing":

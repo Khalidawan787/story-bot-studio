@@ -117,6 +117,44 @@ def set_thumbnail(video_id: str, thumbnail_path: Path, attempts: int = 4,
     raise RuntimeError(f"Thumbnail upload failed after {attempts} attempts: {last_error}")
 
 
+def _is_tall(path: Path) -> bool:
+    try:
+        import cv2
+        import numpy as np
+
+        image = cv2.imdecode(np.fromfile(str(path), dtype=np.uint8), cv2.IMREAD_REDUCED_GRAYSCALE_4)
+        return image is not None and image.shape[0] > image.shape[1]
+    except Exception:
+        return False
+
+
+def wait_until_processed(video_id: str, client_secret_file: Path | None = None,
+                         token_file: Path | None = None, timeout: int = 420) -> bool:
+    """Wait (up to `timeout` s) until YouTube has finished processing the upload.
+
+    A Short's thumbnail set straight after the upload is kept as the video's
+    thumbnail, but the Shorts tab then shows a frame YouTube picked itself
+    (no "sardefault" picture: Katherine Johnson, 9 Nov). Set after processing
+    (as the backfill did for Jordan) the Shorts tab shows the card.
+    """
+    youtube = _youtube(client_secret_file, token_file)
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            items = youtube.videos().list(part="status,processingDetails", id=video_id).execute().get("items") or []
+        except Exception:
+            items = []
+        if items:
+            status = (items[0].get("status") or {}).get("uploadStatus", "")
+            processing = (items[0].get("processingDetails") or {}).get("processingStatus", "")
+            if status == "processed" or processing == "succeeded":
+                return True
+            if status in {"failed", "rejected", "deleted"} or processing in {"failed", "terminated"}:
+                return False
+        time.sleep(20)
+    return False
+
+
 def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, object],
                  channel=None, publish_at: datetime | None = None,
                  progress_callback: Callable[[int], None] | None = None,
@@ -196,6 +234,10 @@ def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, obj
     # publish time, and pending_uploads releases it once the thumbnail is on.
     reason = ""
     if upload_thumbnail:
+        if _is_tall(Path(thumbnail_path)):
+            # A Short: thumbnail after processing, so the Shorts tab shows the card.
+            done = wait_until_processed(video_id, client_secret_file, token_file)
+            print(f"[youtube] {video_id} {'processed' if done else 'still processing'}; setting the Short's thumbnail")
         try:
             set_thumbnail(video_id, thumbnail_path, client_secret_file=client_secret_file, token_file=token_file)
         except Exception as exc:
