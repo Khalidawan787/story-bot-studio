@@ -26,9 +26,11 @@ RELEASE_TZ = ZoneInfo("America/New_York")
 RELEASE_TIMES = {
     #                  Shorts                         long
     "kids":            (("08:00", "16:00", "19:30"), ("12:00",)),
-    "crime":           (("13:00", "17:00", "21:00"), ("19:00",)),
+    # Crime and World Valor make 4 Shorts a day: their Shorts get the most
+    # views (avg 181 and 460 since 1 Oct; the owner's decision, 2026-11-12).
+    "crime":           (("12:00", "15:00", "18:00", "21:00"), ("19:30",)),
     "trending":        (("07:00", "13:00", "17:00"), ("12:00",)),
-    "heroic history":  (("11:00", "15:00", "18:00"), ("14:00",)),
+    "heroic history":  (("10:00", "13:00", "16:00", "19:00"), ("14:30",)),
     "bedtime stories": (("18:30", "20:00", "21:30"), ("19:00",)),
 }
 _DEFAULT_RELEASE = (("09:00", "12:00", "18:00"), ("15:00",))

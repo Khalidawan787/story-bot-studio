@@ -916,6 +916,83 @@ def add_end_card(video_path: Path, run_dir: Path, content_type: str, seconds: fl
 END_SCREEN_SECONDS = 20.0
 
 
+CTA_SECONDS = 4.0
+# (word, button colour, text colour)
+_CTA_BUTTONS = (("LIKE", "0x1e88e5", "white"), ("SHARE", "0x43a047", "white"),
+                ("SUBSCRIBE", "0xe53935", "white"), ("COMMENT", "0xfdd835", "black"))
+
+
+def _cta_filters(width: int, height: int, run_dir: Path, start: float, kids: bool, top: int,
+                 words: tuple = (), unit: int = 1080) -> list[str]:
+    """drawtext buttons, shown from `start` seconds with a short pop-in."""
+    font = font_path()
+    font_arg = f":fontfile='{escape_filter_path(font)}'" if font else ""
+    s = width / unit
+    size = int(40 * s)
+    pad = int(18 * s)
+    gap = int(16 * s)
+    # Made-for-kids: no comments (they are off) and the grown-up is asked.
+    buttons = ((("ASK A GROWN-UP TO LIKE & SUBSCRIBE", "0xe53935", "white"),) if kids else
+               tuple(b for b in _CTA_BUTTONS if not words or b[0] in words))
+    probe = run_dir / "_cta_probe.txt"
+    rows: list[list[tuple[str, str, str, int]]] = [[]]
+    used = 0
+    for word, colour, ink in buttons:
+        probe.write_text(word, encoding="utf-8")
+        from .presenter import _text_width
+
+        w = _text_width(probe, font or "", size) + 2 * pad if font else int(len(word) * size * 0.62) + 2 * pad
+        if rows[-1] and used + gap + w > width * 0.9:
+            rows.append([])
+            used = 0
+        rows[-1].append((word, colour, ink, w))
+        used += (gap if used else 0) + w
+    filters = []
+    enable = f"enable='gte(t,{start:.2f})'"
+    line_h = size + 2 * pad
+    for r, row in enumerate(rows):
+        total = sum(w for *_x, w in row) + gap * (len(row) - 1)
+        x = (width - total) // 2
+        y = top + r * (line_h + gap)
+        for index, (word, colour, ink, w) in enumerate(row):
+            file = run_dir / f"cta_{r}_{index}.txt"
+            file.write_text(word, encoding="utf-8")
+            filters.append(
+                f"drawbox=x={x}:y={y}:w={w}:h={line_h}:color={colour}@0.95:t=fill:{enable}")
+            filters.append(
+                f"drawtext=textfile='{escape_filter_path(str(file))}'{font_arg}:fontsize={size}:"
+                f"fontcolor={ink}:x={x}+({w}-text_w)/2:y={y}+({line_h}-text_h)/2:{enable}")
+            x += w + gap
+    return filters
+
+
+def add_cta_overlay(video_path: Path, run_dir: Path, kids: bool = False,
+                    seconds: float = CTA_SECONDS) -> Path:
+    """LIKE / SHARE / SUBSCRIBE / COMMENT buttons over the last seconds of a Short.
+
+    They sit in the upper part of the frame, clear of the captions and of
+    YouTube's own buttons on the right; the audio is copied untouched.
+    """
+    import json
+
+    probe = json.loads(subprocess.run(
+        [settings.ffprobe_bin, "-v", "error", "-show_entries", "format=duration:stream=codec_type,width,height",
+         "-of", "json", str(video_path)], capture_output=True, text=True, check=True).stdout)
+    video = next((s for s in probe.get("streams") or [] if s.get("codec_type") == "video"), None)
+    duration = float((probe.get("format") or {}).get("duration") or 0)
+    if not video or duration < seconds + 3:
+        return video_path
+    width, height = int(video["width"]), int(video["height"])
+    start = max(0.0, duration - seconds)
+    filters = _cta_filters(width, height, run_dir, start, kids, top=int(height * 0.14))
+    out = run_dir / "with_cta.mp4"
+    subprocess.run([ffmpeg_bin(), "-y", "-v", "error", "-i", str(video_path), "-vf", ",".join(filters),
+                    *_video_encode_args(), "-c:a", "copy", "-movflags", "+faststart", str(out)], check=True)
+    out.replace(video_path)
+    print(f"[video] last {seconds:.0f}s: {'grown-up like/subscribe' if kids else 'LIKE / SHARE / SUBSCRIBE / COMMENT'} buttons")
+    return video_path
+
+
 def add_end_screen(video_path: Path, run_dir: Path, seconds: float = END_SCREEN_SECONDS) -> Path:
     """Add a 20-second "WATCH NEXT / SUBSCRIBE" outro after a long video (owner's rule, 2026-11-03).
 
@@ -979,6 +1056,13 @@ def add_end_screen(video_path: Path, run_dir: Path, seconds: float = END_SCREEN_
         f"x={cx}-text_w/2:y={cy + radius + int(50 * s)}",
         "fade=t=in:st=0:d=0.6",
     ]
+    # LIKE / SHARE / COMMENT with the subscribe spot (the owner's request, 2026-11-12).
+    try:
+        # Under the video boxes; SUBSCRIBE is already the round spot.
+        parts += _cta_filters(width, height, run_dir, 0.0, kids=False, top=int(880 * s),
+                              words=("LIKE", "SHARE", "COMMENT"), unit=1280)
+    except Exception as exc:
+        print(f"[video] end screen buttons left out: {exc}")
     clip = run_dir / "end_screen.mp4"
     subprocess.run([
         ffmpeg_bin(), "-y", "-v", "error", "-loop", "1", "-framerate", fps, "-t", f"{seconds:.3f}",

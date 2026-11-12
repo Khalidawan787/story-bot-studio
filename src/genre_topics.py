@@ -347,6 +347,29 @@ def already_exist_note(titles: list[str]) -> str:
     )
 
 
+# Fresh kids episodes go round the subjects parents search for (the owner's
+# request, 2026-11-12): Alphabet and Basic Science Shorts got 20-50 views,
+# invented little stories 0-2. (category, search words, what to teach)
+KIDS_SEARCH_SUBJECTS = (
+    ("Alphabet", "ABC Letters for Kids", "three letters of the alphabet in order, each with a word that starts with it"),
+    ("Numbers", "Counting for Kids", "counting real objects, up to 10"),
+    ("Shapes", "Learn Shapes for Kids", "three basic shapes and where we see them every day"),
+    ("Basic Science", "Science for Kids", "one simple science idea: the sun, the moon, rain, plants growing, floating and sinking, magnets or the seasons"),
+    ("Opposites", "Opposites for Kids", "three pairs of opposites such as big and small"),
+    ("Body Parts", "Body Parts for Kids", "three body parts and what they help us do"),
+    ("Weather", "Weather for Kids", "one kind of weather and what we wear for it"),
+    ("Fruits", "Fruits for Kids", "three fruits, their colours and tastes"),
+    ("Vehicles", "Vehicles for Kids", "three vehicles, where they go and the sounds they make"),
+    ("Planets", "Planets for Kids", "the sun and a few planets of our solar system"),
+    ("Days of the Week", "Days of the Week for Kids", "the seven days of the week in order"),
+    ("Good Habits", "Good Habits for Kids", "one healthy daily habit such as brushing teeth or washing hands"),
+)
+
+
+def _kids_subject(count_so_far: int) -> tuple[str, str, str]:
+    return KIDS_SEARCH_SUBJECTS[count_so_far % len(KIDS_SEARCH_SUBJECTS)]
+
+
 def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT_SCENES) -> dict:
     from .verified_facts import is_verified_channel, write_next_lesson
 
@@ -356,6 +379,7 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT
         return {"_key": key, **lesson}
     tone = getattr(channel, "tone", "") or GENRE_TONE.get(channel.genre, "engaging and well-paced")
     avoid = "; ".join(avoid_titles[-40:]) if avoid_titles else "none yet"
+    subject = ""
     schema = (
         f"Return ONLY JSON: {{\"title\": str, \"intro\": str, \"outro\": str, "
         f"\"scenes\": [{{\"label\": str, \"line\": str, {_speech_field(channel)}\"image_prompt\": str}}]}}.\n"
@@ -370,12 +394,14 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT
         # challenge with a pause before the answer, a little story, and no
         # brands or existing cartoon characters — using those on a kids channel
         # is a copyright strike waiting to happen.
+        subject, search, teach = _kids_subject(len(avoid_titles))
         prompt = (
             "You write short videos for a preschool learning YouTube channel "
             "(ages 2-6). Tone: cheerful, warm, completely safe.\n"
-            "Write ONE fresh episode teaching a single simple idea: a colour, a "
-            "number, a shape, an animal, an opposite, a daily habit, a season, a "
-            "feeling or a sound.\n"
+            f"Write ONE fresh episode teaching {teach}.\n"
+            f"The title is what a parent types into YouTube search: it starts with the "
+            f"subject in plain words and names what is taught, e.g. '{search}: ...' or "
+            "'Learn the Letters A, B, C'. No character names or made-up words in the title.\n"
             "Rules that matter:\n"
             "- Open with a CHALLENGE the child can act on within two seconds.\n"
             "- Do NOT answer your own question in the same sentence. Build a "
@@ -466,7 +492,9 @@ def _generate_one(channel: Channel, avoid_titles: list[str], scenes: int = SHORT
     return {
         "_key": key,
         "title": title,
-        "category": channel.genre.title(),
+        # A kids episode is filed under its search subject ("Shapes"), so its
+        # title gets the right search words (seo._kids_written_title).
+        "category": subject if channel.builtin else channel.genre.title(),
         "intro": raw.get("intro", ""),
         "outro": raw.get("outro", ""),
         "scenes": lesson_scenes,

@@ -251,13 +251,14 @@ def _connected(channel) -> bool:
 
 
 _END_CALL = {
-    "en": "If you enjoyed this, hit like, subscribe for more, and tell us in the comments what you think.",
-    "sleep": "If this story helped you rest, like it, subscribe, and tell us in the comments "
-             "which story you want next. Sleep well.",
+    "en": "If you enjoyed this, hit like, share it with a friend, subscribe for more, "
+          "and tell us in the comments what you think.",
+    "sleep": "If this story helped you rest, like it, share it with someone who needs sleep, "
+             "subscribe, and tell us in the comments which story you want next. Sleep well.",
 }
 _END_CALL_UR = (
-    "Video achi lagi ho to like karein, channel subscribe karein, aur comment mein apni raye zaroor batayein.",
-    "ویڈیو اچھی لگی ہو تو لائک کریں، چینل سبسکرائب کریں، اور کمنٹ میں اپنی رائے ضرور بتائیں۔",
+    "Video achi lagi ho to like karein, share karein, channel subscribe karein, aur comment mein apni raye zaroor batayein.",
+    "ویڈیو اچھی لگی ہو تو لائک کریں، شیئر کریں، چینل سبسکرائب کریں، اور کمنٹ میں اپنی رائے ضرور بتائیں۔",
 )
 
 
@@ -362,6 +363,16 @@ def run_pipeline(
             video_path = add_presenter(video_path, run_dir, channel, content_type)
         except Exception as exc:
             print(f"[presenter] left out of this video: {exc}")
+    if content_type != "long":
+        # The last seconds of every Short: LIKE / SHARE / SUBSCRIBE / COMMENT
+        # buttons on screen (the owner's request, 2026-11-12). A long video gets
+        # them on its end screen.
+        from .video import add_cta_overlay
+
+        try:
+            video_path = add_cta_overlay(video_path, run_dir, kids=bool(getattr(channel, "made_for_kids", False)))
+        except Exception as exc:
+            print(f"[video] like/share/subscribe buttons left out: {exc}")
     if content_type == "long":
         # 20 s "WATCH NEXT / SUBSCRIBE" outro after every long video (owner's rule).
         from .video import add_end_screen

@@ -222,7 +222,55 @@ def _clean_publish_title(value: str) -> str:
     return text.strip(" .:-") or "Untitled Story"
 
 
+# What parents type into YouTube for each kind of kids lesson (the owner's
+# request, 2026-11-12). "| Fun Animals Lesson 15" told nobody anything, and
+# Alphabet / Basic Science titles were the ones that got views.
+_KIDS_SEARCH = (
+    ("animal", "Animal Sounds for Kids"),
+    ("colo", "Learn Colors for Toddlers"),
+    ("number", "Counting for Kids"),
+    ("count", "Counting for Kids"),
+    ("shape", "Learn Shapes for Kids"),
+    ("alphabet", "ABC Letters for Kids"),
+    ("letter", "ABC Letters for Kids"),
+    ("science", "Science for Kids"),
+    ("fruit", "Fruits for Kids"),
+    ("vegetable", "Vegetables for Kids"),
+    ("vehicle", "Vehicles for Kids"),
+    ("opposite", "Opposites for Kids"),
+)
+
+
+def _kids_search_phrase(category: str) -> str:
+    category = category.lower()
+    return next((phrase for word, phrase in _KIDS_SEARCH if word in category), "Learning Video for Kids")
+
+
+def _kids_written_title(lesson: Lesson) -> str:
+    """A written episode keeps its own title, plus what parents search for.
+
+    Its scene captions are not items to guess: joined into "Can You Name
+    Surprised Fox, Confused Fox, Happy Fox?" they made titles nobody searches.
+    """
+    title = re.split(r"\s*\|\s*", str(lesson.title or "").strip())[0].strip() or "Fun Learning"
+    phrase = _kids_search_phrase(lesson.category)
+    if phrase == "Learning Video for Kids":
+        phrase = "Story for Kids"
+    if "kids" in title.lower() or "toddler" in title.lower():
+        return title[:100]
+    return f"{title} | {phrase}"[:100]
+
+
 def _kids_short_title(lesson: Lesson, labels: list[str]) -> str:
+    from .genre_topics import load_custom_lessons
+
+    try:
+        from .channels import get_channel
+
+        if lesson.topic_key in load_custom_lessons(get_channel("kids")):
+            return _kids_written_title(lesson)
+    except Exception:
+        pass
     category = lesson.category.strip().lower()
     names = ", ".join(labels[:3]) or lesson.title
     if "animal" in category:
@@ -237,7 +285,12 @@ def _kids_short_title(lesson: Lesson, labels: list[str]) -> str:
         challenge = f"Can You Say {names}?"
     else:
         challenge = f"Can You Name {names}?"
-    return f"{challenge} | {lesson.title}"[:100]
+    # The bank's own title ("Fun Animals Lesson 15") becomes the search phrase;
+    # a title that already says something ("Alphabet Letters S-U") stays.
+    tail = lesson.title
+    if re.search(r"\b(?:lesson|part)\s*\d+\s*$", tail, re.I) or re.fullmatch(r"[A-Za-z ]+\d+", tail.strip()):
+        tail = _kids_search_phrase(category)
+    return f"{challenge} | {tail}"[:100]
 
 
 def build_metadata(lesson: Lesson, channel=None, content_type: str = "short") -> dict[str, object]:
