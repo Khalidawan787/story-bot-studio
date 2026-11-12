@@ -19,17 +19,19 @@ from .db import release_publish_slot, reserve_publish_slot
 # YouTube, Facebook and TikTok all go live at the same time (the Facebook post
 # and the TikTok post are scheduled for the video's YouTube publishAt).
 RELEASE_TZ = ZoneInfo("America/New_York")
+# Every channel makes 3 Shorts a day and a long video on 2 days a week (the
+# owner's decision, 2026-11-12: Shorts get the views, long videos ~2 each), so
+# every kind has three Shorts times; with two, the third Short of each day
+# took the next day's time and the line fell further behind every day.
 RELEASE_TIMES = {
-    #                  Shorts              long
+    #                  Shorts                         long
     "kids":            (("08:00", "16:00", "19:30"), ("12:00",)),
-    # Two long times: the long videos ran a week behind (the 7 stuck ones of
-    # 23-29 Oct took the later days), so two a day until the line catches up.
-    "crime":           (("13:00", "17:00", "21:00"), ("19:00", "22:30")),
-    "trending":        (("07:00", "17:00"), ("12:00",)),
-    "heroic history":  (("11:00", "18:00"), ("14:00",)),
-    "bedtime stories": (("18:30", "20:30"), ("19:00",)),
+    "crime":           (("13:00", "17:00", "21:00"), ("19:00",)),
+    "trending":        (("07:00", "13:00", "17:00"), ("12:00",)),
+    "heroic history":  (("11:00", "15:00", "18:00"), ("14:00",)),
+    "bedtime stories": (("18:30", "20:00", "21:30"), ("19:00",)),
 }
-_DEFAULT_RELEASE = (("12:00", "18:00"), ("15:00",))
+_DEFAULT_RELEASE = (("09:00", "12:00", "18:00"), ("15:00",))
 
 
 def release_times(channel_id: str, content_type: str = "short") -> tuple[str, ...]:
