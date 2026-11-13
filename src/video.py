@@ -993,7 +993,8 @@ def add_cta_overlay(video_path: Path, run_dir: Path, kids: bool = False,
     return video_path
 
 
-def add_end_screen(video_path: Path, run_dir: Path, seconds: float = END_SCREEN_SECONDS) -> Path:
+def add_end_screen(video_path: Path, run_dir: Path, seconds: float = END_SCREEN_SECONDS,
+                   voice_path: Path | None = None) -> Path:
     """Add a 20-second "WATCH NEXT / SUBSCRIBE" outro after a long video (owner's rule, 2026-11-03).
 
     The last frame, blurred and darkened, with two empty video frames under
@@ -1056,19 +1057,16 @@ def add_end_screen(video_path: Path, run_dir: Path, seconds: float = END_SCREEN_
         f"x={cx}-text_w/2:y={cy + radius + int(50 * s)}",
         "fade=t=in:st=0:d=0.6",
     ]
-    # LIKE / SHARE / COMMENT with the subscribe spot (the owner's request, 2026-11-12).
-    try:
-        # Under the video boxes; SUBSCRIBE is already the round spot.
-        parts += _cta_filters(width, height, run_dir, 0.0, kids=False, top=int(880 * s),
-                              words=("LIKE", "SHARE", "COMMENT"), unit=1280)
-    except Exception as exc:
-        print(f"[video] end screen buttons left out: {exc}")
     clip = run_dir / "end_screen.mp4"
     subprocess.run([
         ffmpeg_bin(), "-y", "-v", "error", "-loop", "1", "-framerate", fps, "-t", f"{seconds:.3f}",
-        "-i", str(still), "-f", "lavfi", "-t", f"{seconds:.3f}",
-        "-i", f"anullsrc=r={rate}:cl={'mono' if channels == 1 else 'stereo'}",
-        "-vf", ",".join(parts) + ",format=yuv420p", "-r", fps,
+        "-i", str(still),
+        # The narrator asks for a like, a share, a subscribe and a comment over
+        # the end screen (the owner's request, 2026-11-12); silent without one.
+        *(["-i", str(voice_path)] if voice_path else
+          ["-f", "lavfi", "-t", f"{seconds:.3f}", "-i", f"anullsrc=r={rate}:cl={'mono' if channels == 1 else 'stereo'}"]),
+        *(["-af", f"adelay=800:all=1,aresample={rate},apad=whole_dur={seconds:.3f}"] if voice_path else []),
+        "-vf", ",".join(parts) + ",format=yuv420p", "-r", fps, "-t", f"{seconds:.3f}",
         *_video_encode_args(), "-video_track_timescale", timescale,
         *_audio_encode_args(), "-ar", rate, "-ac", str(channels), "-shortest", str(clip),
     ], check=True)

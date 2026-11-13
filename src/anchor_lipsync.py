@@ -163,8 +163,15 @@ def _start(run_dir: Path, voices: list[Path]) -> dict:
     }), encoding="utf-8")
     _run([kaggle, "datasets", "create", "-p", str(data), "-q"], timeout=900)
     for _ in range(60):  # a new dataset takes a minute or two to be usable
-        if "ready" in _run([kaggle, "datasets", "status", dataset]).lower():
-            break
+        try:
+            if "ready" in _run([kaggle, "datasets", "status", dataset]).lower():
+                break
+        except RuntimeError as exc:
+            # The kaggle CLI of Nov 2026 answers 403 Forbidden while a new
+            # dataset is still being processed (13 Nov: the anchor was dropped
+            # although the dataset turned "ready" minutes later). Keep waiting.
+            if "403" not in str(exc) and "404" not in str(exc):
+                raise
         time.sleep(10)
     else:
         raise RuntimeError(f"dataset {dataset} never became ready")

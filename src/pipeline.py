@@ -262,6 +262,34 @@ _END_CALL_UR = (
 )
 
 
+def end_call_text(channel) -> tuple[str, str]:
+    """(on-screen line, spoken text) of the like / share / subscribe / comment call."""
+    from .language import is_urdu
+
+    if is_urdu(channel):
+        return _END_CALL_UR
+    sleepy = "sleep" in f"{channel.id} {getattr(channel, 'genre', '')}".lower() or "snuggle" in channel.id
+    call = _END_CALL["sleep" if sleepy else "en"]
+    return call, call
+
+
+def _end_call_voice(channel, run_dir: Path) -> Path | None:
+    """The call spoken in the channel's voice, for a long video's end screen."""
+    if channel is None or getattr(channel, "made_for_kids", False):
+        return None
+    try:
+        from .language import voice_for
+
+        prosody = prosody_for(channel)
+        path = run_dir / "end_call.mp3"
+        generate_voice(end_call_text(channel)[1], path, voice_for(channel),
+                       prosody.get("rate"), prosody.get("pitch"))
+        return path
+    except Exception as exc:
+        print(f"[video] end screen voice left out: {exc}")
+        return None
+
+
 def _with_end_call(lesson: Lesson, channel) -> Lesson:
     """The narrator closes by asking for a like, a subscribe and a comment.
 
@@ -309,7 +337,9 @@ def run_pipeline(
         raise ValueError(f"Unsupported content type: {content_type}")
     if content_type == "short" and _needs_interactive_rewrite(lesson, channel):
         lesson = _interactive_kids_lesson(lesson)
-    lesson = _with_end_call(lesson, channel)
+    if content_type != "long":
+        # A long video says it over its end screen instead (add_end_screen).
+        lesson = _with_end_call(lesson, channel)
     run_dir = Path(resume_run_dir).resolve() if resume_run_dir else settings.runs_dir / datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     job_id = run_dir.name
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -378,7 +408,7 @@ def run_pipeline(
         from .video import add_end_screen
 
         try:
-            video_path = add_end_screen(video_path, run_dir)
+            video_path = add_end_screen(video_path, run_dir, voice_path=_end_call_voice(channel, run_dir))
         except Exception as exc:
             print(f"[video] end screen left out: {exc}")
     video_path = add_background_music(
