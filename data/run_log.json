@@ -1,0 +1,32 @@
+[
+ {
+  "at": "2026-11-14T00:12:21+00:00",
+  "channel": "trending",
+  "kind": "long",
+  "ok": true,
+  "title": "Pope Leo's Emotional Return to Chiclayo: A Diocese's Devotion",
+  "detail": "20261113_234833_412328",
+  "run": "https://github.com/Khalidawan787/story-bot-studio/actions/runs/43529669265",
+  "where": "github"
+ },
+ {
+  "at": "2026-11-14T02:02:26+00:00",
+  "channel": "ain_news_alert",
+  "kind": "long",
+  "ok": true,
+  "title": "Mississippi River Tanker Collision Sparks Safety Review",
+  "detail": "20261114_001317_713026",
+  "run": "https://github.com/Khalidawan787/story-bot-studio/actions/runs/43529669265",
+  "where": "github"
+ },
+ {
+  "at": "2026-11-14T07:02:25+00:00",
+  "channel": "kids",
+  "kind": "long",
+  "ok": false,
+  "title": "Amazing Machines That Help Us Move!",
+  "detail": "Real image unavailable for scene 'Electricity Power'. Video stopped to prevent placeholder artwork from being published. online providers: Real image generation failed for 'Electricity Power'. Cloudflare: Cloudflare Workers AI failed. flux-",
+  "run": "https://github.com/Khalidawan787/story-bot-studio/actions/runs/43568485973",
+  "where": "github"
+ }
+]

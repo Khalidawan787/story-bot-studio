@@ -1,0 +1,278 @@
+{
+  "trend_microsoft_services_down_globally": {
+    "title": "Microsoft Services Down Globally",
+    "category": "Trending",
+    "intro": "You're watching a News Explainer.",
+    "outro": "We'll continue to monitor this developing story.",
+    "scenes": [
+      {
+        "label": "Global Outage",
+        "line": "Microsoft services are still recovering after a major global outage struck earlier today.",
+        "speech": "",
+        "image": "assets/generated/microsoft_services_down_globally_01.jpg",
+        "image_prompt": "A world map with glowing red dots representing affected areas., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Widespread Disruption",
+        "line": "The outage significantly disrupted cloud services, impacting businesses and individuals worldwide.",
+        "speech": "",
+        "image": "assets/generated/microsoft_services_down_globally_02.jpg",
+        "image_prompt": "A server room with flashing red error lights., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Service Restoration",
+        "line": "Microsoft has confirmed that services are gradually returning online, but recovery is ongoing.",
+        "speech": "",
+        "image": "assets/generated/microsoft_services_down_globally_03.jpg",
+        "image_prompt": "A progress bar animation filling up., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Unconfirmed Cause",
+        "line": "The exact cause of the widespread disruption has not yet been officially confirmed by Microsoft.",
+        "speech": "",
+        "image": "assets/generated/microsoft_services_down_globally_04.jpg",
+        "image_prompt": "A question mark superimposed over a blurred network diagram., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Impacted Services",
+        "line": "Reports suggest services like Microsoft 365, Azure, and Teams were among those affected.",
+        "speech": "",
+        "image": "assets/generated/microsoft_services_down_globally_05.jpg",
+        "image_prompt": "Abstract icons representing cloud computing, email, and chat applications., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Business Operations",
+        "line": "Many businesses rely heavily on these services, leading to significant operational challenges.",
+        "speech": "",
+        "image": "assets/generated/microsoft_services_down_globally_06.jpg",
+        "image_prompt": "A dimly lit office space with many inactive computer monitors., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Individual Access",
+        "line": "Individuals also faced issues accessing email, documents, and collaborative tools.",
+        "speech": "",
+        "image": "assets/generated/microsoft_services_down_globally_07.jpg",
+        "image_prompt": "A person looking frustrated at a laptop screen displaying an error message., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Background: Cloud Dependency",
+        "line": "This highlights the growing dependence on cloud infrastructure for daily life and work.",
+        "speech": "",
+        "image": "assets/generated/microsoft_services_down_globally_08.jpg",
+        "image_prompt": "An abstract visualization of interconnected data servers., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Resilience Concerns",
+        "line": "Such widespread outages raise questions about the resilience of global digital systems.",
+        "speech": "",
+        "image": "assets/generated/microsoft_services_down_globally_09.jpg",
+        "image_prompt": "A network cable being plugged into a port, with a glitch effect., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Company Response",
+        "line": "Microsoft engineers are working diligently to restore full functionality for all users.",
+        "speech": "",
+        "image": "assets/generated/microsoft_services_down_globally_10.jpg",
+        "image_prompt": "A close-up of a keyboard with hands typing rapidly., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Monitoring Efforts",
+        "line": "Tech experts are monitoring the situation closely as recovery efforts continue globally.",
+        "speech": "",
+        "image": "assets/generated/microsoft_services_down_globally_11.jpg",
+        "image_prompt": "A dashboard displaying network traffic and status indicators., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Future Preparedness",
+        "line": "Companies may reassess their disaster recovery plans following this extensive global incident.",
+        "speech": "",
+        "image": "assets/generated/microsoft_services_down_globally_12.jpg",
+        "image_prompt": "A blueprint or schematic of a secure data center., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      }
+    ]
+  },
+  "trend_cop31_climate_consensus_gone_as_burnham_pledges_new_leadership": {
+    "title": "COP31: Climate Consensus 'Gone' as Burnham Pledges New Leadership",
+    "category": "Trending",
+    "intro": "Climate change talks just took a dramatic turn. Will this shocking declaration shift global action?",
+    "outro": "The world watches to see if this bold new approach can rekindle climate action.",
+    "scenes": [
+      {
+        "label": "COP31 Opens",
+        "line": "At COP31 in November 2026, a leader declared the global climate consensus is officially shattered.",
+        "speech": "",
+        "image": "assets/generated/cop31_climate_consensus_gone_as_burnham_pledges_new_leadership_01.jpg",
+        "image_prompt": "Modern conference hall interior, empty podium., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Shocking Statement",
+        "line": "This leader stated that decades of agreed-upon climate targets are no longer the driving force.",
+        "speech": "",
+        "image": "assets/generated/cop31_climate_consensus_gone_as_burnham_pledges_new_leadership_02.jpg",
+        "image_prompt": "Abstract visual representing fragmented agreement, geometric shapes disconnected., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "New Leadership Pledge",
+        "line": "However, a bold pledge for a 'new era of leadership' was immediately put forth.",
+        "speech": "",
+        "image": "assets/generated/cop31_climate_consensus_gone_as_burnham_pledges_new_leadership_03.jpg",
+        "image_prompt": "Sunrise over a vast, diverse landscape, hopeful light., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Background: Past COPs",
+        "line": "Previous Conferences of the Parties, or COPs, have aimed to unite nations on climate goals.",
+        "speech": "",
+        "image": "assets/generated/cop31_climate_consensus_gone_as_burnham_pledges_new_leadership_04.jpg",
+        "image_prompt": "Collage of diverse natural environments: forest, ocean, desert, ice caps., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Accumulating Challenges",
+        "line": "For years, nations have grappled with commitments and the accelerating impacts of climate change.",
+        "speech": "",
+        "image": "assets/generated/cop31_climate_consensus_gone_as_burnham_pledges_new_leadership_05.jpg",
+        "image_prompt": "Time-lapse view of rising sea levels against a coastline., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Loss of Consensus",
+        "line": "The leader's statement suggests a significant shift away from the established framework for cooperation.",
+        "speech": "",
+        "image": "assets/generated/cop31_climate_consensus_gone_as_burnham_pledges_new_leadership_06.jpg",
+        "image_prompt": "Cracked foundation of a large, sturdy structure, symbolizing breakdown., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Economic Factors",
+        "line": "Economic pressures and differing national priorities are often cited as reasons for stalled progress.",
+        "speech": "",
+        "image": "assets/generated/cop31_climate_consensus_gone_as_burnham_pledges_new_leadership_07.jpg",
+        "image_prompt": "World map with glowing nodes representing global economic activity., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Impact on Action",
+        "line": "This breakdown in consensus raises questions about the future of international climate commitments.",
+        "speech": "",
+        "image": "assets/generated/cop31_climate_consensus_gone_as_burnham_pledges_new_leadership_08.jpg",
+        "image_prompt": "Overlapping gears and cogs, some jammed, preventing smooth motion., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "The New Pledge",
+        "line": "The promised 'new era' implies a potentially different, perhaps more direct, approach to climate solutions.",
+        "speech": "",
+        "image": "assets/generated/cop31_climate_consensus_gone_as_burnham_pledges_new_leadership_09.jpg",
+        "image_prompt": "A single, strong beam of light cutting through atmospheric haze., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Why it Matters",
+        "line": "For ordinary people, this impacts everything from local weather patterns to global food security.",
+        "speech": "",
+        "image": "assets/generated/cop31_climate_consensus_gone_as_burnham_pledges_new_leadership_10.jpg",
+        "image_prompt": "Split screen: one side shows a drought-stricken field, the other heavy rainfall., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Global Expectations",
+        "line": "Future international cooperation on emissions, adaptation, and funding now faces uncertainty.",
+        "speech": "",
+        "image": "assets/generated/cop31_climate_consensus_gone_as_burnham_pledges_new_leadership_11.jpg",
+        "image_prompt": "Global network visualization with some connections flickering or weak., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Looking Ahead",
+        "line": "The world watches to see if this bold new approach can rekindle climate action.",
+        "speech": "",
+        "image": "assets/generated/cop31_climate_consensus_gone_as_burnham_pledges_new_leadership_12.jpg",
+        "image_prompt": "A single compass needle spinning, then pointing towards a new direction., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      }
+    ]
+  },
+  "trend_guatemala_versus_canada_quarterfinal_match": {
+    "title": "Guatemala Versus Canada Quarterfinal Match",
+    "category": "Trending",
+    "intro": "Today we explain the latest developments surrounding the Guatemala versus Canada soccer matchup.",
+    "outro": "Stay tuned for further sports updates as this international soccer tournament continues to unfold.",
+    "scenes": [
+      {
+        "label": "Quarterfinal Match",
+        "line": "Guatemala prepares to face Canada in a highly anticipated international soccer quarterfinal match.",
+        "speech": "",
+        "image": "assets/generated/guatemala_versus_canada_quarterfinal_match_01.jpg",
+        "image_prompt": "A brightly lit soccer stadium viewed from the stands during a major international tournament., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Tactical Decisions",
+        "line": "Reports indicate that coach Tena has selected his starting eleven for the upcoming clash against Canada.",
+        "speech": "",
+        "image": "assets/generated/guatemala_versus_canada_quarterfinal_match_02.jpg",
+        "image_prompt": "A professional soccer coach observing a practice session on a pristine green training pitch., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Lineup Confirmed",
+        "line": "Jesús López has reportedly won the position and will appear in the starting lineup against Canada.",
+        "speech": "",
+        "image": "assets/generated/guatemala_versus_canada_quarterfinal_match_03.jpg",
+        "image_prompt": "Close-up of a professional soccer cleat resting on green turf inside a modern athletic facility., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Strategic Formula",
+        "line": "Recent expert opinions discuss the exact tactical formula needed to secure a victory in this round.",
+        "speech": "",
+        "image": "assets/generated/guatemala_versus_canada_quarterfinal_match_04.jpg",
+        "image_prompt": "A tactical board displaying soccer formation strategies and player positioning diagrams., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Tournament Stakes",
+        "line": "Both national teams advance into the crucial knockout stage of the ongoing regional tournament competition.",
+        "speech": "",
+        "image": "assets/generated/guatemala_versus_canada_quarterfinal_match_05.jpg",
+        "image_prompt": "A soccer ball resting near the penalty spot on a professional pitch before a match., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Player Selection",
+        "line": "The chosen eleven players represent the best tactical options available for the quarterfinal challenge.",
+        "speech": "",
+        "image": "assets/generated/guatemala_versus_canada_quarterfinal_match_06.jpg",
+        "image_prompt": "Rows of professional soccer jerseys neatly arranged inside an empty locker room., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Midfield Focus",
+        "line": "Midfield positions remain vital as teams battle for control of the ball throughout the ninety minutes.",
+        "speech": "",
+        "image": "assets/generated/guatemala_versus_canada_quarterfinal_match_07.jpg",
+        "image_prompt": "Wide angle view of a soccer field with white boundary lines marked on green grass., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Coaching Choices",
+        "line": "Observers analyze every selection made by the coaching staff leading up to the opening whistle.",
+        "speech": "",
+        "image": "assets/generated/guatemala_versus_canada_quarterfinal_match_08.jpg",
+        "image_prompt": "A stadium press box overlooking an empty athletic field under bright overhead lights., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Fans Anticipate",
+        "line": "Supporters from both nations watch closely as kickoff approaches for this decisive tournament match.",
+        "speech": "",
+        "image": "assets/generated/guatemala_versus_canada_quarterfinal_match_09.jpg",
+        "image_prompt": "Empty stadium seats in tiered sections under the bright lights of a modern sports arena., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Match Preparation",
+        "line": "Athletes complete final warmups on the pitch to ensure peak physical condition for the game.",
+        "speech": "",
+        "image": "assets/generated/guatemala_versus_canada_quarterfinal_match_10.jpg",
+        "image_prompt": "Training cones arranged neatly in a line on a manicured grass soccer training ground., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Official Roster",
+        "line": "Official team rosters confirm the starting players who will take the field for the opening minutes.",
+        "speech": "",
+        "image": "assets/generated/guatemala_versus_canada_quarterfinal_match_11.jpg",
+        "image_prompt": "A digital stadium scoreboard displaying team statistics and match information., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Final Countdown",
+        "line": "The match begins shortly as players take their positions for the high-stakes quarterfinal showdown.",
+        "speech": "",
+        "image": "assets/generated/guatemala_versus_canada_quarterfinal_match_12.jpg",
+        "image_prompt": "A professional soccer ball sitting on the center circle of a green turf pitch., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      }
+    ]
+  }
+}

@@ -1,0 +1,278 @@
+{
+  "trend_faa_lifts_nationwide_ground_stop_after_flight_disruptions": {
+    "title": "FAA Lifts Nationwide Ground Stop After Flight Disruptions",
+    "category": "Trending",
+    "intro": "On November 14, 2026, a nationwide FAA ground stop halted all US flights, affecting millions. Here's what happened and why it matters.",
+    "outro": "While flights are resuming, significant delays and cancellations are expected to continue, so check your flight status.",
+    "scenes": [
+      {
+        "label": "FAA Ground Stop",
+        "line": "The Federal Aviation Administration issued a nationwide ground stop early this morning, grounding all flights across the United States.",
+        "speech": "",
+        "image": "assets/generated/faa_lifts_nationwide_ground_stop_after_flight_disruptions_01.jpg",
+        "image_prompt": "An empty airport tarmac with multiple airplanes parked, seen from a distance under early morning light., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "System Outage",
+        "line": "This unprecedented halt was caused by an outage in the FAA's Notice to Air Missions system.",
+        "speech": "",
+        "image": "assets/generated/faa_lifts_nationwide_ground_stop_after_flight_disruptions_02.jpg",
+        "image_prompt": "Close-up of a blinking cursor on a dark computer screen displaying lines of code., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Safety First",
+        "line": "The FAA stated the ground stop was a precautionary measure to ensure flight safety and system integrity.",
+        "speech": "",
+        "image": "assets/generated/faa_lifts_nationwide_ground_stop_after_flight_disruptions_03.jpg",
+        "image_prompt": "A generic air traffic control tower with antennas, illuminated against a cloudy sky., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Widespread Impact",
+        "line": "Thousands of flights were immediately grounded at airports nationwide, causing significant disruption to air travel.",
+        "speech": "",
+        "image": "assets/generated/faa_lifts_nationwide_ground_stop_after_flight_disruptions_04.jpg",
+        "image_prompt": "A wide shot of a busy airport terminal interior with scattered passengers looking at departure boards., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Travel Chaos",
+        "line": "Passengers faced hours of uncertainty, with many flights delayed or canceled before departure.",
+        "speech": "",
+        "image": "assets/generated/faa_lifts_nationwide_ground_stop_after_flight_disruptions_05.jpg",
+        "image_prompt": "A row of unattended airport check-in counters with 'Closed' signs visible., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "System Restoration",
+        "line": "The FAA worked to restore its critical Notice to Air Missions system throughout the morning.",
+        "speech": "",
+        "image": "assets/generated/faa_lifts_nationwide_ground_stop_after_flight_disruptions_06.jpg",
+        "image_prompt": "A server room with blinking lights on multiple racks of computer equipment., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Flights Resume",
+        "line": "By mid-morning, the FAA announced that airlines could resume normal operations.",
+        "speech": "",
+        "image": "assets/generated/faa_lifts_nationwide_ground_stop_after_flight_disruptions_07.jpg",
+        "image_prompt": "An airplane engine on a wing, illuminated by sunlight, ready for takeoff., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Delays Persist",
+        "line": "However, the FAA warned that delays and cancellations would continue for some time.",
+        "speech": "",
+        "image": "assets/generated/faa_lifts_nationwide_ground_stop_after_flight_disruptions_08.jpg",
+        "image_prompt": "A digital departure board in an airport showing multiple flights listed as 'Delayed' or 'Canceled'., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "System's Role",
+        "line": "The Notice to Air Missions system provides essential safety information to pilots and airlines.",
+        "speech": "",
+        "image": "assets/generated/faa_lifts_nationwide_ground_stop_after_flight_disruptions_09.jpg",
+        "image_prompt": "Abstract visualization of data streams flowing between different points on a world map., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Technical Glitch",
+        "line": "Officials are investigating the cause of the technical glitch that triggered the system failure.",
+        "speech": "",
+        "image": "assets/generated/faa_lifts_nationwide_ground_stop_after_flight_disruptions_10.jpg",
+        "image_prompt": "A close-up of a network cable plugged into a router with illuminated status lights., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Rebuilding Trust",
+        "line": "This event highlights the reliance on complex systems for modern air travel safety.",
+        "speech": "",
+        "image": "assets/generated/faa_lifts_nationwide_ground_stop_after_flight_disruptions_11.jpg",
+        "image_prompt": "A visual metaphor of interconnected gears, some appearing slightly misaligned., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Travel Advisories",
+        "line": "Travelers are advised to check directly with their airlines for the latest flight updates.",
+        "speech": "",
+        "image": "assets/generated/faa_lifts_nationwide_ground_stop_after_flight_disruptions_12.jpg",
+        "image_prompt": "A smartphone screen displaying a generic airline app interface with flight information., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      }
+    ]
+  },
+  "trend_hegseth_awards_medal_to_soldier_who_chastised_him": {
+    "title": "Hegseth Awards Medal to Soldier Who Chastised Him",
+    "category": "Trending",
+    "intro": "Welcome to today's quick news explainer covering a trending story about a military medal ceremony.",
+    "outro": "That concludes today's report on this unusual medal presentation and its unfolding details.",
+    "scenes": [
+      {
+        "label": "Surprising Medal Award",
+        "line": "Pete Hegseth has unexpectedly awarded a military medal to a soldier who previously chastised him.",
+        "speech": "",
+        "image": "assets/generated/hegseth_awards_medal_to_soldier_who_chastised_him_01.jpg",
+        "image_prompt": "A close-up shot of a military medal resting in its display box on a dark wooden table., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "The Confrontation Background",
+        "line": "Reports indicate the soldier had openly criticized Hegseth during a prior public or professional interaction.",
+        "speech": "",
+        "image": "assets/generated/hegseth_awards_medal_to_soldier_who_chastised_him_02.jpg",
+        "image_prompt": "A modern conference room with empty chairs and a podium under bright overhead lighting., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Official Ceremony Held",
+        "line": "Despite the past tension, the official award ceremony proceeded as scheduled within the military command.",
+        "speech": "",
+        "image": "assets/generated/hegseth_awards_medal_to_soldier_who_chastised_him_03.jpg",
+        "image_prompt": "An American military office showing a desk, an unlit lamp, and neutral beige walls., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Public Attention Grows",
+        "line": "News of the surprising recognition quickly spread across media platforms and captured global public attention.",
+        "speech": "",
+        "image": "assets/generated/hegseth_awards_medal_to_soldier_who_chastised_him_04.jpg",
+        "image_prompt": "A smartphone resting on a desk displaying glowing notification lights in a dim room., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Details Remain Unconfirmed",
+        "line": "Officials have not confirmed all specific details surrounding the exact reasons behind the recognition.",
+        "speech": "",
+        "image": "assets/generated/hegseth_awards_medal_to_soldier_who_chastised_him_05.jpg",
+        "image_prompt": "A closed wooden office door with a brushed metal handle and a blank plaque beside it., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Focus on Protocol",
+        "line": "Observers are examining standard military award protocols to understand how such decisions are typically finalized.",
+        "speech": "",
+        "image": "assets/generated/hegseth_awards_medal_to_soldier_who_chastised_him_06.jpg",
+        "image_prompt": "A stack of official government documents and a silver pen resting on a clean glass table., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Internal Reactions",
+        "line": "Various military personnel have expressed differing opinions regarding the unexpected nature of this specific award.",
+        "speech": "",
+        "image": "assets/generated/hegseth_awards_medal_to_soldier_who_chastised_him_07.jpg",
+        "image_prompt": "An empty hallway inside a large administrative building with polished concrete floors., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Media Coverage Expands",
+        "line": "Major news outlets continue covering the story as new statements and minor updates are released.",
+        "speech": "",
+        "image": "assets/generated/hegseth_awards_medal_to_soldier_who_chastised_him_08.jpg",
+        "image_prompt": "A television screen showing a blurred, out-of-focus news broadcast inside a quiet room., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Broader Context",
+        "line": "This event highlights the complex relationships often found within military leadership and active service members.",
+        "speech": "",
+        "image": "assets/generated/hegseth_awards_medal_to_soldier_who_chastised_him_09.jpg",
+        "image_prompt": "An aerial view of a large government complex surrounded by trees under an overcast sky., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "No Further Comments",
+        "line": "Representatives have declined to provide additional comments while awaiting further official announcements on the matter.",
+        "speech": "",
+        "image": "assets/generated/hegseth_awards_medal_to_soldier_who_chastised_him_10.jpg",
+        "image_prompt": "A modern microphone sitting idle on a blank wooden podium in an empty press briefing room., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Ongoing Monitoring",
+        "line": "Journalists and analysts are closely monitoring the situation to see if any further official documents emerge.",
+        "speech": "",
+        "image": "assets/generated/hegseth_awards_medal_to_soldier_who_chastised_him_11.jpg",
+        "image_prompt": "A computer keyboard and mouse resting on a clean wooden desk near a window., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Final Summary",
+        "line": "The unusual pairing of this soldier and Hegseth remains a prominent topic of discussion across current news.",
+        "speech": "",
+        "image": "assets/generated/hegseth_awards_medal_to_soldier_who_chastised_him_12.jpg",
+        "image_prompt": "A stack of daily newspapers resting neatly on a table under natural daylight., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      }
+    ]
+  },
+  "trend_scott_colom_becomes_mississippi_first_black_senator": {
+    "title": "Scott Colom Becomes Mississippi First Black Senator",
+    "category": "Trending",
+    "intro": "Mississippi just elected its first Black senator since the nineteenth century in a historic political breakthrough.",
+    "outro": "This landmark election marks a significant chapter in the modern political history of Mississippi and the nation.",
+    "scenes": [
+      {
+        "label": "Historic Senate Victory",
+        "line": "Democrat Scott Colom has officially made history as Mississippi's first Black senator since the nineteenth century.",
+        "speech": "",
+        "image": "assets/generated/scott_colom_becomes_mississippi_first_black_senator_01.jpg",
+        "image_prompt": "An exterior shot of a state capitol building under a clear sky with professional lighting., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Nineteenth Century Precedent",
+        "line": "This remarkable victory breaks a racial barrier in the United States Senate that has lasted for generations.",
+        "speech": "",
+        "image": "assets/generated/scott_colom_becomes_mississippi_first_black_senator_02.jpg",
+        "image_prompt": "A close-up of historical legislative documents resting on a dark wooden desk in a quiet library., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Democratic Party Milestone",
+        "line": "The election of Scott Colom represents a major milestone for the Democratic party in the American South.",
+        "speech": "",
+        "image": "assets/generated/scott_colom_becomes_mississippi_first_black_senator_03.jpg",
+        "image_prompt": "A modern press conference room setup with empty microphones and professional lighting., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Mississippi Political Shift",
+        "line": "Voters in Mississippi have delivered a surprising outcome that alters the traditional political landscape of the state.",
+        "speech": "",
+        "image": "assets/generated/scott_colom_becomes_mississippi_first_black_senator_04.jpg",
+        "image_prompt": "An aerial view of a suburban neighborhood in Mississippi during the afternoon., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Statewide Voter Impact",
+        "line": "Ordinary citizens across the state participated in an election cycle that commanded nationwide attention and analysis.",
+        "speech": "",
+        "image": "assets/generated/scott_colom_becomes_mississippi_first_black_senator_05.jpg",
+        "image_prompt": "A quiet suburban street with modern homes and green trees under daylight., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Nationwide Attention",
+        "line": "Political analysts and news organizations across the country are closely examining the results of this monumental race.",
+        "speech": "",
+        "image": "assets/generated/scott_colom_becomes_mississippi_first_black_senator_06.jpg",
+        "image_prompt": "A modern newsroom with multiple computer monitors displaying financial and political data charts., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Legislative Future Ahead",
+        "line": "Senator-elect Scott Colom now prepares to take his place in the United States Congress in Washington.",
+        "speech": "",
+        "image": "assets/generated/scott_colom_becomes_mississippi_first_black_senator_07.jpg",
+        "image_prompt": "The majestic dome of the United States Capitol building viewed from a distance., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Civil Rights Context",
+        "line": "Historians note the profound significance of electing a Black senator in a state with a complex civil rights past.",
+        "speech": "",
+        "image": "assets/generated/scott_colom_becomes_mississippi_first_black_senator_08.jpg",
+        "image_prompt": "A close-up of an American flag gently waving against a clear blue sky., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Future Policy Focus",
+        "line": "Constituents now await the policy priorities and legislative agenda that Colom will bring to the Senate.",
+        "speech": "",
+        "image": "assets/generated/scott_colom_becomes_mississippi_first_black_senator_09.jpg",
+        "image_prompt": "A stack of official legislative papers sitting on a clean wooden table., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Broad Public Reaction",
+        "line": "Reactions from communities across Mississippi reflect a wide range of perspectives on this historic electoral outcome.",
+        "speech": "",
+        "image": "assets/generated/scott_colom_becomes_mississippi_first_black_senator_10.jpg",
+        "image_prompt": "A diverse group of citizens walking together on a sunny downtown sidewalk., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "Ongoing Political Analysis",
+        "line": "Political experts continue to evaluate what this Senate race means for future elections throughout the region.",
+        "speech": "",
+        "image": "assets/generated/scott_colom_becomes_mississippi_first_black_senator_11.jpg",
+        "image_prompt": "A desk with an open notebook, a pen, and a modern laptop in a well-lit office., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      },
+      {
+        "label": "A New Chapter",
+        "line": "Scott Colom steps into national office as a central figure in a changing American political environment.",
+        "speech": "",
+        "image": "assets/generated/scott_colom_becomes_mississippi_first_black_senator_12.jpg",
+        "image_prompt": "The grand marble staircase inside a government building with soft natural light., photorealistic news documentary photography, neutral journalistic tone, cinematic natural light, no text, no logos"
+      }
+    ]
+  }
+}
