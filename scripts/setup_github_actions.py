@@ -36,9 +36,16 @@ def _gh() -> str:
 
 
 def _check_auth(gh: str) -> None:
-    result = subprocess.run([gh, "auth", "status"], capture_output=True, text=True)
-    if result.returncode != 0:
-        raise SystemExit("Not signed in to GitHub. Run:  gh auth login")
+    """Signed in as this repository's owner (the secrets go to that account).
+
+    `gh auth status` fails when ANY signed-in account is broken: on 16 Nov 2026
+    another bot's account (active, expired token) stopped Send to GitHub although
+    Khalidawan787 was fine. So only the owner's own login is checked.
+    """
+    owner = origin_repo().split("/")[0]
+    token = subprocess.run([gh, "auth", "token", "--user", owner], capture_output=True, text=True)
+    if token.returncode != 0 or not token.stdout.strip():
+        raise SystemExit(f"Not signed in to GitHub as {owner}. Run:  gh auth login  (and sign in as {owner})")
 
 
 def origin_repo() -> str:
