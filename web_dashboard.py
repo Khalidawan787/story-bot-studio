@@ -2028,6 +2028,8 @@ PAGE = r"""
   .acct-item{padding:7px 8px;border-radius:8px;margin:3px 0;font-size:13px}.acct-item .hint{word-break:break-word}
   .acct-me{background:rgba(120,140,255,.10);outline:1px solid rgba(120,140,255,.35)}
   .bk-logo{display:inline-block;background:#0b0d14;border:1px solid var(--line);border-radius:10px;padding:10px}.bk-logo img{max-height:90px;display:block}
+  .bk-logo-confirm{flex-basis:100%;border:1px solid #f4b329;border-radius:10px;padding:10px;background:rgba(244,179,41,.08)}
+  .bk-logo-ask{font-size:13px;margin-bottom:8px}
   .bk-colour{display:flex;align-items:center;gap:10px;margin:5px 0;font-size:13px}.bk-sw{width:26px;height:20px;border-radius:5px;border:1px solid rgba(255,255,255,.18)}
   .ch-swatches{display:flex;gap:6px}.ch-swatches span{width:22px;height:22px;border-radius:5px;border:1px solid rgba(255,255,255,.25)}
   .channel-banner{min-height:118px;gap:18px!important;padding:18px 22px!important;flex-wrap:nowrap!important}
@@ -2247,11 +2249,20 @@ PAGE = r"""
         <div class="bk-label">Logo</div>
         {% if kit.logo %}<div class="bk-logo"><img src="/media?path={{kit.logo.path|urlencode}}&v={{kit.logo.mtime}}" alt=""></div>
         <div class="hint" style="color:#a9f0cd">&#10003; Drawn on every new thumbnail (top left)</div>{% else %}<div class="hint">No logo yet. Upload a PNG (transparent works best): it is drawn top left on every new thumbnail.</div>{% endif %}
-        <form method="post" action="/brand/logo" enctype="multipart/form-data" class="row" style="gap:8px;margin-top:10px;flex-wrap:wrap">
+        {# Upload asks first, with the picture and the channel's name (the owner's
+           request, 2026-11-16: TrendNerve's logo had gone onto World Valor). #}
+        <form method="post" action="/brand/logo" enctype="multipart/form-data" class="row bk-logo-form" style="gap:8px;margin-top:10px;flex-wrap:wrap">
           <input type="hidden" name="channel" value="{{ch.id}}">
-          <input type="file" name="logo" accept="image/png,image/jpeg,image/webp">
-          <button class="ghost sm" type="submit">Upload PNG logo</button>
-          {% if kit.logo %}<button class="ghost sm" type="submit" name="remove" value="1" onclick="return confirm('Remove the logo?')">Remove</button>{% endif %}
+          <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" onchange="bkLogoPreview(this)">
+          {% if kit.logo %}<button class="ghost sm" type="submit" name="remove" value="1" onclick="return confirm('Remove the logo from {{ch.name}}?')">Remove</button>{% endif %}
+          <div class="bk-logo-confirm" hidden>
+            <div class="bk-logo-ask">Is <b>{{ch.name}}</b> ki har nayi thumbnail par yeh logo lagega. Sahi channel hai?</div>
+            <div class="bk-logo"><img alt=""></div>
+            <div class="row" style="gap:8px;margin-top:8px">
+              <button class="green sm" type="submit">Haan, {{ch.name}} par lagao</button>
+              <button class="ghost sm" type="button" onclick="bkLogoCancel(this)">Nahi, cancel</button>
+            </div>
+          </div>
         </form>
       </div>
       <div class="bk-col">
@@ -3370,6 +3381,19 @@ document.addEventListener('submit', function(event){
     .catch(function(error){ toast('Failed: '+error.message, 'error'); })
     .finally(function(){ if(button){ button.disabled=false; button.textContent=label; } });
 });
+</script>
+<script>
+function bkLogoPreview(input){
+  var box = input.form.querySelector('.bk-logo-confirm');
+  if(!input.files || !input.files[0]){ box.hidden = true; return; }
+  var reader = new FileReader();
+  reader.onload = function(e){ box.querySelector('img').src = e.target.result; box.hidden = false; };
+  reader.readAsDataURL(input.files[0]);
+}
+function bkLogoCancel(button){
+  var form = button.form; form.querySelector('input[type=file]').value = '';
+  form.querySelector('.bk-logo-confirm').hidden = true;
+}
 </script>
 </body></html>
 """
