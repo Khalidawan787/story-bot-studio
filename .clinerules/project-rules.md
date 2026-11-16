@@ -61,6 +61,7 @@ This file and `.clinerules/project-rules.md` hold the same text. When you change
 ## GitHub account
 - This bot always uses the GitHub account **Khalidawan787**. gh on this PC is also signed in to another bot's account, so `scripts/setup_github_actions.py` sends secrets as the repo owner, and git push in this folder uses Khalidawan787 (local `credential.helper`).
 - Facebook posting runs from GitHub only (the `facebook-video-post` and `facebook-picture-post` workflows).
+- **Facebook paused until 2026-11-23** (the owner's decision, 2026-11-16): the accounts were disabled, then reinstated with "limited access for a few days" (error 368 on every post). `social_accounts.FACEBOOK_PAUSED_UNTIL` stops every Facebook post (Reels, long videos, picture posts, backfill) through `facebook_posts_here`; posting resumes by itself on that day. TrendNerve Global's Page was still not accessible on 16 Nov. A wrong logo (TrendNerve's) had been uploaded to World Valor's brand card on 5 Nov and drawn on its thumbnails; it was removed.
 - **Accounts & apps card** (Connections tab, `src/account_info.py`, 2026-11-10): the GitHub repo and accounts (owner, push, secrets), each Facebook Page's Meta app (name, ID, developers link) and who connected it (Graph `debug_token`, on "Refresh Facebook", cached in `data/account_info.json`, not committed), each channel's Google Cloud project with its Gmail and the channel login Gmail, and the TikTok names. Never a token.
 
 ## Channel: Crime Files (`crime`), YouTube "Crime Chronicles"

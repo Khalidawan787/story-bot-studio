@@ -66,16 +66,42 @@ def set_facebook_place(place: str) -> str:
     return place
 
 
+# Facebook limited the account "for a few days" after it was disabled and
+# reinstated (16 Nov 2026: error 368 on every post). Posting on through that
+# could get it disabled again, so nothing is posted to Facebook before this
+# day (UTC); after it, posting resumes by itself (the owner's decision).
+# FACEBOOK_PAUSED_UNTIL=YYYY-MM-DD overrides it; an empty value lifts it.
+FACEBOOK_PAUSED_UNTIL = "2026-11-23"
+
+
+def facebook_paused_until() -> str:
+    """The day Facebook posting resumes (YYYY-MM-DD), or "" when it is not paused."""
+    import os
+    from datetime import date
+
+    value = os.getenv("FACEBOOK_PAUSED_UNTIL", FACEBOOK_PAUSED_UNTIL).strip()
+    try:
+        return value if value and date.fromisoformat(value) > date.today() else ""
+    except ValueError:
+        return ""
+
+
 def facebook_posts_here() -> bool:
-    """True when this machine is the one that posts to Facebook."""
+    """True when this machine is the one that posts to Facebook (and it is not paused)."""
     import os
 
+    if facebook_paused_until():
+        return False
     on_github = os.getenv("GITHUB_ACTIONS", "").lower() == "true"
     return (facebook_place() == "github") == on_github
 
 
 def facebook_elsewhere_reason() -> str:
     """Why this machine does not post, in words for a person."""
+    paused = facebook_paused_until()
+    if paused:
+        return (f"Facebook posting is paused until {paused} while Facebook limits the account; "
+                "it resumes by itself on that day.")
     if facebook_place() == "github":
         return ("Facebook posting is set to run from GitHub only, so this PC does not post. "
                 "Change it under System > Facebook Page if this PC should post instead.")

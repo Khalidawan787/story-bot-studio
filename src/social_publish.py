@@ -818,7 +818,7 @@ def auto_publish_video(video_id: int, channel_id: str,
     from .social_accounts import facebook_elsewhere_reason, facebook_posts_here
 
     if fb.get("auto_upload") and fb.get("page_id") and fb.get("page_access_token") and not facebook_posts_here():
-        messages.append(f"Facebook left to the other machine: {facebook_elsewhere_reason()}")
+        messages.append(f"Facebook not posted: {facebook_elsewhere_reason()}")
     elif fb.get("auto_upload") and fb.get("page_id") and fb.get("page_access_token"):
         try:
             messages.append(publish_video(
