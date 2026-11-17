@@ -69,20 +69,45 @@ jobs:
       - name: Check out the code
         uses: actions/checkout@v4
 
+      # On 13 Nov 2026 one `git ls-remote` failed for 7 s (GitHub's side), its
+      # error was hidden, the run took it for "no branch", started from an
+      # empty database and force-pushed that over 700+ videos of history.
+      # Now: up to 5 tries; "no branch" only when GitHub answers that it has
+      # none; otherwise the run STOPS. .state_ok marks a proper restore, and
+      # the save step pushes only with it.
       - name: Restore the bot's state
         run: |
           set -e
-          if git ls-remote --exit-code --heads origin bot-state >/dev/null 2>&1; then
-            git fetch --depth=1 origin bot-state
+          answer=""
+          for try in 1 2 3 4 5; do
+            if answer=$(git ls-remote --heads origin bot-state 2>&1); then
+              ok=yes; break
+            fi
+            ok=no
+            echo "Asking GitHub for the bot-state branch failed (try $try): $answer"
+            sleep $((try * 10))
+          done
+          if [ "$ok" != "yes" ]; then
+            echo "::error::Could not reach the bot-state branch; stopping instead of starting from an empty database."
+            exit 1
+          fi
+          if [ -n "$answer" ]; then
+            for try in 1 2 3; do
+              git fetch --depth=1 origin +bot-state:refs/remotes/origin/bot-state && break
+              [ "$try" = 3 ] && exit 1
+              sleep 15
+            done
             git archive origin/bot-state | tar -x -C .
             # Settings kept in the repository, not run state: the copy saved
             # in bot-state is older and must not replace the committed one.
             git checkout HEAD -- data/verified_subjects.json
             echo "State restored from the bot-state branch:"
-            ls -la bot.sqlite3 2>/dev/null || echo "  (no database yet)"
+            ls -la bot.sqlite3
+            test -s bot.sqlite3
           else
-            echo "No bot-state branch yet — this run starts fresh and creates it."
+            echo "GitHub says there is no bot-state branch: this run starts fresh and creates it."
           fi
+          touch .state_ok
 
       - name: Install ffmpeg
         run: |
@@ -122,6 +147,12 @@ jobs:
       - name: Read view counts from YouTube
         continue-on-error: true
         run: python -m src.cli refresh-views
+
+      # The weekly scorecard (src/scorecard.py): views at 24/72 h, % viewed,
+      # shares and subscribers per video, and the hook test results.
+      - name: Scorecard numbers
+        continue-on-error: true
+        run: python -m src.cli scorecard
 
       - name: Show what each channel is allowed to upload today
         run: python -m src.cli quota-status
@@ -193,6 +224,10 @@ jobs:
         if: always()
         run: |
           set -e
+          if [ ! -f .state_ok ]; then
+            echo "::error::The state was not restored at the start; not saving, so the history on bot-state stays."
+            exit 1
+          fi
           git config user.name  "storybot"
           git config user.email "storybot@users.noreply.github.com"
           git checkout --orphan state-push

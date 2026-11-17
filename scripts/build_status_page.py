@@ -280,9 +280,20 @@ def collect() -> dict:
             "recent": recent,
             "today": int(today_uploads[0]["n"]) if today_uploads else 0,
             "problems": problems,
+            "scorecard": _scorecard(),
         }
     finally:
         conn.close()
+
+
+def _scorecard() -> list:
+    try:
+        from src import scorecard
+
+        return scorecard.build()
+    except Exception as exc:
+        print(f"scorecard left out: {exc}")
+        return []
 
 
 # Why a built video is not on YouTube yet, read from its error text. The state
@@ -617,6 +628,53 @@ def _week(week: dict, channels: list) -> str:
             f"<tbody>{''.join(body)}</tbody></table></div>")
 
 
+def _num(value, digits: int = 0) -> str:
+    if value is None:
+        return "<span class='muted'>-</span>"
+    return f"{value:,.{digits}f}"
+
+
+def _trend(now, before) -> str:
+    """This week's median against the 28 days before: green up, red down."""
+    if now is None or before in (None, 0):
+        return ""
+    change = (now - before) / before * 100
+    colour = "#3ddc97" if change >= 10 else "#ff6b6b" if change <= -10 else "#9aa3b8"
+    return f" <small style='color:{colour}'>{'+' if change >= 0 else ''}{change:.0f}%</small>"
+
+
+def _scorecard_html(cards: list) -> str:
+    """The weekly scorecard (src/scorecard.py): Shorts medians against the channel's own past."""
+    if not cards:
+        return ""
+    rows = []
+    for card in cards:
+        w, b = card["week"], card["baseline"]
+        hooks = " &middot; ".join(
+            f"<b>{html.escape(name)}</b> {v['videos']}x: {_num(v['median_views'])} views"
+            + (f", {_num(v['median_pct'], 0)}% viewed" if v.get("median_pct") is not None else "")
+            for name, v in card["hooks"].items()) or "<span class='muted'>no test yet</span>"
+        rows.append(
+            f"<tr><th scope='row'>{html.escape(card['name'])}</th>"
+            f"<td>{w['videos']}<br><small class='muted'>{card.get('pending', 0)} pending</small></td>"
+            f"<td>{_num(w['median_views'])}{_trend(w['median_views'], b['median_views'])}"
+            f"<br><small class='muted'>before {_num(b['median_views'])}</small></td>"
+            f"<td>{_num(w['median_72h'])}</td>"
+            f"<td>{_num(w['median_pct'], 0)}{'%' if w['median_pct'] is not None else ''}"
+            f"<br><small class='muted'>before {_num(b['median_pct'], 0)}{'%' if b['median_pct'] is not None else ''}</small></td>"
+            f"<td>{_num(w['shares_per_1k'], 1)}</td><td>{_num(w['subs_per_1k'], 1)}</td>"
+            f"<td class='hooks'>{hooks}</td></tr>")
+    return f"""
+    <section class="card">
+      <h2>Weekly scorecard <small>Shorts public 3-10 days ago (past 72 h) against the 28 days before; medians</small></h2>
+      <div class='tbl'><table class='week score'><thead><tr><th>Channel</th><th>Shorts</th><th>Median views</th>
+        <th>Views at 72 h</th><th>% viewed</th><th>Shares /1k</th><th>Subs /1k</th><th>Hook test (35 days)</th></tr></thead>
+        <tbody>{''.join(rows)}</tbody></table></div>
+      <p class='muted' style='font-size:12px'>% viewed, shares and subscribers need the channel's Analytics login
+        (dashboard &rarr; Analytics &amp; Queue &rarr; Connect Analytics). "-" = no data yet.</p>
+    </section>"""
+
+
 def _failures(rows: list) -> str:
     if not rows:
         return ""
@@ -750,6 +808,7 @@ _CSS = """
   @media (max-width:520px) { .rthumb { width:96px } }
 
   .tbl { overflow-x:auto; margin:0 -16px; padding:0 16px }
+  table.score td, table.score th { vertical-align:top } table.score td.hooks { min-width:220px; font-size:12px }
   table { width:100%; border-collapse:collapse; font-size:14px }
   td, th { padding:8px 8px; border-top:1px solid var(--line); text-align:center; white-space:nowrap;
            font-variant-numeric:tabular-nums }
@@ -831,6 +890,8 @@ def render(data: dict) -> str:
 
   <h2 class="section">Channels</h2>
   <div class="grid">{''.join(_card(c) for c in data['channels'])}</div>
+
+  {_scorecard_html(data.get('scorecard') or [])}
 
   {_failures(data.get('failures') or [])}
   {problems}

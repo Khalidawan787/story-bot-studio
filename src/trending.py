@@ -582,7 +582,7 @@ def plain_title(channel: Channel, title: str) -> str:
     return " ".join(title.split()).strip(" -:|")
 
 
-def _news_prompt(channel: Channel, trend: Trend, scenes: int, long_form: bool) -> str:
+def _news_prompt(channel: Channel, trend: Trend, scenes: int, long_form: bool, hook: str = "") -> str:
     """Grounded prompt: the model explains the REAL headlines, not invented ones."""
     context = trend.context() or f"- {trend.title}"
     today = datetime.now().strftime("%B %d, %Y")
@@ -598,6 +598,9 @@ def _news_prompt(channel: Channel, trend: Trend, scenes: int, long_form: bool) -
             "scenes. Each scene line is one narrated sentence of 12-20 words, so the Short "
             "runs 60 to 85 seconds. Open with the single most surprising fact so nobody scrolls away."
         )
+        if hook:
+            # The hook test (hook_tests.py) decides how scene 1 opens.
+            shape = f"{shape} {hook}"
     sport_rule = (
         "   This is a SPORT story. Report only the results, scores, injuries, "
         "transfers and records the headlines state. Do not predict the outcome, "
@@ -642,9 +645,13 @@ def generate_trending_topics(channel: Channel, count: int = 2, scenes: int = 12)
     added: list[str] = []
     used_signatures: list[str] = []
 
+    from .hook_tests import next_style, record
+
     for trend in trends:
+        test = next_style(channel.id)
         try:
-            raw = _script_json(_news_prompt(channel, trend, scenes, long_form=False))
+            raw = _script_json(_news_prompt(channel, trend, scenes, long_form=False,
+                                            hook=test[1] if test else ""))
         except Exception as exc:
             print(f"[trending] {channel.id}: script failed for '{trend.title[:60]}' ({exc})")
             continue
@@ -656,6 +663,8 @@ def generate_trending_topics(channel: Channel, count: int = 2, scenes: int = 12)
             key = f"{key}_{len(lessons) + 1}"
         lessons[key] = lesson
         added.append(key)
+        if test:
+            record(channel.id, key, test[0])
         used_signatures.append(trend.key)
         sources = ", ".join(sorted(trend.sources))
         print(f"[trending] picked '{trend.title[:70]}' (sources: {sources})")

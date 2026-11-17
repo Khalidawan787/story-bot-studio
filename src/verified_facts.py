@@ -359,7 +359,8 @@ def _audit(lines: list[str], article: Article) -> dict[int, str]:
 
 # ----------------------------------------------------------------- writing --
 
-def _prompt(channel: Channel, article: Article, scenes: int, long_form: bool, feedback: str) -> str:
+def _prompt(channel: Channel, article: Article, scenes: int, long_form: bool, feedback: str,
+            hook: str = "") -> str:
     tone = getattr(channel, "tone", "") or "clear, respectful and engaging"
     if long_form:
         # A long script is asked for as single facts, one sentence each, and
@@ -379,6 +380,9 @@ def _prompt(channel: Channel, article: Article, scenes: int, long_form: bool, fe
                  "fact in the SOURCE, under 16 words, stated plainly (the deed, the odds, the number). "
                  "Then tell the story in order from scene 2.")
     speech = '"speech": str, ' if is_urdu(channel) else ""
+    if hook:
+        # The hook test (hook_tests.py): which TRUE fact opens the video.
+        shape = f"{shape}\n{hook}"
     return (
         f"You write true stories for the video channel '{channel.name}'. Tone: {tone}.\n"
         f"{shape}\n"
@@ -462,7 +466,7 @@ def _enough(rows: list[dict], long_form: bool, min_words: int | None = None) -> 
 
 
 def write_lesson(channel: Channel, article: Article, scenes: int = 8, long_form: bool = False,
-                 min_words: int | None = None) -> tuple[str, dict]:
+                 min_words: int | None = None, hook: str = "") -> tuple[str, dict]:
     """A checked script about `article`'s subject, as (key, lesson) for the topic bank.
 
     `min_words` lowers the long-form length a checked script must reach (a
@@ -472,7 +476,7 @@ def write_lesson(channel: Channel, article: Article, scenes: int = 8, long_form:
 
     feedback = ""
     for _attempt in range(2):
-        raw = _script_json(_prompt(channel, article, scenes, long_form, feedback))
+        raw = _script_json(_prompt(channel, article, scenes, long_form, feedback, hook))
         rows, dropped = _checked_rows(channel, article, raw)
         for note in dropped:
             print(f"[verified_facts] {channel.id}: dropped {note}")
@@ -548,8 +552,14 @@ def write_next_lesson(channel: Channel, scenes: int, long_form: bool,
     error = "No verified script could be written"
     for _attempt in range(1 if asked_for else 3):
         article = article_for_prompt(channel, text, long_form)
+        from .hook_tests import next_style, record
+
+        test = None if long_form else next_style(channel.id)
         try:
-            return write_lesson(channel, article, scenes, long_form)
+            key, lesson = write_lesson(channel, article, scenes, long_form, hook=test[1] if test else "")
+            if test:
+                record(channel.id, key, test[0])
+            return key, lesson
         except Exception as exc:
             error = str(exc)
             print(f"[verified_facts] {channel.id}: {exc}")

@@ -90,6 +90,8 @@ def main() -> None:
     rviews = sub.add_parser("refresh-views", help="Read every uploaded video's real view count from YouTube.")
     rviews.add_argument("--channel", default="", help="Only this channel id (blank = all).")
 
+    sub.add_parser("scorecard", help="Views at 24/72 h, YouTube Analytics per video, and the weekly scorecard.")
+
     upg = sub.add_parser("upgrade-images", help="Replace tiny/low-quality asset images with fresh AI ones.")
     upg.add_argument("--limit", default="30", help="Maximum images to upgrade.")
 
@@ -387,6 +389,19 @@ def main() -> None:
         print("\nMost watched:")
         for line in top_videos(10):
             print(line)
+        return
+    elif args.command == "scorecard":
+        from . import scorecard
+
+        print(f"views marked at 24/72 h: {scorecard.mark_views()}")
+        for message in scorecard.fetch_analytics():
+            print(message)
+        for card in scorecard.build():
+            week, base = card["week"], card["baseline"]
+            print(f"[{card['channel']}] this week {week['videos']} Shorts, median views {week['median_views']} "
+                  f"(28 days before: {base['median_views']}); hooks: "
+                  + (", ".join(f"{k} {v['videos']} videos median {v['median_views']}" for k, v in card["hooks"].items())
+                     or "none yet"))
         return
     elif args.command == "fix-thumbnails":
         from .pending_uploads import refresh_thumbnails
