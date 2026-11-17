@@ -144,6 +144,65 @@ def shown_on_youtube(youtube_id: str, short: bool):
     return None
 
 
+def on_youtube_now(youtube, youtube_id: str):
+    """The video's current thumbnail as YouTube serves it to the channel owner.
+
+    The API gives signed i.ytimg links that work while the video is still
+    private or scheduled, so a fresh upload can be checked within seconds.
+    """
+    items = youtube.videos().list(part="snippet", id=youtube_id).execute().get("items") or []
+    if not items:
+        return None
+    thumbs = items[0]["snippet"].get("thumbnails") or {}
+    for size in ("maxres", "standard", "high", "medium"):
+        url = (thumbs.get(size) or {}).get("url")
+        if url:
+            image = _download(url)
+            if image is not None:
+                return image
+    return None
+
+
+def confirm_after_upload(youtube, youtube_id: str, saved_card: str | Path, short: bool,
+                         set_again=None, tries: int = 6, wait: float = 20.0) -> tuple[bool, str]:
+    """Seconds after the upload: does YouTube show our saved card? If not, set the
+    SAME saved card again once (set_again) and look again (the owner's request,
+    2026-11-17). Returns (confirmed, words for the log)."""
+    import time
+
+    import cv2
+    import numpy as np
+
+    card = cv2.imdecode(np.fromfile(str(saved_card), dtype=np.uint8), cv2.IMREAD_COLOR)
+    if card is None:
+        return False, f"the saved card cannot be read: {saved_card}"
+    ours = fingerprint_image(card, short)
+    gap = None
+    for attempt in range(tries):
+        time.sleep(wait)
+        try:
+            image = on_youtube_now(youtube, youtube_id)
+        except Exception as exc:
+            image = None
+            print(f"[thumbnail] {youtube_id}: could not read YouTube's thumbnail ({exc})")
+        if image is not None:
+            gap = distance(fingerprint_image(image, short), ours)
+            if gap <= SAME_LIMIT:
+                return True, f"confirmed on YouTube: our card is on (difference {gap})"
+        if attempt == tries // 2 - 1 and set_again is not None:
+            # Half the waiting is over and YouTube still shows something else:
+            # the saved card once more, then keep looking.
+            print(f"[thumbnail] {youtube_id}: YouTube still shows another picture"
+                  + (f" (difference {gap})" if gap is not None else "") + "; setting the saved card again")
+            try:
+                set_again()
+            except Exception as exc:
+                return False, f"setting it again failed: {exc}"
+    return False, ("YouTube still shows another picture"
+                   + (f" (difference {gap})" if gap is not None else " (not readable yet)")
+                   + "; the daily audit will set it again")
+
+
 def check(youtube_id: str, channel_id: str, short: bool) -> tuple[str, str]:
     """('ok' | 'not_ours' | 'wrong_channel' | 'unknown', words for the log)."""
     saved = recall(youtube_id)

@@ -249,6 +249,20 @@ def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, obj
                           channel_id=str(getattr(channel, "id", "") or ""))
         except Exception as exc:
             reason = str(exc)
+        if not reason:
+            # Seconds later: is it really our card on YouTube? If not, the same
+            # saved card again (the owner's request, 2026-11-17).
+            from .thumbnail_prints import confirm_after_upload
+
+            try:
+                ok, note = confirm_after_upload(
+                    _youtube(client_secret_file, token_file), video_id, thumbnail_path, _is_tall(Path(thumbnail_path)),
+                    set_again=lambda: set_thumbnail(video_id, thumbnail_path, attempts=1,
+                                                    client_secret_file=client_secret_file, token_file=token_file,
+                                                    channel_id=str(getattr(channel, "id", "") or "")))
+                print(f"[thumbnail] {video_id}: {note}")
+            except Exception as exc:
+                print(f"[thumbnail] {video_id}: check after upload skipped ({exc})")
     else:
         reason = "custom thumbnails are not allowed on this channel yet (verify it at youtube.com/verify)"
     if reason:
