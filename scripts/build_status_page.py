@@ -657,9 +657,11 @@ def _scorecard_html(cards: list) -> str:
         rows.append(
             f"<tr><th scope='row'>{html.escape(card['name'])}</th>"
             f"<td>{w['videos']}<br><small class='muted'>{card.get('pending', 0)} pending</small></td>"
-            f"<td>{_num(w['median_views'])}{_trend(w['median_views'], b['median_views'])}"
-            f"<br><small class='muted'>before {_num(b['median_views'])}</small></td>"
-            f"<td>{_num(w['median_72h'])}</td>"
+            # Views so far are not comparable (older videos had weeks to grow);
+            # the fair comparison is the views at 72 h, so the arrow sits there.
+            f"<td>{_num(w['median_views'])}<br><small class='muted'>so far</small></td>"
+            f"<td>{_num(w['median_72h'])}{_trend(w['median_72h'], b['median_72h'])}"
+            f"<br><small class='muted'>before {_num(b['median_72h'])}</small></td>"
             f"<td>{_num(w['median_pct'], 0)}{'%' if w['median_pct'] is not None else ''}"
             f"<br><small class='muted'>before {_num(b['median_pct'], 0)}{'%' if b['median_pct'] is not None else ''}</small></td>"
             f"<td>{_num(w['shares_per_1k'], 1)}</td><td>{_num(w['subs_per_1k'], 1)}</td>"
