@@ -118,7 +118,7 @@ def run(per_day: int = PER_DAY) -> list[str]:
                              or create_thumbnail(lesson, None, run_dir / "thumbnail.jpg", channel, content_type))
                     target = channel_for_account(channel_id, account)
                     set_thumbnail(youtube_id(url), Path(thumb), client_secret_file=target.client_secret_path,
-                                  token_file=target.token_path)
+                                  token_file=target.token_path, channel_id=channel_id)
                     messages.append(f"[{channel_id}] {video_id}: thumbnail set")
                 except Exception as exc:
                     text = str(exc).lower()

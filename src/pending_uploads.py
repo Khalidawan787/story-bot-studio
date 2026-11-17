@@ -546,7 +546,7 @@ def _process_row(row: sqlite3.Row, *, bypass_safety_cap: bool = False) -> str:
             youtube_id = _video_id_from_url(row["video_url"])
             set_thumbnail(youtube_id, thumbnail_path,
                           client_secret_file=channel.client_secret_path,
-                          token_file=channel.token_path)
+                          token_file=channel.token_path, channel_id=channel.id)
             # The thumbnail is on: release the held video. Its booked time if
             # still ahead, else the channel's next free release time.
             from .youtube_upload import set_release
@@ -795,7 +795,7 @@ def refresh_thumbnails(limit: int = 20, channel_id: str | None = None,
             set_thumbnail(
                 _video_id_from_url(row["video_url"]), thumbnail_path,
                 client_secret_file=channel.client_secret_path,
-                token_file=channel.token_path,
+                token_file=channel.token_path, channel_id=channel.id,
             )
             messages.append(f"{video_id}: thumbnail updated — {row['video_url']}")
         except Exception as exc:

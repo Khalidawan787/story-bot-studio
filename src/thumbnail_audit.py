@@ -308,13 +308,24 @@ def audit(days: int = 7, fix: bool = True, channel_id: str | None = None) -> lis
             except Exception as exc:
                 messages.append(f"{tag} could not list the channel's videos: {exc}")
                 continue
-            fixes, counts = 0, {"custom": 0, "missing": 0, "unknown": 0, "fixed": 0}
+            fixes, counts = 0, {"custom": 0, "missing": 0, "unknown": 0, "fixed": 0, "verified": 0, "unverified": 0}
             for video in videos:
                 state = thumbnail_state(video["id"])
                 if state == "custom" and video["short"] and shorts_tab_state(video["id"]) == "frame":
                     # The card is the video's thumbnail but the Shorts tab shows a
                     # frame: setting it again after processing fixes the tab.
                     state = "missing"
+                if state == "custom":
+                    # Is it OUR card, made for THIS channel (the owner's request,
+                    # 2026-11-17)? YouTube's picture against the fingerprint the
+                    # bot saved when it set the thumbnail.
+                    from .thumbnail_prints import check as print_check
+
+                    verdict, why = print_check(video["id"], base.id, bool(video["short"]))
+                    counts["verified" if verdict == "ok" else "unverified"] += 1
+                    if verdict in {"not_ours", "wrong_channel"}:
+                        messages.append(f"{tag} {video['id']} '{video['title'][:50]}': {why}; setting ours again")
+                        state = "missing"
                 kind = "Short" if video["short"] else "long"
                 label = f"{tag} {video['id']} ({kind}) '{video['title'][:50]}'"
                 if state != "missing":
@@ -348,7 +359,7 @@ def audit(days: int = 7, fix: bool = True, channel_id: str | None = None) -> lis
                 try:
                     path = thumbnail_for(channel, video)
                     set_thumbnail(video["id"], path, attempts=2, client_secret_file=channel.client_secret_path,
-                                  token_file=channel.token_path)
+                                  token_file=channel.token_path, channel_id=base.id)
                 except Exception as exc:
                     error = str(exc)
                     _record(video["id"], base.id, video["title"], "fix_failed", error[:300])
@@ -377,6 +388,7 @@ def audit(days: int = 7, fix: bool = True, channel_id: str | None = None) -> lis
             messages.append(
                 f"{tag} checked {len(videos)} video(s) from the last {days} days: "
                 f"{counts['custom']} with thumbnail, {counts['fixed']} fixed now, "
-                f"{counts['missing'] - counts['fixed']} still missing, {counts['unknown']} not public yet"
+                f"{counts['missing'] - counts['fixed']} still missing, {counts['unknown']} not public yet; "
+                f"{counts['verified']} confirmed as our own card on YouTube"
             )
     return messages

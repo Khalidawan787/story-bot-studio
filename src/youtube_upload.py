@@ -91,7 +91,10 @@ def _youtube(client_secret_file: Path | None = None, token_file: Path | None = N
 
 
 def set_thumbnail(video_id: str, thumbnail_path: Path, attempts: int = 4,
-                  client_secret_file: Path | None = None, token_file: Path | None = None) -> None:
+                  client_secret_file: Path | None = None, token_file: Path | None = None,
+                  channel_id: str = "") -> None:
+    """Set the video's thumbnail and remember its fingerprint (thumbnail_prints),
+    so the daily audit can check YouTube really shows this one, on this channel."""
     youtube = _youtube(client_secret_file, token_file)
     last_error: Exception | None = None
     for attempt in range(1, attempts + 1):
@@ -100,6 +103,9 @@ def set_thumbnail(video_id: str, thumbnail_path: Path, attempts: int = 4,
                 videoId=video_id,
                 media_body=MediaFileUpload(str(thumbnail_path), mimetype="image/jpeg"),
             ).execute()
+            from .thumbnail_prints import remember
+
+            remember(video_id, thumbnail_path, channel_id)
             return
         except Exception as exc:
             last_error = exc
@@ -239,7 +245,8 @@ def upload_video(video_path: Path, thumbnail_path: Path, metadata: dict[str, obj
             done = wait_until_processed(video_id, client_secret_file, token_file)
             print(f"[youtube] {video_id} {'processed' if done else 'still processing'}; setting the Short's thumbnail")
         try:
-            set_thumbnail(video_id, thumbnail_path, client_secret_file=client_secret_file, token_file=token_file)
+            set_thumbnail(video_id, thumbnail_path, client_secret_file=client_secret_file, token_file=token_file,
+                          channel_id=str(getattr(channel, "id", "") or ""))
         except Exception as exc:
             reason = str(exc)
     else:
