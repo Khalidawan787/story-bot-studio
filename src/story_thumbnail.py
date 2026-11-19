@@ -4,7 +4,7 @@ The owner's examples for World Valor (2026-11-05, data/brand/<id>/examples:
 "Franklin D. Roosevelt, A Life of Service" and "The Untold Life of Napoleon"):
 
     the photo on the left, fading into a dark navy sky with grain and a warm glow;
-    top left the channel's mark, top right a slanted crimson TRUE STORY badge;
+    top left the channel's mark (no badge: "TRUE STORY" moved to Crime, 19 Nov);
     on the right, centred:   FRANKLIN D.            (ivory, Cinzel Bold)
                              ROOSEVELT              (antique gold, Cinzel Black,
                                                      dark edge and shadow)
@@ -279,16 +279,7 @@ def compose_story_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
             f"drawtext=fontfile='{_escape(LABEL)}':textfile='{_escape(mark_file)}':fontsize=20:"
             f"x=48:y={SAFE_MARGIN + 11}:fontcolor={c['text']}",
         ]
-    parts.append(f"[{current}]{','.join(draw)}[texted]")
-    badge_file = tmp("badge", "TRUE STORY")
-    badge_w = _text_width(badge_file, str(LABEL), 26) + 44
-    parts.append(
-        f"color=c={c['accent']}:s={badge_w}x52,"
-        f"drawtext=fontfile='{_escape(LABEL)}':textfile='{_escape(badge_file)}':fontsize=26:fontcolor=white:"
-        f"x=22:y=(52-text_h)/2,format=rgba,pad=w=iw+24:h=ih:x=12:y=0:color=black@0,"
-        f"shear=shx=-0.22:fillcolor=black@0,format=rgba[badge]"
-    )
-    parts.append(f"[texted][badge]overlay={THUMB_WIDTH - badge_w - 70}:{SAFE_MARGIN}")
+    parts.append(f"[{current}]{','.join(draw)}")
     subprocess.run(
         [settings.ffmpeg_bin, "-y", *inputs, "-filter_complex", ";".join(parts),
          "-frames:v", "1", "-update", "1", "-q:v", "2", str(output_path)],

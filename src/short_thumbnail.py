@@ -92,14 +92,15 @@ def _rows_for(style: str, lesson: Lesson, run_dir: Path, channel=None) -> tuple[
         if theme_list:
             rows.append(_row("  \u2022  ".join(theme_list), HEADING, 40, "", bar=c["bg"], ink=c["title"],
                              max_lines=1, outline=c["title"], centred=True))
-        return rows, {"badge": ("TRUE STORY", c["accent"], "white", LABEL), "shade": c["bg"]}
+        # No badge on World Valor: "TRUE STORY" is Crime's (the owner, 2026-11-19).
+        return rows, {"shade": c["bg"]}
     if style == "crime":
         from .crime_thumbnail import _subject, split_headline
 
         white, yellow = split_headline(lesson, _subject(run_dir))
         rows = [_row(" ".join(white), ANTON, 104, "white", max_lines=2, gap=12)] if white else []
         rows.append(_row(yellow, ANTON, 120, "", bar="0xffd21a", ink="black", max_lines=3))
-        return rows, {"badge": ("CRIME FILES", "0xe0141e", "white", ANTON),
+        return rows, {"badge": ("TRUE STORY", "0xe0141e", "white", ANTON),
                       "mark": "CRIME CHRONICLES", "shade": "0x2a0606"}
     if style == "motivation":
         from .motivation_thumbnail import slogan

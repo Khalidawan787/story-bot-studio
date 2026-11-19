@@ -2,7 +2,7 @@
 
 The subject's own free Wikipedia photo fills the left and fades into a dark red
 backdrop. Top left a "CRIME CHRONICLES" mark in red corner brackets, top right a
-slanted red "CRIME FILES" badge. On the right the headline in white condensed
+slanted red "TRUE STORY" badge (it read "CRIME FILES" until 19 Nov 2026). On the right the headline in white condensed
 capitals, with the person's name (or the last words) in black on a tilted
 yellow brush stripe.
 
@@ -65,7 +65,8 @@ def split_headline(lesson: Lesson, subject: str) -> tuple[list[str], str]:
             highlight = candidate
             break
     if highlight:
-        rest = " ".join(title.replace(highlight, " ").split()).strip(" :-")
+        # "Belle Starr, Outlaw Queen" minus the name left ", OUTLAW QUEEN" on the card.
+        rest = " ".join(title.replace(highlight, " ").split()).strip(" :-,;|")
     else:
         # No name in it: the last word, or two when the last is short.
         cut = len(words) - (2 if len(words) > 2 and len(words[-1]) <= 4 else 1)
@@ -162,7 +163,7 @@ def compose_crime_thumbnail(lesson: Lesson, art_path: Path | None, output_path: 
             output_path.with_suffix(".cbadge.txt")]
     mark[0].write_text("CRIME", encoding="utf-8")
     mark[1].write_text("CHRONICLES", encoding="utf-8")
-    mark[2].write_text("CRIME FILES", encoding="utf-8")
+    mark[2].write_text("TRUE STORY", encoding="utf-8")
     right = 48 + _text_width(mark[1], str(FONT), 32) + 14
     m = SAFE_MARGIN + 8
     drawn = [
