@@ -1,0 +1,58 @@
+{
+  "the_echo_of_your_smile": {
+    "title": "The Echo of Your Smile",
+    "category": "Love",
+    "intro": "Have you ever felt a love so deep, it echoes in the quietest moments? Today, we explore the subtle, beautiful ways love lingers, even when words fail.",
+    "outro": "May the echo of your love always find its way back to you. Don't forget to share your own 'echo' stories in the comments below. Until next time, keep loving.",
+    "scenes": [
+      {
+        "label": "First Spark",
+        "line": "It began with a glance, a shared laugh that felt like coming home.",
+        "image": "assets/generated/the_echo_of_your_smile_01.jpg",
+        "image_prompt": "Two people making eye contact across a crowded coffee shop, a gentle smile forming on their lips., romantic cinematic illustration, warm soft golden light, beautiful, tasteful"
+      },
+      {
+        "label": "Shared Moments",
+        "line": "We built a world of inside jokes and quiet understandings, painting our days with shared dreams.",
+        "image": "assets/generated/the_echo_of_your_smile_02.jpg",
+        "image_prompt": "A couple walking hand-in-hand through a park, bathed in golden hour sunlight., romantic cinematic illustration, warm soft golden light, beautiful, tasteful"
+      },
+      {
+        "label": "Distance Lingers",
+        "line": "Then, miles stretched between us, testing the strength of our bond, but not its truth.",
+        "image": "assets/generated/the_echo_of_your_smile_03.jpg",
+        "image_prompt": "A solitary figure looking out a train window at a passing landscape, a faint outline of another person superimposed., romantic cinematic illustration, warm soft golden light, beautiful, tasteful"
+      },
+      {
+        "label": "Letters of Love",
+        "line": "Letters arrived, not just with words, but with the whisper of your presence, a tangible piece of your heart.",
+        "image": "assets/generated/the_echo_of_your_smile_04.jpg",
+        "image_prompt": "A close-up of hands opening a slightly worn, handwritten letter, with soft candlelight in the background., romantic cinematic illustration, warm soft golden light, beautiful, tasteful"
+      },
+      {
+        "label": "Familiar Scents",
+        "line": "Sometimes, a familiar scent on the breeze—your favorite perfume, the hint of rain on earth—brings you rushing back.",
+        "image": "assets/generated/the_echo_of_your_smile_05.jpg",
+        "image_prompt": "A woman inhaling deeply near an open window, a soft, wistful expression on her face., romantic cinematic illustration, warm soft golden light, beautiful, tasteful"
+      },
+      {
+        "label": "Songs of Us",
+        "line": "A melody plays, a song we once danced to, and suddenly, I'm dancing with you again.",
+        "image": "assets/generated/the_echo_of_your_smile_06.jpg",
+        "image_prompt": "A couple slow-dancing in a dimly lit room, silhouetted against a soft glow., romantic cinematic illustration, warm soft golden light, beautiful, tasteful"
+      },
+      {
+        "label": "Echo in Silence",
+        "line": "In the silence of my own thoughts, your laughter is a warm, constant echo.",
+        "image": "assets/generated/the_echo_of_your_smile_07.jpg",
+        "image_prompt": "A person sitting peacefully on a porch swing at dusk, eyes closed, a faint smile gracing their lips., romantic cinematic illustration, warm soft golden light, beautiful, tasteful"
+      },
+      {
+        "label": "Love's Resonance",
+        "line": "This is the echo of your smile, a love that resonates through time and space, forever a part of me.",
+        "image": "assets/generated/the_echo_of_your_smile_08.jpg",
+        "image_prompt": "Two hands reaching towards each other, a warm, golden light emanating from the space between them., romantic cinematic illustration, warm soft golden light, beautiful, tasteful"
+      }
+    ]
+  }
+}
