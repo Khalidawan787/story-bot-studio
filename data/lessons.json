@@ -1,0 +1,81 @@
+{
+  "animals": {
+    "title": "Animal Sounds",
+    "category": "Animals",
+    "intro": "Hello kids! Let's learn animal sounds.",
+    "outro": "Great job! See you in the next lesson.",
+    "scenes": [
+      {
+        "label": "Cow",
+        "line": "This is a Cow. A Cow says Moo Moo!",
+        "image": "assets/animals/cow.png"
+      },
+      {
+        "label": "Dog",
+        "line": "This is a Dog. A Dog says Woof Woof!",
+        "image": "assets/animals/dog.png"
+      },
+      {
+        "label": "Cat",
+        "line": "This is a Cat. A Cat says Meow!",
+        "image": "assets/animals/cat.png"
+      }
+    ]
+  },
+  "colors": {
+    "title": "Learn Colors",
+    "category": "Colors",
+    "intro": "Hello kids! Let's learn colors.",
+    "outro": "Great job learning colors!",
+    "scenes": [
+      {
+        "label": "Red",
+        "line": "This color is Red.",
+        "image": "assets/colors/red.png"
+      },
+      {
+        "label": "Blue",
+        "line": "This color is Blue.",
+        "image": "assets/colors/blue.png"
+      },
+      {
+        "label": "Yellow",
+        "line": "This color is Yellow.",
+        "image": "assets/colors/yellow.png"
+      }
+    ]
+  },
+  "numbers": {
+    "title": "Counting One To Five",
+    "category": "Numbers",
+    "intro": "Hello kids! Let's count together.",
+    "outro": "Amazing counting!",
+    "scenes": [
+      {
+        "label": "One",
+        "line": "One. Can you say one?",
+        "image": "assets/numbers/one.png"
+      },
+      {
+        "label": "Two",
+        "line": "Two. Can you say two?",
+        "image": "assets/numbers/two.png"
+      },
+      {
+        "label": "Three",
+        "line": "Three. Can you say three?",
+        "image": "assets/numbers/three.png"
+      },
+      {
+        "label": "Four",
+        "line": "Four. Can you say four?",
+        "image": "assets/numbers/four.png"
+      },
+      {
+        "label": "Five",
+        "line": "Five. Can you say five?",
+        "image": "assets/numbers/five.png"
+      }
+    ]
+  }
+}
